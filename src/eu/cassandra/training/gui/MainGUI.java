@@ -1011,7 +1011,7 @@ public class MainGUI extends JFrame
 
           Appliance tempAppliance =
             new Appliance(installation.getName() + " " + name, conModel,
-                          "eventsAll11.csv", mesTemp, mesTemp2);
+                          "Demo/eventsAll11.csv", mesTemp, mesTemp2);
 
           installation.addAppliance(tempAppliance);
           dlm.addElement(tempAppliance.getName());
@@ -1051,8 +1051,9 @@ public class MainGUI extends JFrame
         try {
           appliance =
             new Appliance(installation.getName() + " " + name,
-                          consumptionPathField.getText(), "eventsAll11.csv",
-                          installation, activePowerRadioButton.isSelected());
+                          consumptionPathField.getText(),
+                          "Demo/eventsAll11.csv", installation,
+                          activePowerRadioButton.isSelected());
         }
         catch (IOException e1) {
           e1.printStackTrace();
@@ -1363,7 +1364,6 @@ public class MainGUI extends JFrame
       {
         behaviorSelectList.setSelectedIndex(0);
 
-        System.out.println("YEAH");
       }
     });
 
