@@ -32,18 +32,19 @@ import eu.cassandra.training.utils.EM;
 
 public class BehaviourModel
 {
-  private static final int DAILY_TIMES = 0;
-  private static final int DURATION = 1;
-  private static final int START_TIME = 2;
-  private static final int START_TIME_BINNED = 3;
+  protected static final int DAILY_TIMES = 0;
+  protected static final int DURATION = 1;
+  protected static final int START_TIME = 2;
+  protected static final int START_TIME_BINNED = 3;
 
-  private String name;
-  private String applianceOf;
-  private ConsumptionEventRepo consumptionEventRepo;
-  private ProbabilityDistribution startTime, startTimeBinned, duration,
+  protected String name;
+  protected String applianceOf;
+  protected ConsumptionEventRepo consumptionEventRepo;
+  protected ProbabilityDistribution startTime, startTimeBinned, duration,
           dailyTimes;
-  private Map<String, String> fileMap = new HashMap<String, String>();
-  private Map<String, String> distributionTypes = new HashMap<String, String>();
+  protected Map<String, String> fileMap = new HashMap<String, String>();
+  protected Map<String, String> distributionTypes =
+    new HashMap<String, String>();
 
   public BehaviourModel ()
   {
@@ -53,7 +54,6 @@ public class BehaviourModel
 
   public BehaviourModel (Appliance appliance) throws FileNotFoundException
   {
-
     name = appliance.getName() + " Behaviour Model";
     applianceOf = appliance.getName();
     consumptionEventRepo = new ConsumptionEventRepo(applianceOf);
@@ -63,6 +63,16 @@ public class BehaviourModel
   public String getName ()
   {
     return name;
+  }
+
+  public String getApplianceOf ()
+  {
+    return applianceOf;
+  }
+
+  public ConsumptionEventRepo getConsumptionEventRepo ()
+  {
+    return consumptionEventRepo;
   }
 
   public ProbabilityDistribution getDailyTimesDistribution ()

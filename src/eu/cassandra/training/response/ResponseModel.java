@@ -18,8 +18,12 @@ limitations under the License.
 package eu.cassandra.training.response;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+
+import org.jfree.chart.ChartPanel;
 
 import eu.cassandra.training.behaviour.BehaviourModel;
+import eu.cassandra.training.utils.ChartUtils;
 
 public class ResponseModel extends BehaviourModel
 {
@@ -32,48 +36,60 @@ public class ResponseModel extends BehaviourModel
     super();
   }
 
-  public void createResponseModel (int responseType, double[] basicScheme,
-                                   double[] newScheme)
+  public ResponseModel (BehaviourModel behaviour) throws FileNotFoundException
   {
-    // {
-    //
-    // PeakFinder pf = new PeakFinder(startTimeBinned.getHistogram());
-    //
-    // int peakIndex = pf.findGlobalMaximum().getIndexMinute();
-    //
-    // System.out.println(peakIndex);
-    //
-    // startTimeBinned.movePeak(peakIndex, 3);
-    //
+    applianceOf = behaviour.getApplianceOf();
+    name = applianceOf + " Response Model";
+    fileMap = behaviour.getFileMap();
+    distributionTypes = behaviour.getDistributionTypes();
+    consumptionEventRepo = behaviour.getConsumptionEventRepo();
+
+    String[] types =
+      { "DailyTimes", "Duration", "StartTime", "StartTimeBinned" };
+
+    for (int i = 0; i < types.length; i++)
+      fillDistribution(fileMap.get(types[i]), distributionTypes.get(types[i]),
+                       i);
+
   }
 
-  public double[] respond (String name, int responseType, double[] basicScheme,
-                           double[] newScheme) throws FileNotFoundException
+  public static ChartPanel previewResponseModel (BehaviourModel behaviour,
+                                                 int responseType,
+                                                 double[] basicScheme,
+                                                 double[] newScheme)
   {
-    // double[] newActive = Arrays.copyOf(activePower, activePower.length);
-    // double[] newReactive = Arrays.copyOf(reactivePower,
-    // reactivePower.length);
-    //
-    // String[] types =
-    // { "DailyTimes", "Duration", "StartTime", "StartTimeBinned" };
-    //
-    // String[] distributions = new String[types.length];
-    // String[] fileString = new String[types.length];
-    //
-    // for (int i = 0; i < types.length; i++) {
-    // distributions[i] = distributionTypes.get(types[i]);
-    // fileString[i] = fileMap.get(types[i]);
-    // }
-    //
-    // Appliance newAppliance =
-    // new Appliance(name, consumptionModelString, this.consumptionEventRepo,
-    // newActive, newReactive);
-    //
-    // newAppliance.distributionFromFiles(fileString, distributions);
-    //
-    // newAppliance.createResponse(responseType, basicScheme, newScheme);
-    //
-    // return newAppliance;
-    return null;
+    PeakFinder pf =
+      new PeakFinder(behaviour.getStartTimeBinnedDistribution().getHistogram());
+
+    int peakIndex = pf.findGlobalMaximum().getIndexMinute();
+
+    double[] before =
+      Arrays.copyOf(behaviour.getStartTimeBinnedDistribution().getHistogram(),
+                    behaviour.getStartTimeBinnedDistribution().getHistogram().length);
+
+    System.out.println(peakIndex);
+
+    double[] after =
+      behaviour.getStartTimeBinnedDistribution().movePeakPreview(peakIndex, 3);
+
+    return ChartUtils.createResponseHistogram("Response",
+                                              "10 Minute Intervals",
+                                              "Probability", before, after);
+
   }
+
+  public void respond (int responseType, double[] basicScheme,
+                       double[] newScheme)
+  {
+
+    PeakFinder pf = new PeakFinder(startTimeBinned.getHistogram());
+
+    int peakIndex = pf.findGlobalMaximum().getIndexMinute();
+
+    System.out.println(peakIndex);
+
+    startTimeBinned.movePeak(peakIndex, 3);
+
+  }
+
 }

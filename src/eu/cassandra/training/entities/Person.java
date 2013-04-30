@@ -20,6 +20,8 @@ package eu.cassandra.training.entities;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
+import org.jfree.chart.ChartPanel;
+
 import eu.cassandra.training.behaviour.BehaviourModel;
 import eu.cassandra.training.response.ResponseModel;
 
@@ -106,5 +108,29 @@ public class Person
     BehaviourModel behaviourModel = new BehaviourModel(appliance);
     behaviourModel.train(distributions);
     behaviourModels.add(behaviourModel);
+  }
+
+  public ChartPanel previewResponse (BehaviourModel behaviour, int response,
+                                     double[] basicScheme, double[] newScheme)
+  {
+    return ResponseModel.previewResponseModel(behaviour, response, basicScheme,
+                                              newScheme);
+  }
+
+  public String createResponse (BehaviourModel behaviour, int responseType,
+                                double[] basicScheme, double[] newScheme)
+    throws FileNotFoundException
+  {
+    String result = "";
+
+    ResponseModel response = new ResponseModel(behaviour);
+
+    response.respond(responseType, basicScheme, newScheme);
+
+    responseModels.add(response);
+
+    result = response.getName();
+
+    return result;
   }
 }

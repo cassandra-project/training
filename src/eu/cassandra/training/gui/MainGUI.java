@@ -69,6 +69,7 @@ import eu.cassandra.training.entities.Appliance;
 import eu.cassandra.training.entities.Installation;
 import eu.cassandra.training.response.ResponseModel;
 import eu.cassandra.training.utils.ChartUtils;
+import eu.cassandra.training.utils.ImportUtils;
 
 public class MainGUI extends JFrame
 {
@@ -1368,103 +1369,101 @@ public class MainGUI extends JFrame
       public void componentShown (ComponentEvent arg0)
       {
         behaviorSelectList.setSelectedIndex(0);
+      }
+    });
+
+    previewResponseButton.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent arg0)
+      {
+
+        BehaviourModel behaviour =
+          installation.getPerson().findBehaviour(behaviorSelectList
+                                                         .getSelectedValue());
+
+        int response = -1;
+
+        if (bestCaseRadioButton.isSelected())
+          response = 0;
+        else if (normalCaseRadioButton.isSelected())
+          response = 1;
+        else
+          response = 2;
+
+        double[] basicScheme =
+          ImportUtils.parseScheme(basicPricingSchemePane.getText());
+        double[] newScheme =
+          ImportUtils.parseScheme(newPricingSchemePane.getText());
+
+        ChartPanel chartPanel =
+          installation.getPerson().previewResponse(behaviour, response,
+                                                   basicScheme, newScheme);
+        responsePanel.add(chartPanel, BorderLayout.CENTER);
+        responsePanel.validate();
+
+        createResponseButton.setEnabled(true);
+      }
+    });
+
+    createResponseButton.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent arg0)
+      {
+        exportPreviewPanel.removeAll();
+        exportPreviewPanel.updateUI();
+
+        int responseType = -1;
+        String responseString = "";
+        if (bestCaseRadioButton.isSelected()) {
+          responseType = 0;
+          responseString = "Best";
+        }
+        else if (normalCaseRadioButton.isSelected()) {
+          responseType = 1;
+          responseString = "Normal";
+        }
+        else if (worstCaseRadioButton.isSelected()) {
+          responseType = 2;
+          responseString = "Worst";
+        }
+
+        double[] basicScheme =
+          ImportUtils.parseScheme(basicPricingSchemePane.getText());
+        double[] newScheme =
+          ImportUtils.parseScheme(newPricingSchemePane.getText());
+
+        BehaviourModel behaviour =
+          installation.getPerson().findBehaviour(behaviorSelectList
+                                                         .getSelectedValue());
+
+        String response = "";
+
+        try {
+          response =
+            installation.getPerson().createResponse(behaviour, responseType,
+                                                    basicScheme, newScheme);
+        }
+        catch (FileNotFoundException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+
+        int size = exportModelList.getModel().getSize();
+        // System.out.println(size);
+
+        if (size > 0) {
+          exportModels = (DefaultListModel<String>) exportModelList.getModel();
+          if (exportModels.contains(response) == false)
+            exportModels.addElement(response);
+        }
+        else {
+          exportModels = new DefaultListModel<String>();
+          exportModels.addElement(response);
+          exportModelList.setEnabled(true);
+        }
+        exportModelList.setModel(exportModels);
 
       }
     });
 
-    // previewResponseButton.addActionListener(new ActionListener() {
-    // public void actionPerformed (ActionEvent arg0)
-    // {
-    //
-    // Appliance current =
-    // installation.findAppliance(behaviorSelectList.getSelectedValue());
-    //
-    // int response = -1;
-    //
-    // if (bestCaseRadioButton.isSelected())
-    // response = 0;
-    // else if (normalCaseRadioButton.isSelected())
-    // response = 1;
-    // else
-    // response = 2;
-    //
-    // basicScheme = ImportUtils.parseScheme(basicPricingSchemePane.getText());
-    // newScheme = ImportUtils.parseScheme(newPricingSchemePane.getText());
-    //
-    // ChartPanel chartPanel =
-    // current.responsePreview(response, basicScheme, newScheme);
-    // responsePanel.add(chartPanel, BorderLayout.CENTER);
-    // responsePanel.validate();
-    //
-    // createResponseButton.setEnabled(true);
-    // }
-    // });
-    //
-    // createResponseButton.addActionListener(new ActionListener() {
-    // public void actionPerformed (ActionEvent arg0)
-    // {
-    // exportPreviewPanel.removeAll();
-    // exportPreviewPanel.updateUI();
-    //
-    // int response = -1;
-    // String responseString = "";
-    // if (bestCaseRadioButton.isSelected()) {
-    // response = 0;
-    // responseString = "Best";
-    // }
-    // else if (normalCaseRadioButton.isSelected()) {
-    // response = 1;
-    // responseString = "Normal";
-    // }
-    // else if (worstCaseRadioButton.isSelected()) {
-    // response = 2;
-    // responseString = "Worst";
-    // }
-    //
-    // basicScheme = ImportUtils.parseScheme(basicPricingSchemePane.getText());
-    // newScheme = ImportUtils.parseScheme(newPricingSchemePane.getText());
-    //
-    // Appliance current =
-    // installation.findAppliance(behaviorSelectList.getSelectedValue());
-    //
-    // Appliance newAppliance = null;
-    //
-    // try {
-    // newAppliance =
-    // current.createModel(current.getName() + "(" + responseString + ")",
-    // response, basicScheme, newScheme);
-    // }
-    // catch (FileNotFoundException e) {
-    //
-    // e.printStackTrace();
-    // }
-    //
-    // installation.add(newAppliance);
-    //
-    // System.out.println(newAppliance.getName());
-    //
-    // int size = exportModelList.getModel().getSize();
-    // // System.out.println(size);
-    // DefaultListModel<String> dlm;
-    // if (size > 0) {
-    // dlm = (DefaultListModel<String>) exportModelList.getModel();
-    // if (dlm.contains(newAppliance.getName()) == false)
-    // dlm.addElement(newAppliance.getName());
-    // }
-    // else {
-    // dlm = new DefaultListModel<String>();
-    // dlm.addElement(newAppliance.getName());
-    // exportModelList.setEnabled(true);
-    // }
-    // exportModelList.setModel(dlm);
-    //
-    // exportDailyButton.setEnabled(true);
-    // exportDurationButton.setEnabled(true);
-    // exportStartButton.setEnabled(true);
-    // exportStartBinnedButton.setEnabled(true);
-    // }
-    // });
-    //
     newPricingSchemePane.addKeyListener(new KeyAdapter() {
       @Override
       public void keyTyped (KeyEvent arg0)
@@ -1484,9 +1483,6 @@ public class MainGUI extends JFrame
       public void actionPerformed (ActionEvent arg0)
       {
 
-        // System.out.println("Basic: " + basicPricingSchemePane.getText());
-        // System.out.println("New: " + newPricingSchemePane.getText());
-
         boolean basicScheme = false;
         boolean newScheme = false;
 
@@ -1495,8 +1491,6 @@ public class MainGUI extends JFrame
 
         if (newPricingSchemePane.getText().equalsIgnoreCase("") == false)
           newScheme = true;
-
-        // System.out.println("Basic: " + basicScheme + " New: " + newScheme);
 
         if (basicScheme && newScheme) {
           ChartPanel chartPanel =
