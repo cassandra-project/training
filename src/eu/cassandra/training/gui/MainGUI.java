@@ -69,7 +69,6 @@ import eu.cassandra.training.entities.Appliance;
 import eu.cassandra.training.entities.Installation;
 import eu.cassandra.training.response.ResponseModel;
 import eu.cassandra.training.utils.ChartUtils;
-import eu.cassandra.training.utils.Constants;
 
 public class MainGUI extends JFrame
 {
@@ -86,8 +85,14 @@ public class MainGUI extends JFrame
   private final ButtonGroup responseModelButtonGroup = new ButtonGroup();
   private Installation installation = new Installation();
   private final ButtonGroup powerButtonGroup = new ButtonGroup();
-  private double[] basicScheme = new double[Constants.MINUTES_PER_DAY];
-  private double[] newScheme = new double[Constants.MINUTES_PER_DAY];
+  private DefaultListModel<String> detectedAppliances =
+    new DefaultListModel<String>();
+  private DefaultListModel<String> selectedAppliances =
+    new DefaultListModel<String>();
+  private DefaultListModel<String> behaviorModels =
+    new DefaultListModel<String>();
+  private DefaultListModel<String> exportModels =
+    new DefaultListModel<String>();
 
   /**
    * Launch the application.
@@ -980,8 +985,6 @@ public class MainGUI extends JFrame
 
         int temp = 10 + ((int) (Math.random() * 2));
 
-        DefaultListModel<String> dlm = new DefaultListModel<String>();
-
         for (int i = 0; i < temp; i++) {
 
           String name = "Appliance " + i;
@@ -1014,20 +1017,21 @@ public class MainGUI extends JFrame
                           "Demo/eventsAll11.csv", mesTemp, mesTemp2);
 
           installation.addAppliance(tempAppliance);
-          dlm.addElement(tempAppliance.getName());
-
+          detectedAppliances.addElement(tempAppliance.getName());
+          selectedAppliances.addElement(tempAppliance.getName());
+          exportModels.addElement(tempAppliance.getName());
         }
 
         detectedApplianceList.setEnabled(true);
-        detectedApplianceList.setModel(dlm);
+        detectedApplianceList.setModel(detectedAppliances);
         detectedApplianceList.setSelectedIndex(0);
 
         tabbedPane.setEnabledAt(1, true);
         selectedApplianceList.setEnabled(true);
-        selectedApplianceList.setModel(dlm);
+        selectedApplianceList.setModel(selectedAppliances);
 
         exportModelList.setEnabled(true);
-        exportModelList.setModel(dlm);
+        exportModelList.setModel(exportModels);
         tabbedPane.setEnabledAt(3, true);
 
         disaggregateButton.setEnabled(false);
@@ -1061,17 +1065,20 @@ public class MainGUI extends JFrame
 
         installation.addAppliance(appliance);
 
-        dlm.addElement(appliance.getName());
+        detectedAppliances.addElement(appliance.getName());
+        selectedAppliances.addElement(appliance.getName());
+        exportModels.addElement(appliance.getName());
+
         detectedApplianceList.setEnabled(true);
-        detectedApplianceList.setModel(dlm);
+        detectedApplianceList.setModel(detectedAppliances);
         detectedApplianceList.setSelectedIndex(0);
 
         tabbedPane.setEnabledAt(1, true);
         selectedApplianceList.setEnabled(true);
-        selectedApplianceList.setModel(dlm);
+        selectedApplianceList.setModel(selectedAppliances);
 
         exportModelList.setEnabled(true);
-        exportModelList.setModel(dlm);
+        exportModelList.setModel(exportModels);
         tabbedPane.setEnabledAt(3, true);
 
         disaggregateButton.setEnabled(false);
@@ -1184,30 +1191,30 @@ public class MainGUI extends JFrame
         distributionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
         distributionPreviewPanel.validate();
         int size = behaviorSelectList.getModel().getSize();
-        DefaultListModel<String> dlm;
+
         if (size > 0) {
-          dlm = (DefaultListModel<String>) behaviorSelectList.getModel();
-          if (dlm.contains(behaviourModel.getName()) == false)
-            dlm.addElement(behaviourModel.getName());
+          behaviorModels =
+            (DefaultListModel<String>) behaviorSelectList.getModel();
+          if (behaviorModels.contains(behaviourModel.getName()) == false)
+            behaviorModels.addElement(behaviourModel.getName());
         }
         else {
-          dlm = new DefaultListModel<String>();
-          dlm.addElement(behaviourModel.getName());
+          behaviorModels = new DefaultListModel<String>();
+          behaviorModels.addElement(behaviourModel.getName());
           behaviorSelectList.setEnabled(true);
         }
 
-        behaviorSelectList.setModel(dlm);
+        behaviorSelectList.setModel(behaviorModels);
 
         size = exportModelList.getModel().getSize();
-        DefaultListModel<String> dlm2;
         if (size > 0) {
-          dlm2 = (DefaultListModel<String>) exportModelList.getModel();
-          if (dlm2.contains(behaviourModel.getName()) == false)
-            dlm2.addElement(behaviourModel.getName());
+          exportModels = (DefaultListModel<String>) exportModelList.getModel();
+          if (exportModels.contains(behaviourModel.getName()) == false)
+            exportModels.addElement(behaviourModel.getName());
         }
         else {
-          dlm2 = new DefaultListModel<String>();
-          dlm2.addElement(behaviourModel.getName());
+          exportModels = new DefaultListModel<String>();
+          exportModels.addElement(behaviourModel.getName());
           exportModelList.setEnabled(true);
         }
 
@@ -1216,9 +1223,7 @@ public class MainGUI extends JFrame
         startTimeButton.setEnabled(true);
         startTimeBinnedButton.setEnabled(true);
 
-        exportModelList.setModel(dlm2);
-        if (!tabbedPane.isEnabledAt(3))
-          tabbedPane.setEnabledAt(3, true);
+        exportModelList.setModel(exportModels);
 
         exportDailyButton.setEnabled(true);
         exportDurationButton.setEnabled(true);
@@ -1528,63 +1533,62 @@ public class MainGUI extends JFrame
       public void componentShown (ComponentEvent arg0)
       {
         exportModelList.setSelectedIndex(0);
-
       }
     });
 
     exportModelList.addListSelectionListener(new ListSelectionListener() {
       public void valueChanged (ListSelectionEvent arg0)
       {
+        if (tabbedPane.getSelectedIndex() == 3) {
+          exportPreviewPanel.removeAll();
+          exportPreviewPanel.updateUI();
 
-        exportPreviewPanel.removeAll();
-        exportPreviewPanel.updateUI();
+          String selection = exportModelList.getSelectedValue();
 
-        String selection = exportModelList.getSelectedValue();
+          Appliance appliance = installation.findAppliance(selection);
 
-        Appliance appliance = installation.findAppliance(selection);
+          BehaviourModel behaviour =
+            installation.getPerson().findBehaviour(selection);
 
-        BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection);
+          ResponseModel response =
+            installation.getPerson().findResponse(selection);
 
-        ResponseModel response =
-          installation.getPerson().findResponse(selection);
+          ChartPanel chartPanel = null;
 
-        ChartPanel chartPanel = null;
+          if (appliance != null) {
 
-        if (appliance != null) {
+            chartPanel =
+              ChartUtils.createHistogram("Test", "Time Step", "Power",
+                                         appliance.getConsumptionModel());
 
-          chartPanel =
-            ChartUtils.createHistogram("Test", "Time Step", "Power",
-                                       appliance.getConsumptionModel());
+            exportDailyButton.setEnabled(false);
+            exportDurationButton.setEnabled(false);
+            exportStartButton.setEnabled(false);
+            exportStartBinnedButton.setEnabled(false);
 
-          exportDailyButton.setEnabled(false);
-          exportDurationButton.setEnabled(false);
-          exportStartButton.setEnabled(false);
-          exportStartBinnedButton.setEnabled(false);
+          }
+          else if (behaviour != null) {
 
+            chartPanel = behaviour.createDailyTimesDistributionChart();
+
+            exportDailyButton.setEnabled(true);
+            exportDurationButton.setEnabled(true);
+            exportStartButton.setEnabled(true);
+            exportStartBinnedButton.setEnabled(true);
+          }
+          else if (response != null) {
+
+            chartPanel = response.createDailyTimesDistributionChart();
+
+            exportDailyButton.setEnabled(true);
+            exportDurationButton.setEnabled(true);
+            exportStartButton.setEnabled(true);
+            exportStartBinnedButton.setEnabled(true);
+          }
+
+          exportPreviewPanel.add(chartPanel, BorderLayout.CENTER);
+          exportPreviewPanel.validate();
         }
-        else if (behaviour != null) {
-
-          chartPanel = behaviour.createDailyTimesDistributionChart();
-
-          exportDailyButton.setEnabled(true);
-          exportDurationButton.setEnabled(true);
-          exportStartButton.setEnabled(true);
-          exportStartBinnedButton.setEnabled(true);
-        }
-        else if (response != null) {
-
-          chartPanel = response.createDailyTimesDistributionChart();
-
-          exportDailyButton.setEnabled(true);
-          exportDurationButton.setEnabled(true);
-          exportStartButton.setEnabled(true);
-          exportStartBinnedButton.setEnabled(true);
-        }
-
-        exportPreviewPanel.add(chartPanel, BorderLayout.CENTER);
-        exportPreviewPanel.validate();
-
       }
     });
 
