@@ -4,7 +4,8 @@
   <package id="1" language="java" name="eu.cassandra.training.utils" project="Training Module" 
     file="/Training Module/src/eu/cassandra/training/utils" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="304" y="-48"/>    
-    <display autosize="true" stereotype="true" accessors="true"/>  
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true"/>  
   </package>  
   <class id="2" language="java" name="eu.cassandra.training.utils.ChartUtils" project="Training Module" 
     file="/Training Module/src/eu/cassandra/training/utils/ChartUtils.java" binary="false" corner="BOTTOM_RIGHT">    
@@ -30,11 +31,9 @@
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true"/>      
-      <operations public="true" package="true" protected="true" private="true"/>    
-    </display>  
-  </class>  
-  <class id="5" language="java" name="eu.cassandra.training.utils.ImportUtils" project="Training Module" 
-    file="/Training Module/src/eu/cassandra/training/utils/ImportUtils.java" binary="false" corner="BOTTOM_RIGHT">    
+      <operations public="true" package="true" protected="true" private="trueu.cassandra.training.utils.Utils 
+  <class id="5" language="java" name="eu.cassandra.training.utils.Utils" project="Training Module" 
+    file="/Training Module/src/eu/cassandra/training/utils/Utils.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="337" y="449"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      

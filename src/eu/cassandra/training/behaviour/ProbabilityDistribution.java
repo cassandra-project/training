@@ -139,16 +139,36 @@ public interface ProbabilityDistribution
   public void status ();
 
   /**
-   * Moves the distribution using Moving average
+   * Shifting function for the probability distribution
    * 
    */
-  public void movePeak (int index, int interval);
+  public void shifting (int shiftingCase, double[] basicScheme,
+                        double[] newScheme);
 
   /**
-   * Makes a preview of the moving algorithm
+   * Makes a preview of the shifting function
    * 
    */
-  public double[] movePeakPreview (int index, int interval);
+  public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
+                                   double[] newScheme);
+
+  /**
+   * The Best Case Scenario shifting function
+   * 
+   */
+  public double[] shiftingBest (double[] newScheme);
+
+  /**
+   * The Normal Case Scenario shifting function
+   * 
+   */
+  public double[] shiftingNormal (double[] basicScheme, double[] newScheme);
+
+  /**
+   * The Worst Case Scenario shifting function
+   * 
+   */
+  public double[] shiftingWorst (double[] basicScheme, double[] newScheme);
 
   /**
    * Return the distribution probability histogram.

@@ -25,7 +25,7 @@ import java.util.Scanner;
 import eu.cassandra.training.response.PeakFinder;
 import eu.cassandra.training.utils.Constants;
 import eu.cassandra.training.utils.RNG;
-
+import eu.cassandra.training.utils.Utils;
 
 /**
  * @author Antonios Chrysopoulos
@@ -310,7 +310,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
     int peakIndex = pf.findGlobalIntervalMaximum().getIndexMinute();
 
-    g.movePeak(peakIndex * Constants.MINUTES_PER_BIN, 30);
+    // g.movePeak(peakIndex * Constants.MINUTES_PER_BIN, 30);
 
     g.precompute(0, 1440, 1440);
 
@@ -383,20 +383,110 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     return histogram;
   }
 
+  // @Override
+  // public void shifting (int shiftingCase, double[] basicScheme,
+  // double[] newScheme)
+  // {
+  //
+  // histogram = movingAverage(index, interval);
+  //
+  // }
+  //
+  // @Override
+  // public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
+  // double[] newScheme)
+  // {
+  //
+  // return movingAverage(index, interval);
+  //
+  // }
+
   @Override
-  public void movePeak (int index, int interval)
+  public void shifting (int shiftingCase, double[] basicScheme,
+                        double[] newScheme)
   {
 
-    histogram = movingAverage(index, interval);
+    if (shiftingCase == 0) {
+
+      histogram = shiftingBest(newScheme);
+    }
+    else if (shiftingCase == 1) {
+
+      histogram = shiftingNormal(basicScheme, newScheme);
+    }
+    else if (shiftingCase == 2) {
+
+      histogram = shiftingWorst(basicScheme, newScheme);
+    }
+    else {
+      System.out.println("ERROR in shifting function");
+    }
 
   }
 
   @Override
-  public double[] movePeakPreview (int index, int interval)
+  public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
+                                   double[] newScheme)
   {
 
-    return movingAverage(index, interval);
+    double[] result = new double[Constants.MINUTES_PER_DAY];
 
+    if (shiftingCase == 0) {
+
+      result = shiftingBest(newScheme);
+    }
+    else if (shiftingCase == 1) {
+
+      result = shiftingNormal(basicScheme, newScheme);
+    }
+    else if (shiftingCase == 2) {
+
+      result = shiftingWorst(basicScheme, newScheme);
+    }
+    else {
+      System.out.println("ERROR in shifting function");
+    }
+
+    result = Utils.aggregateStartTimeDistribution(result);
+
+    return result;
+
+  }
+
+  @Override
+  public double[] shiftingBest (double[] newScheme)
+  {
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    double sum = 0;
+
+    for (int i = 0; i < newScheme.length; i++) {
+      result[i] = histogram[i] / newScheme[i];
+      sum += result[i];
+    }
+
+    for (int i = 0; i < result.length; i++)
+      result[i] /= sum;
+
+    return result;
+
+  }
+
+  @Override
+  public double[] shiftingNormal (double[] basicScheme, double[] newScheme)
+  {
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    return result;
+
+  }
+
+  @Override
+  public double[] shiftingWorst (double[] basicScheme, double[] newScheme)
+  {
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    return result;
   }
 
   public void movePeak2 (int index, int interval)

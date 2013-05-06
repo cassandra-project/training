@@ -20,7 +20,9 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import eu.cassandra.training.utils.Constants;
 import eu.cassandra.training.utils.RNG;
+import eu.cassandra.training.utils.Utils;
 
 /**
  * @author Christos Diou <diou remove this at iti dot gr>
@@ -307,15 +309,92 @@ public class Gaussian implements ProbabilityDistribution
   }
 
   @Override
-  public void movePeak (int index, int interval)
+  public void shifting (int shiftingCase, double[] basicScheme,
+                        double[] newScheme)
   {
+
+    if (shiftingCase == 0) {
+
+      histogram = shiftingBest(newScheme);
+
+    }
+    else if (shiftingCase == 1) {
+
+      histogram = shiftingNormal(basicScheme, newScheme);
+    }
+    else if (shiftingCase == 2) {
+
+      histogram = shiftingWorst(basicScheme, newScheme);
+    }
+    else {
+      System.out.println("ERROR in shifting function");
+    }
 
   }
 
   @Override
-  public double[] movePeakPreview (int index, int interval)
+  public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
+                                   double[] newScheme)
   {
-    return null;
+
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    if (shiftingCase == 0) {
+
+      result = shiftingBest(newScheme);
+    }
+    else if (shiftingCase == 1) {
+
+      result = shiftingNormal(basicScheme, newScheme);
+    }
+    else if (shiftingCase == 2) {
+
+      result = shiftingWorst(basicScheme, newScheme);
+    }
+    else {
+      System.out.println("ERROR in shifting function");
+    }
+
+    result = Utils.aggregateStartTimeDistribution(result);
+
+    return result;
+
+  }
+
+  @Override
+  public double[] shiftingBest (double[] newScheme)
+  {
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    double sum = 0;
+
+    for (int i = 0; i < newScheme.length; i++) {
+      result[i] = histogram[i] / newScheme[i];
+      sum += result[i];
+    }
+
+    for (int i = 0; i < result.length; i++)
+      result[i] /= sum;
+
+    return result;
+
+  }
+
+  @Override
+  public double[] shiftingNormal (double[] basicScheme, double[] newScheme)
+  {
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    return result;
+
+  }
+
+  @Override
+  public double[] shiftingWorst (double[] basicScheme, double[] newScheme)
+  {
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    return result;
   }
 
 }

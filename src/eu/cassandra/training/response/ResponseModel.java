@@ -23,7 +23,9 @@ import java.util.Arrays;
 import org.jfree.chart.ChartPanel;
 
 import eu.cassandra.training.behaviour.BehaviourModel;
+import eu.cassandra.training.behaviour.Histogram;
 import eu.cassandra.training.utils.ChartUtils;
+import eu.cassandra.training.utils.Utils;
 
 public class ResponseModel extends BehaviourModel
 {
@@ -58,19 +60,21 @@ public class ResponseModel extends BehaviourModel
                                                  double[] basicScheme,
                                                  double[] newScheme)
   {
-    PeakFinder pf =
-      new PeakFinder(behaviour.getStartTimeBinnedDistribution().getHistogram());
-
-    int peakIndex = pf.findGlobalMaximum().getIndexMinute();
+    // PeakFinder pf =
+    // new
+    // PeakFinder(behaviour.getStartTimeBinnedDistribution().getHistogram());
+    //
+    // int peakIndex = pf.findGlobalMaximum().getIndexMinute();
 
     double[] before =
-      Arrays.copyOf(behaviour.getStartTimeBinnedDistribution().getHistogram(),
-                    behaviour.getStartTimeBinnedDistribution().getHistogram().length);
+      Arrays.copyOf(behaviour.getStartTimeBinned().getHistogram(), behaviour
+              .getStartTimeBinned().getHistogram().length);
 
-    System.out.println(peakIndex);
+    // System.out.println(peakIndex);
 
     double[] after =
-      behaviour.getStartTimeBinnedDistribution().movePeakPreview(peakIndex, 3);
+      behaviour.getStartTime().shiftingPreview(responseType, basicScheme,
+                                               newScheme);
 
     return ChartUtils.createResponseHistogram("Response",
                                               "10 Minute Intervals",
@@ -82,14 +86,17 @@ public class ResponseModel extends BehaviourModel
                        double[] newScheme)
   {
 
-    PeakFinder pf = new PeakFinder(startTimeBinned.getHistogram());
+    // PeakFinder pf = new PeakFinder(startTimeBinned.getHistogram());
+    //
+    // int peakIndex = pf.findGlobalMaximum().getIndexMinute();
+    //
+    // System.out.println(peakIndex);
 
-    int peakIndex = pf.findGlobalMaximum().getIndexMinute();
+    startTime.shifting(responseType, basicScheme, newScheme);
 
-    System.out.println(peakIndex);
-
-    startTimeBinned.movePeak(peakIndex, 3);
+    startTimeBinned =
+      new Histogram(Utils.aggregateStartTimeDistribution(startTime
+              .getHistogram()));
 
   }
-
 }

@@ -90,7 +90,7 @@ public class BehaviourModel
     return startTime;
   }
 
-  public ProbabilityDistribution getStartTimeBinnedDistribution ()
+  public ProbabilityDistribution getStartTimeBinned ()
   {
     return startTimeBinned;
   }

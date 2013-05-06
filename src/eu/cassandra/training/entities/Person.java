@@ -105,6 +105,12 @@ public class Person
   public void train (Appliance appliance, String[] distributions)
     throws FileNotFoundException
   {
+    BehaviourModel exists =
+      findBehaviour(appliance.getName() + " Behaviour Model");
+
+    if (exists != null)
+      behaviourModels.remove(exists);
+
     BehaviourModel behaviourModel = new BehaviourModel(appliance);
     behaviourModel.train(distributions);
     behaviourModels.add(behaviourModel);

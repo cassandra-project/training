@@ -25,6 +25,7 @@ import java.util.Scanner;
 
 import eu.cassandra.training.utils.Constants;
 import eu.cassandra.training.utils.RNG;
+import eu.cassandra.training.utils.Utils;
 
 public class Histogram implements ProbabilityDistribution
 {
@@ -224,51 +225,91 @@ public class Histogram implements ProbabilityDistribution
   }
 
   @Override
-  public void movePeak (int index, int interval)
+  public void shifting (int shiftingCase, double[] basicScheme,
+                        double[] newScheme)
   {
 
-    values = movingAverage(index, interval);
+    if (shiftingCase == 0) {
+
+      values = shiftingBest(newScheme);
+    }
+    else if (shiftingCase == 1) {
+
+      values = shiftingNormal(basicScheme, newScheme);
+    }
+    else if (shiftingCase == 2) {
+
+      values = shiftingWorst(basicScheme, newScheme);
+    }
+    else {
+      System.out.println("ERROR in shifting function");
+    }
 
   }
 
   @Override
-  public double[] movePeakPreview (int index, int interval)
+  public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
+                                   double[] newScheme)
   {
 
-    return movingAverage(index, interval);
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    if (shiftingCase == 0) {
+
+      result = shiftingBest(newScheme);
+    }
+    else if (shiftingCase == 1) {
+
+      result = shiftingNormal(basicScheme, newScheme);
+    }
+    else if (shiftingCase == 2) {
+
+      result = shiftingWorst(basicScheme, newScheme);
+    }
+    else {
+      System.out.println("ERROR in shifting function");
+    }
+
+    result = Utils.aggregateStartTimeDistribution(result);
+
+    return result;
 
   }
 
-  public static void main (String[] args) throws FileNotFoundException
+  @Override
+  public double[] shiftingBest (double[] newScheme)
   {
-    System.out.println("Testing Histogram.");
+    double[] result = new double[Constants.MINUTES_PER_DAY];
 
-    RNG.init();
+    double sum = 0;
 
-    Histogram g = new Histogram("Files/DurationHistogramOverall.csv");
-    g.status();
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
+    for (int i = 0; i < newScheme.length; i++) {
+      result[i] = values[i] / newScheme[i];
+      sum += result[i];
+    }
 
-    g = new Histogram("Files/DailyTimesHistogramOverall.csv");
-    g.status();
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
+    for (int i = 0; i < result.length; i++)
+      result[i] /= sum;
 
-    g = new Histogram("Files/StartTimeHistogramBinnedOverall.csv");
-    g.status();
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
-    System.out.println(g.getPrecomputedBin());
+    return result;
 
+  }
+
+  @Override
+  public double[] shiftingNormal (double[] basicScheme, double[] newScheme)
+  {
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    return result;
+
+  }
+
+  @Override
+  public double[] shiftingWorst (double[] basicScheme, double[] newScheme)
+  {
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    return result;
   }
 
 }

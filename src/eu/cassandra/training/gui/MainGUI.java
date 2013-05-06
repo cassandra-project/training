@@ -70,7 +70,7 @@ import eu.cassandra.training.entities.Appliance;
 import eu.cassandra.training.entities.Installation;
 import eu.cassandra.training.response.ResponseModel;
 import eu.cassandra.training.utils.ChartUtils;
-import eu.cassandra.training.utils.ImportUtils;
+import eu.cassandra.training.utils.Utils;
 
 public class MainGUI extends JFrame
 {
@@ -286,15 +286,15 @@ public class MainGUI extends JFrame
 
     // RESPONSE MODEL TAB //
 
-    final JPanel responseParemetersPanel = new JPanel();
-    responseParemetersPanel.setLayout(null);
-    responseParemetersPanel.setBorder(new TitledBorder(null,
+    final JPanel responseParametersPanel = new JPanel();
+    responseParametersPanel.setLayout(null);
+    responseParametersPanel.setBorder(new TitledBorder(null,
                                                        "Response Parameters",
                                                        TitledBorder.LEADING,
                                                        TitledBorder.TOP, null,
                                                        null));
-    responseParemetersPanel.setBounds(6, 6, 391, 244);
-    createResponseTab.add(responseParemetersPanel);
+    responseParametersPanel.setBounds(6, 6, 391, 244);
+    createResponseTab.add(responseParametersPanel);
 
     final JPanel behaviorModelSelectionPanel = new JPanel();
     behaviorModelSelectionPanel.setLayout(null);
@@ -608,7 +608,7 @@ public class MainGUI extends JFrame
 
     final JLabel label_5 = new JLabel("Monetary Incentive");
     label_5.setBounds(10, 28, 103, 16);
-    responseParemetersPanel.add(label_5);
+    responseParametersPanel.add(label_5);
 
     final JSlider monetarySlider = new JSlider();
     monetarySlider.setEnabled(false);
@@ -618,11 +618,11 @@ public class MainGUI extends JFrame
     monetarySlider.setMinorTickSpacing(10);
     monetarySlider.setMajorTickSpacing(10);
     monetarySlider.setBounds(138, 28, 214, 45);
-    responseParemetersPanel.add(monetarySlider);
+    responseParametersPanel.add(monetarySlider);
 
     final JLabel label_6 = new JLabel("Environmental Awareness");
     label_6.setBounds(10, 79, 157, 16);
-    responseParemetersPanel.add(label_6);
+    responseParametersPanel.add(label_6);
 
     final JSlider environmentalSlider = new JSlider();
     environmentalSlider.setEnabled(false);
@@ -632,41 +632,41 @@ public class MainGUI extends JFrame
     environmentalSlider.setMinorTickSpacing(10);
     environmentalSlider.setSnapToTicks(true);
     environmentalSlider.setBounds(138, 79, 214, 45);
-    responseParemetersPanel.add(environmentalSlider);
+    responseParametersPanel.add(environmentalSlider);
 
     final JLabel label_7 = new JLabel("Response Model");
     label_7.setBounds(10, 153, 103, 16);
-    responseParemetersPanel.add(label_7);
+    responseParametersPanel.add(label_7);
 
     final JRadioButton bestCaseRadioButton =
       new JRadioButton("Best Case Scenario");
     responseModelButtonGroup.add(bestCaseRadioButton);
     bestCaseRadioButton.setBounds(138, 131, 146, 18);
-    responseParemetersPanel.add(bestCaseRadioButton);
+    responseParametersPanel.add(bestCaseRadioButton);
 
     final JRadioButton normalCaseRadioButton =
       new JRadioButton("Normal Case Scenario");
     normalCaseRadioButton.setSelected(true);
     responseModelButtonGroup.add(normalCaseRadioButton);
     normalCaseRadioButton.setBounds(138, 152, 157, 18);
-    responseParemetersPanel.add(normalCaseRadioButton);
+    responseParametersPanel.add(normalCaseRadioButton);
 
     final JRadioButton worstCaseRadioButton =
       new JRadioButton("Worst Case Scenario");
     worstCaseRadioButton.setSelected(true);
     responseModelButtonGroup.add(worstCaseRadioButton);
     worstCaseRadioButton.setBounds(138, 173, 157, 18);
-    responseParemetersPanel.add(worstCaseRadioButton);
+    responseParametersPanel.add(worstCaseRadioButton);
 
     final JButton previewResponseButton = new JButton("Preview Response Model");
     previewResponseButton.setEnabled(false);
     previewResponseButton.setBounds(24, 198, 157, 28);
-    responseParemetersPanel.add(previewResponseButton);
+    responseParametersPanel.add(previewResponseButton);
 
     final JButton createResponseButton = new JButton("Create Response Model");
     createResponseButton.setEnabled(false);
     createResponseButton.setBounds(191, 198, 162, 28);
-    responseParemetersPanel.add(createResponseButton);
+    responseParametersPanel.add(createResponseButton);
 
     // SELECT BEHAVIOR MODEL //
 
@@ -949,7 +949,7 @@ public class MainGUI extends JFrame
         boolean parse = true;
 
         try {
-          parse = ImportUtils.parseMeasurementsFile(pathField.getText(), power);
+          parse = Utils.parseMeasurementsFile(pathField.getText(), power);
         }
         catch (IOException e2) {
           e2.printStackTrace();
@@ -1373,7 +1373,7 @@ public class MainGUI extends JFrame
         if (behaviourModel != null) {
 
           ChartPanel chartPanel2 =
-            behaviourModel.createDurationDistributionChart();
+            behaviourModel.createDailyTimesDistributionChart();
           distributionPreviewPanel.add(chartPanel2, BorderLayout.CENTER);
           distributionPreviewPanel.validate();
           distributionPreviewPanel.updateUI();
@@ -1410,9 +1410,8 @@ public class MainGUI extends JFrame
           response = 2;
 
         double[] basicScheme =
-          ImportUtils.parseScheme(basicPricingSchemePane.getText());
-        double[] newScheme =
-          ImportUtils.parseScheme(newPricingSchemePane.getText());
+          Utils.parseScheme(basicPricingSchemePane.getText());
+        double[] newScheme = Utils.parseScheme(newPricingSchemePane.getText());
 
         ChartPanel chartPanel =
           installation.getPerson().previewResponse(behaviour, response,
@@ -1431,24 +1430,18 @@ public class MainGUI extends JFrame
         exportPreviewPanel.updateUI();
 
         int responseType = -1;
-        String responseString = "";
-        if (bestCaseRadioButton.isSelected()) {
+
+        if (bestCaseRadioButton.isSelected())
           responseType = 0;
-          responseString = "Best";
-        }
-        else if (normalCaseRadioButton.isSelected()) {
+        else if (normalCaseRadioButton.isSelected())
           responseType = 1;
-          responseString = "Normal";
-        }
-        else if (worstCaseRadioButton.isSelected()) {
+
+        else if (worstCaseRadioButton.isSelected())
           responseType = 2;
-          responseString = "Worst";
-        }
 
         double[] basicScheme =
-          ImportUtils.parseScheme(basicPricingSchemePane.getText());
-        double[] newScheme =
-          ImportUtils.parseScheme(newPricingSchemePane.getText());
+          Utils.parseScheme(basicPricingSchemePane.getText());
+        double[] newScheme = Utils.parseScheme(newPricingSchemePane.getText());
 
         BehaviourModel behaviour =
           installation.getPerson().findBehaviour(behaviorSelectList
@@ -1516,11 +1509,10 @@ public class MainGUI extends JFrame
 
         if (basicScheme)
           parseBasic =
-            ImportUtils.parsePricingScheme(basicPricingSchemePane.getText());
+            Utils.parsePricingScheme(basicPricingSchemePane.getText());
 
         if (newScheme)
-          parseNew =
-            ImportUtils.parsePricingScheme(newPricingSchemePane.getText());
+          parseNew = Utils.parsePricingScheme(newPricingSchemePane.getText());
 
         if (parseBasic == false) {
           JFrame error = new JFrame();

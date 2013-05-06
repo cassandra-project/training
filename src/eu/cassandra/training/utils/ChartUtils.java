@@ -406,9 +406,9 @@ public class ChartUtils
   public static ChartPanel parsePricingScheme (String basic, String after)
   {
 
-    double[] data = ImportUtils.parseScheme(basic);
+    double[] data = Utils.parseScheme(basic);
 
-    double[] data2 = ImportUtils.parseScheme(after);
+    double[] data2 = Utils.parseScheme(after);
 
     XYSeries series1 = new XYSeries("Basic Pricing Scheme");
     for (int i = 0; i < data.length; i++) {
