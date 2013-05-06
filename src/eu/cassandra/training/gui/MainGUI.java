@@ -43,6 +43,7 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
@@ -937,18 +938,6 @@ public class MainGUI extends JFrame
     importDataButton.addActionListener(new ActionListener() {
       public void actionPerformed (ActionEvent e)
       {
-
-        disaggregateButton.setEnabled(false);
-        createEventsButton.setEnabled(false);
-
-        if (installationRadioButton.isSelected()) {
-          disaggregateButton.setEnabled(true);
-        }
-        else if (singleApplianceRadioButton.isSelected()) {
-          consumptionPathField.setEnabled(true);
-          consumptionBrowseButton.setEnabled(true);
-        }
-
         installationRadioButton.setEnabled(false);
         singleApplianceRadioButton.setEnabled(false);
         importDataButton.setEnabled(false);
@@ -957,23 +946,54 @@ public class MainGUI extends JFrame
         activeAndReactivePowerRadioButton.setEnabled(false);
 
         boolean power = activePowerRadioButton.isSelected();
+        boolean parse = true;
+
         try {
-          installation = new Installation(pathField.getText(), power);
+          parse = ImportUtils.parseMeasurementsFile(pathField.getText(), power);
         }
         catch (IOException e2) {
           e2.printStackTrace();
         }
 
-        ChartPanel chartPanel = null;
-        try {
-          chartPanel = installation.measurementsChart(power);
-        }
-        catch (IOException e1) {
-          e1.printStackTrace();
-        }
+        if (parse) {
+          try {
+            installation = new Installation(pathField.getText(), power);
+          }
+          catch (IOException e2) {
+            e2.printStackTrace();
+          }
 
-        dataReviewPanel.add(chartPanel, BorderLayout.CENTER);
-        dataReviewPanel.validate();
+          ChartPanel chartPanel = null;
+          try {
+            chartPanel = installation.measurementsChart(power);
+          }
+          catch (IOException e1) {
+            e1.printStackTrace();
+          }
+
+          dataReviewPanel.add(chartPanel, BorderLayout.CENTER);
+          dataReviewPanel.validate();
+
+          disaggregateButton.setEnabled(false);
+          createEventsButton.setEnabled(false);
+
+          if (installationRadioButton.isSelected()) {
+            disaggregateButton.setEnabled(true);
+          }
+          else if (singleApplianceRadioButton.isSelected()) {
+            consumptionPathField.setEnabled(true);
+            consumptionBrowseButton.setEnabled(true);
+          }
+        }
+        else {
+          JFrame error = new JFrame();
+
+          JOptionPane
+                  .showMessageDialog(error,
+                                     "Parsing measurements file failed. Check the selected buttons and the file provided and try again.",
+                                     "Inane error", JOptionPane.ERROR_MESSAGE);
+          resetButton.doClick();
+        }
 
       }
     });
@@ -1485,6 +1505,8 @@ public class MainGUI extends JFrame
 
         boolean basicScheme = false;
         boolean newScheme = false;
+        boolean parseBasic = true;
+        boolean parseNew = true;
 
         if (basicPricingSchemePane.getText().equalsIgnoreCase("") == false)
           basicScheme = true;
@@ -1492,30 +1514,51 @@ public class MainGUI extends JFrame
         if (newPricingSchemePane.getText().equalsIgnoreCase("") == false)
           newScheme = true;
 
-        if (basicScheme && newScheme) {
-          ChartPanel chartPanel =
-            ChartUtils.parsePricingScheme(basicPricingSchemePane.getText(),
-                                          newPricingSchemePane.getText());
+        if (basicScheme)
+          parseBasic =
+            ImportUtils.parsePricingScheme(basicPricingSchemePane.getText());
 
-          pricingPreviewPanel.add(chartPanel, BorderLayout.CENTER);
-          pricingPreviewPanel.validate();
+        if (newScheme)
+          parseNew =
+            ImportUtils.parsePricingScheme(newPricingSchemePane.getText());
 
-          previewResponseButton.setEnabled(true);
+        if (parseBasic == false) {
+          JFrame error = new JFrame();
 
+          JOptionPane
+                  .showMessageDialog(error,
+                                     "Basic Pricing Scheme is not defined correctly.Please check your input and try again.",
+                                     "Inane error", JOptionPane.ERROR_MESSAGE);
         }
-        else if (basicScheme) {
+        else if (parseNew == false) {
+          JFrame error = new JFrame();
 
-          ChartPanel chartPanel2 =
-            ChartUtils.parsePricingScheme(basicPricingSchemePane.getText());
-
-          pricingPreviewPanel.add(chartPanel2, BorderLayout.CENTER);
-          pricingPreviewPanel.validate();
-
-          previewResponseButton.setEnabled(false);
-
+          JOptionPane
+                  .showMessageDialog(error,
+                                     "New Pricing Scheme is not defined correctly.Please check your input and try again.",
+                                     "Inane error", JOptionPane.ERROR_MESSAGE);
         }
         else {
-          previewResponseButton.setEnabled(false);
+          if (basicScheme && newScheme) {
+            ChartPanel chartPanel =
+              ChartUtils.parsePricingScheme(basicPricingSchemePane.getText(),
+                                            newPricingSchemePane.getText());
+
+            pricingPreviewPanel.add(chartPanel, BorderLayout.CENTER);
+            pricingPreviewPanel.validate();
+
+            previewResponseButton.setEnabled(true);
+
+          }
+          else {
+            JFrame error = new JFrame();
+
+            JOptionPane
+                    .showMessageDialog(error,
+                                       "You have not defined both pricing schemes.Please check your input and try again.",
+                                       "Inane error", JOptionPane.ERROR_MESSAGE);
+            previewResponseButton.setEnabled(false);
+          }
         }
       }
     });

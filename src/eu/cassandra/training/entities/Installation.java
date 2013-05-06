@@ -155,7 +155,6 @@ public class Installation
       }
 
       scanner.close();
-      System.out.println("Your csv file has been read!");
       break;
 
     case "xls":
@@ -174,7 +173,6 @@ public class Installation
           temp2.add(row.getCell(2).getNumericCellValue());
       }
 
-      System.out.println("Your excel file has been read!");
       break;
 
     }

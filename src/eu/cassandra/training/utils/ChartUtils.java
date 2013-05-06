@@ -93,7 +93,7 @@ public class ChartUtils
     dataset.addSeries(series1);
 
     PlotOrientation orientation = PlotOrientation.VERTICAL;
-    boolean show = false;
+    boolean show = true;
     boolean toolTips = false;
     boolean urls = false;
 
@@ -123,7 +123,7 @@ public class ChartUtils
     dataset.addSeries(series2);
 
     PlotOrientation orientation = PlotOrientation.VERTICAL;
-    boolean show = false;
+    boolean show = true;
     boolean toolTips = false;
     boolean urls = false;
 
