@@ -27,7 +27,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
-public class ImportUtils
+public class Utils
 {
 
   public static boolean parseMeasurementsFile (String measurementsFile,
@@ -153,7 +153,7 @@ public class ImportUtils
       startTime = startHour * 60 + startMinute;
       endTime = endHour * 60 + endMinute;
 
-      System.out.println("Start: " + startTime + " End: " + endTime);
+      // System.out.println("Start: " + startTime + " End: " + endTime);
 
       double value = Double.parseDouble(line.split("-")[2]);
 
@@ -231,6 +231,17 @@ public class ImportUtils
         break;
 
     }
+
+    return result;
+  }
+
+  public static double[] aggregateStartTimeDistribution (double[] values)
+  {
+    double[] result = new double[values.length / Constants.MINUTES_PER_BIN];
+
+    for (int i = 0; i < result.length; i++)
+      for (int j = 0; j < Constants.MINUTES_PER_BIN; j++)
+        result[i] += values[i * Constants.MINUTES_PER_BIN + j];
 
     return result;
   }
