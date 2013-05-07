@@ -180,119 +180,195 @@ public class Histogram implements ProbabilityDistribution
     return 1 - getProbabilityGreaterEqual(x);
   }
 
-  private double[] movingAverage (Incentive incentive)
+  private double[] movingAverage (double[] values, Incentive incentive)
   {
-    double[] values = Arrays.copyOf(this.values, this.values.length);
     int side = -1;
     int startIndex = incentive.getStartMinute();
     int endIndex = incentive.getEndMinute();
     double overDiff = 0;
     double temp = 0;
+    String type = "";
     double sum = 0;
 
     if (incentive.isPenalty()) {
 
-      side = Constants.SHIFTING_WINDOW_IN_MINUTES / 2;
+      if (incentive.getBeforeDifference() > 0
+          && incentive.getAfterDifference() < 0)
+        type = "Both";
 
-      for (int i = startIndex; i < endIndex; i++) {
-        temp = incentive.getBase() * values[i] / incentive.getPrice();
-        overDiff += values[i] - temp;
-        values[i] = temp;
+      if (incentive.getBeforeDifference() > 0
+          && incentive.getAfterDifference() > 0)
+        type = "Left";
 
-      }
+      if (incentive.getBeforeDifference() < 0
+          && incentive.getAfterDifference() < 0)
+        type = "Right";
 
-      // System.out.println("Over Difference = " + overDiff);
-
-      double additive = overDiff / Constants.SHIFTING_WINDOW_IN_MINUTES;
-
-      for (int i = 0; i < side; i++) {
-
-        int before = startIndex - i;
-        if (before < 0)
-          before += Constants.MINUTES_PER_DAY;
-        int after = endIndex + i;
-        if (after > Constants.MINUTES_PER_DAY - 1)
-          after -= Constants.MINUTES_PER_DAY;
-
-        values[before] += additive;
-        values[after] += additive;
-
-      }
-
+      if (incentive.getBeforeDifference() < 0
+          && incentive.getAfterDifference() > 0)
+        type = "None";
     }
-
     else {
 
-      side = Constants.SHIFTING_WINDOW_IN_MINUTES * 2;
+      if (incentive.getBeforeDifference() < 0
+          && incentive.getAfterDifference() > 0)
+        type = "Both";
 
-      for (int i = startIndex - side; i < endIndex + side; i++) {
-        temp = incentive.getPrice() * values[i] / incentive.getBase();
-        overDiff += values[i] - temp;
-        values[i] = temp;
-      }
+      if (incentive.getBeforeDifference() < 0
+          && incentive.getAfterDifference() < 0)
+        type = "Left";
 
-      // System.out.println("Over Difference = " + overDiff);
+      if (incentive.getBeforeDifference() > 0
+          && incentive.getAfterDifference() > 0)
+        type = "Right";
 
-      double additive = overDiff / (endIndex - startIndex);
-
-      for (int i = startIndex; i < endIndex; i++)
-        values[i] += additive;
+      if (incentive.getBeforeDifference() > 0
+          && incentive.getAfterDifference() < 0)
+        type = "None";
 
     }
 
+    System.out.println("Penalty: " + incentive.isPenalty() + " Type: " + type);
+
+    if (!type.equalsIgnoreCase("None")) {
+
+      if (incentive.isPenalty()) {
+
+        for (int i = startIndex; i < endIndex; i++) {
+          temp = incentive.getBase() * values[i] / incentive.getPrice();
+          overDiff += values[i] - temp;
+          values[i] = temp;
+
+        }
+        // System.out.println("Over Difference = " + overDiff);
+        double additive = overDiff / Constants.SHIFTING_WINDOW_IN_MINUTES;
+
+        switch (type) {
+
+        case "Both":
+
+          side = Constants.SHIFTING_WINDOW_IN_MINUTES / 2;
+
+          for (int i = 0; i < side; i++) {
+
+            int before = startIndex - i;
+            if (before < 0)
+              before += Constants.MINUTES_PER_DAY;
+            int after = endIndex + i;
+            if (after > Constants.MINUTES_PER_DAY - 1)
+              after %= Constants.MINUTES_PER_DAY;
+
+            values[before] += additive;
+            values[after] += additive;
+
+          }
+          break;
+
+        case "Left":
+
+          side = Constants.SHIFTING_WINDOW_IN_MINUTES;
+
+          for (int i = 0; i < side; i++) {
+
+            int before = startIndex - i;
+            if (before < 0)
+              before += Constants.MINUTES_PER_DAY;
+            values[before] += additive;
+
+          }
+          break;
+
+        case "Right":
+
+          side = Constants.SHIFTING_WINDOW_IN_MINUTES;
+
+          for (int i = 0; i < side; i++) {
+
+            int after = endIndex + i;
+            if (after > Constants.MINUTES_PER_DAY - 1)
+              after %= Constants.MINUTES_PER_DAY;
+
+            values[after] += additive;
+          }
+        }
+      }
+      else {
+        side = Constants.SHIFTING_WINDOW_IN_MINUTES * 2;
+        switch (type) {
+
+        case "Both":
+
+          for (int i = startIndex - side; i < startIndex; i++) {
+
+            int index = i;
+
+            if (index < 0)
+              index += Constants.MINUTES_PER_DAY;
+
+            temp = incentive.getPrice() * values[index] / incentive.getBase();
+            overDiff += values[index] - temp;
+            values[index] = temp;
+          }
+
+          for (int i = endIndex; i < endIndex + side; i++) {
+
+            int index = i;
+
+            if (index > Constants.MINUTES_PER_DAY - 1)
+              index %= Constants.MINUTES_PER_DAY;
+
+            temp = incentive.getPrice() * values[index] / incentive.getBase();
+            overDiff += values[index] - temp;
+            values[index] = temp;
+          }
+          break;
+
+        case "Left":
+
+          for (int i = startIndex - 2 * side; i < startIndex; i++) {
+
+            int index = i;
+
+            if (index < 0)
+              index += Constants.MINUTES_PER_DAY;
+
+            temp = incentive.getPrice() * values[index] / incentive.getBase();
+            overDiff += values[index] - temp;
+            values[index] = temp;
+          }
+          break;
+
+        case "Right":
+
+          for (int i = endIndex; i < endIndex + 2 * side; i++) {
+
+            int index = i;
+
+            if (index > Constants.MINUTES_PER_DAY - 1)
+              index %= Constants.MINUTES_PER_DAY;
+
+            temp = incentive.getPrice() * values[index] / incentive.getBase();
+            overDiff += values[index] - temp;
+            values[index] = temp;
+          }
+
+        }
+        // System.out.println("Over Difference = " + overDiff);
+
+        double additive = overDiff / (endIndex - startIndex);
+
+        for (int i = startIndex; i < endIndex; i++)
+          values[i] += additive;
+
+      }
+
+    }
     for (int i = 0; i < values.length; i++)
       sum += values[i];
-
-    // System.out.println("Summary: " + sum);
+    System.out.println("Summary: " + sum);
 
     return values;
   }
-
-  // public double[] movingAverage (int index, int window)
-  // {
-  // int side = 0;
-  // if (window % 2 == 1)
-  // side = (int) (window / 2);
-  // else {
-  // window++;
-  // side = (int) (window / 2) + 1;
-  // }
-  //
-  // double[] values = Arrays.copyOf(this.values, this.values.length);
-  //
-  // int startIndex = Math.max(index - side, 0);
-  // int endIndex = Math.min(index + side, Constants.MINUTES_PER_DAY);
-  //
-  // for (int i = startIndex; i < endIndex; i++) {
-  // double temp = 0;
-  // // System.out.print("Index:" + i + " Old Value: " + values[i]);
-  //
-  // for (int j = -side; j < side; j++)
-  // temp += values[i + j];
-  //
-  // values[i] = temp / window;
-  // // System.out.println(" New Value: " + values[i]);
-  // }
-  //
-  // double sum = 0;
-  //
-  // for (int i = 0; i < values.length; i++)
-  // sum += values[i];
-  //
-  // double diff = 1 - sum;
-  // double diffPortion = diff / window;
-  //
-  // System.out.println("Summary" + sum + " Difference: " + diff + " Portion: "
-  // + diffPortion);
-  //
-  // for (int i = 0; i < window; i++)
-  // values[endIndex + i] += diffPortion;
-  //
-  // for (int i = 0; i < window; i++)
-  // values[startIndex - i] += diffPortion;
-  //
-  // return values;
-  // }
 
   @Override
   public void shifting (int shiftingCase, double[] basicScheme,
@@ -368,12 +444,12 @@ public class Histogram implements ProbabilityDistribution
   @Override
   public double[] shiftingNormal (double[] basicScheme, double[] newScheme)
   {
-    double[] result = new double[Constants.MINUTES_PER_DAY];
+    double[] result = Arrays.copyOf(this.values, this.values.length);
 
     IncentiveVector inc = new IncentiveVector(basicScheme, newScheme);
 
     for (Incentive incentive: inc.getIncentives()) {
-      result = movingAverage(incentive);
+      result = movingAverage(result, incentive);
     }
 
     return result;

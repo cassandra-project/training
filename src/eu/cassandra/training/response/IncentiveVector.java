@@ -67,7 +67,7 @@ public class IncentiveVector
 
     if (startFlag) {
       // System.out.println("In for end of index!");
-      aDiff = newScheme[Constants.MINUTES_PER_DAY - 1] - newScheme[0];
+      aDiff = newScheme[0] - newScheme[Constants.MINUTES_PER_DAY - 1];
       end = Constants.MINUTES_PER_DAY - 1;
       startFlag = false;
       incentives.add(new Incentive(start, end, base, bDiff, aDiff,
