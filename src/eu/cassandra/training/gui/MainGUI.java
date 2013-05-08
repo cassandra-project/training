@@ -946,7 +946,7 @@ public class MainGUI extends JFrame
         activeAndReactivePowerRadioButton.setEnabled(false);
 
         boolean power = activePowerRadioButton.isSelected();
-        boolean parse = true;
+        int parse = -1;
 
         try {
           parse = Utils.parseMeasurementsFile(pathField.getText(), power);
@@ -955,7 +955,7 @@ public class MainGUI extends JFrame
           e2.printStackTrace();
         }
 
-        if (parse) {
+        if (parse == -1) {
           try {
             installation = new Installation(pathField.getText(), power);
           }
@@ -990,7 +990,9 @@ public class MainGUI extends JFrame
 
           JOptionPane
                   .showMessageDialog(error,
-                                     "Parsing measurements file failed. Check the selected buttons and the file provided and try again.",
+                                     "Parsing measurements file failed. The problem seems to be in line "
+                                             + parse
+                                             + ".Check the selected buttons and the file provided and try again.",
                                      "Inane error", JOptionPane.ERROR_MESSAGE);
           resetButton.doClick();
         }
@@ -1498,8 +1500,8 @@ public class MainGUI extends JFrame
 
         boolean basicScheme = false;
         boolean newScheme = false;
-        boolean parseBasic = true;
-        boolean parseNew = true;
+        int parseBasic = 0;
+        int parseNew = 0;
 
         if (basicPricingSchemePane.getText().equalsIgnoreCase("") == false)
           basicScheme = true;
@@ -1514,21 +1516,23 @@ public class MainGUI extends JFrame
         if (newScheme)
           parseNew = Utils.parsePricingScheme(newPricingSchemePane.getText());
 
-        if (parseBasic == false) {
+        if (parseBasic != -1) {
           JFrame error = new JFrame();
 
           JOptionPane
                   .showMessageDialog(error,
-                                     "Basic Pricing Scheme is not defined correctly.Please check your input and try again.",
+                                     "Basic Pricing Scheme is not defined correctly. Please check your input in line "
+                                             + parseBasic + " and try again.",
                                      "Inane error", JOptionPane.ERROR_MESSAGE);
         }
-        else if (parseNew == false) {
+        else if (parseNew != -1) {
           JFrame error = new JFrame();
 
-          JOptionPane
-                  .showMessageDialog(error,
-                                     "New Pricing Scheme is not defined correctly.Please check your input and try again.",
-                                     "Inane error", JOptionPane.ERROR_MESSAGE);
+          JOptionPane.showMessageDialog(error,
+                                        "New Pricing Scheme is not defined correctly. Please check your input in line "
+                                                + parseNew + " and try again.",
+                                        "Inane error",
+                                        JOptionPane.ERROR_MESSAGE);
         }
         else {
           if (basicScheme && newScheme) {

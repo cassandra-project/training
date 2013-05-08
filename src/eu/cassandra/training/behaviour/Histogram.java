@@ -197,10 +197,10 @@ public class Histogram implements ProbabilityDistribution
         type = "Both";
 
       if (incentive.getBeforeDifference() > 0
-          && incentive.getAfterDifference() > 0)
+          && incentive.getAfterDifference() >= 0)
         type = "Left";
 
-      if (incentive.getBeforeDifference() < 0
+      if (incentive.getBeforeDifference() <= 0
           && incentive.getAfterDifference() < 0)
         type = "Right";
 
@@ -215,10 +215,10 @@ public class Histogram implements ProbabilityDistribution
         type = "Both";
 
       if (incentive.getBeforeDifference() < 0
-          && incentive.getAfterDifference() < 0)
+          && incentive.getAfterDifference() <= 0)
         type = "Left";
 
-      if (incentive.getBeforeDifference() > 0
+      if (incentive.getBeforeDifference() >= 0
           && incentive.getAfterDifference() > 0)
         type = "Right";
 

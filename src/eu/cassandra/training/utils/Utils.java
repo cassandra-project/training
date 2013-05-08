@@ -30,12 +30,11 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 public class Utils
 {
 
-  public static boolean parseMeasurementsFile (String measurementsFile,
-                                               boolean power)
-    throws IOException
+  public static int parseMeasurementsFile (String measurementsFile,
+                                           boolean power) throws IOException
   {
 
-    boolean result = true;
+    int result = -1;
 
     ArrayList<Double> temp = new ArrayList<Double>();
     ArrayList<Double> temp2 = new ArrayList<Double>();
@@ -51,6 +50,7 @@ public class Utils
       File file = new File(measurementsFile);
       Scanner scanner = new Scanner(file);
       scanner.nextLine();
+      int counter = 2;
       while (scanner.hasNext()) {
 
         String line = scanner.nextLine();
@@ -58,27 +58,31 @@ public class Utils
         String[] testString = line.split(",");
 
         if (power) {
-          result = (testString.length == 2);
+          if (testString.length != 2)
+            result = counter;
+          ;
           try {
             Double.parseDouble(testString[1]);
           }
           catch (NumberFormatException e) {
-            result = false;
+            result = counter;
           }
         }
         else {
-          result = (testString.length == 3);
+          if (testString.length != 3)
+            result = counter;
           try {
             Double.parseDouble(testString[1]);
             Double.parseDouble(testString[2]);
           }
           catch (NumberFormatException e) {
-            result = false;
+            result = counter;
           }
 
-          if (result == false)
+          if (result != -1)
             break;
         }
+        counter++;
       }
 
       scanner.close();
@@ -97,26 +101,28 @@ public class Utils
         HSSFRow row = sheet.getRow(i + 1);
 
         if (power) {
-          result = (row.getCell(2) == null);
+          if (row.getCell(2) != null)
+            result = i + 2;
           try {
             Double.parseDouble(row.getCell(1).toString());
           }
           catch (NumberFormatException e) {
-            result = false;
+            result = i + 2;
           }
         }
         else {
-          result = (row.getCell(3) == null);
+          if (row.getCell(3) != null)
+            result = i + 2;
           try {
             Double.parseDouble(row.getCell(1).toString());
             Double.parseDouble(row.getCell(2).toString());
           }
           catch (NumberFormatException e) {
-            result = false;
+            result = i + 2;
           }
         }
 
-        if (result == false)
+        if (result != -1)
           break;
       }
 
@@ -166,21 +172,21 @@ public class Utils
     return data;
   }
 
-  public static boolean parsePricingScheme (String scheme)
+  public static int parsePricingScheme (String scheme)
   {
-    boolean result = true;
+    int result = -1;
 
     String[] lines = scheme.split("\n");
 
     int startTime = -1;
     int endTime = -1;
-
+    int counter = 1;
     for (String line: lines) {
 
       String[] testString = line.split("-");
 
       if (testString.length != 3) {
-        result = false;
+        result = counter;
         break;
       }
 
@@ -191,12 +197,22 @@ public class Utils
         Integer.parseInt(start.split(":")[1]);
       }
       catch (NumberFormatException e) {
-        result = false;
+        result = counter;
         break;
       }
 
       int startHour = Integer.parseInt(start.split(":")[0]);
       int startMinute = Integer.parseInt(start.split(":")[1]);
+
+      if (startHour > 23 || startHour < 0) {
+        result = counter;
+        break;
+      }
+
+      if (startMinute > 59 || startMinute < 0) {
+        result = counter;
+        break;
+      }
 
       String end = line.split("-")[1];
 
@@ -205,31 +221,42 @@ public class Utils
         Integer.parseInt(end.split(":")[1]);
       }
       catch (NumberFormatException e) {
-        result = false;
+        result = counter;
         break;
       }
 
       int endHour = Integer.parseInt(end.split(":")[0]);
       int endMinute = Integer.parseInt(end.split(":")[1]);
 
+      if (endHour > 23 || endHour < 0) {
+        result = counter;
+        break;
+      }
+
+      if (endMinute > 59 || endMinute < 0) {
+        result = counter;
+        break;
+      }
+
       startTime = startHour * 60 + startMinute;
       endTime = endHour * 60 + endMinute;
 
       if (startTime > endTime) {
-        result = false;
+        result = counter;
       }
       else {
         try {
           Double.parseDouble(line.split("-")[2]);
         }
         catch (NumberFormatException e) {
-          result = false;
+          result = counter;
         }
       }
 
-      if (!result)
+      if (result != -1)
         break;
 
+      counter++;
     }
 
     return result;

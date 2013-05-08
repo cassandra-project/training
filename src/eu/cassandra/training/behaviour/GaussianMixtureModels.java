@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import eu.cassandra.training.response.Incentive;
+import eu.cassandra.training.response.IncentiveVector;
 import eu.cassandra.training.response.PeakFinder;
 import eu.cassandra.training.utils.Constants;
 import eu.cassandra.training.utils.RNG;
@@ -383,24 +385,6 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     return histogram;
   }
 
-  // @Override
-  // public void shifting (int shiftingCase, double[] basicScheme,
-  // double[] newScheme)
-  // {
-  //
-  // histogram = movingAverage(index, interval);
-  //
-  // }
-  //
-  // @Override
-  // public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
-  // double[] newScheme)
-  // {
-  //
-  // return movingAverage(index, interval);
-  //
-  // }
-
   @Override
   public void shifting (int shiftingCase, double[] basicScheme,
                         double[] newScheme)
@@ -475,7 +459,13 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   @Override
   public double[] shiftingNormal (double[] basicScheme, double[] newScheme)
   {
-    double[] result = new double[Constants.MINUTES_PER_DAY];
+    double[] result = Arrays.copyOf(histogram, histogram.length);
+
+    IncentiveVector inc = new IncentiveVector(basicScheme, newScheme);
+
+    for (Incentive incentive: inc.getIncentives()) {
+      result = movingAverage(result, incentive);
+    }
 
     return result;
 
@@ -489,91 +479,193 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     return result;
   }
 
-  public void movePeak2 (int index, int interval)
+  private double[] movingAverage (double[] values, Incentive incentive)
   {
-
-    double max = Double.NEGATIVE_INFINITY;
-    int maxIndex = -1;
+    int side = -1;
+    int startIndex = incentive.getStartMinute();
+    int endIndex = incentive.getEndMinute();
+    double overDiff = 0;
     double temp = 0;
-    double distance = 0;
-    for (int i = 0; i < gaussians.length; i++) {
+    String type = "";
+    double sum = 0;
 
-      temp +=
-        Math.abs(pi[i] * (gaussians[i].sigma / (gaussians[i].mean - index)));
+    if (incentive.isPenalty()) {
+
+      if (incentive.getBeforeDifference() > 0
+          && incentive.getAfterDifference() < 0)
+        type = "Both";
+
+      if (incentive.getBeforeDifference() > 0
+          && incentive.getAfterDifference() >= 0)
+        type = "Left";
+
+      if (incentive.getBeforeDifference() <= 0
+          && incentive.getAfterDifference() < 0)
+        type = "Right";
+
+      if (incentive.getBeforeDifference() < 0
+          && incentive.getAfterDifference() > 0)
+        type = "None";
+    }
+    else {
+
+      if (incentive.getBeforeDifference() < 0
+          && incentive.getAfterDifference() > 0)
+        type = "Both";
+
+      if (incentive.getBeforeDifference() < 0
+          && incentive.getAfterDifference() <= 0)
+        type = "Left";
+
+      if (incentive.getBeforeDifference() >= 0
+          && incentive.getAfterDifference() > 0)
+        type = "Right";
+
+      if (incentive.getBeforeDifference() > 0
+          && incentive.getAfterDifference() < 0)
+        type = "None";
 
     }
 
-    for (int i = 0; i < gaussians.length; i++) {
+    System.out.println("Penalty: " + incentive.isPenalty() + " Type: " + type);
 
-      double aDistance =
-        (pi[i] * (gaussians[i].sigma / (gaussians[i].mean - index))) / temp;
+    if (!type.equalsIgnoreCase("None")) {
 
-      distance = interval * aDistance;
+      if (incentive.isPenalty()) {
 
-      if (max < aDistance) {
-        max = aDistance;
-        maxIndex = i;
+        for (int i = startIndex; i < endIndex; i++) {
+          temp = incentive.getBase() * values[i] / incentive.getPrice();
+          overDiff += values[i] - temp;
+          values[i] = temp;
+
+        }
+        // System.out.println("Over Difference = " + overDiff);
+        double additive = overDiff / Constants.SHIFTING_WINDOW_IN_MINUTES;
+
+        switch (type) {
+
+        case "Both":
+
+          side = Constants.SHIFTING_WINDOW_IN_MINUTES / 2;
+
+          for (int i = 0; i < side; i++) {
+
+            int before = startIndex - i;
+            if (before < 0)
+              before += Constants.MINUTES_PER_DAY;
+            int after = endIndex + i;
+            if (after > Constants.MINUTES_PER_DAY - 1)
+              after %= Constants.MINUTES_PER_DAY;
+
+            values[before] += additive;
+            values[after] += additive;
+
+          }
+          break;
+
+        case "Left":
+
+          side = Constants.SHIFTING_WINDOW_IN_MINUTES;
+
+          for (int i = 0; i < side; i++) {
+
+            int before = startIndex - i;
+            if (before < 0)
+              before += Constants.MINUTES_PER_DAY;
+            values[before] += additive;
+
+          }
+          break;
+
+        case "Right":
+
+          side = Constants.SHIFTING_WINDOW_IN_MINUTES;
+
+          for (int i = 0; i < side; i++) {
+
+            int after = endIndex + i;
+            if (after > Constants.MINUTES_PER_DAY - 1)
+              after %= Constants.MINUTES_PER_DAY;
+
+            values[after] += additive;
+          }
+        }
+      }
+      else {
+        side = Constants.SHIFTING_WINDOW_IN_MINUTES * 2;
+        switch (type) {
+
+        case "Both":
+
+          for (int i = startIndex - side; i < startIndex; i++) {
+
+            int index = i;
+
+            if (index < 0)
+              index += Constants.MINUTES_PER_DAY;
+
+            temp = incentive.getPrice() * values[index] / incentive.getBase();
+            overDiff += values[index] - temp;
+            values[index] = temp;
+          }
+
+          for (int i = endIndex; i < endIndex + side; i++) {
+
+            int index = i;
+
+            if (index > Constants.MINUTES_PER_DAY - 1)
+              index %= Constants.MINUTES_PER_DAY;
+
+            temp = incentive.getPrice() * values[index] / incentive.getBase();
+            overDiff += values[index] - temp;
+            values[index] = temp;
+          }
+          break;
+
+        case "Left":
+
+          for (int i = startIndex - 2 * side; i < startIndex; i++) {
+
+            int index = i;
+
+            if (index < 0)
+              index += Constants.MINUTES_PER_DAY;
+
+            temp = incentive.getPrice() * values[index] / incentive.getBase();
+            overDiff += values[index] - temp;
+            values[index] = temp;
+          }
+          break;
+
+        case "Right":
+
+          for (int i = endIndex; i < endIndex + 2 * side; i++) {
+
+            int index = i;
+
+            if (index > Constants.MINUTES_PER_DAY - 1)
+              index %= Constants.MINUTES_PER_DAY;
+
+            temp = incentive.getPrice() * values[index] / incentive.getBase();
+            overDiff += values[index] - temp;
+            values[index] = temp;
+          }
+
+        }
+        // System.out.println("Over Difference = " + overDiff);
+
+        double additive = overDiff / (endIndex - startIndex);
+
+        for (int i = startIndex; i < endIndex; i++)
+          values[i] += additive;
+
       }
 
-      // System.out.println("Index:" + i + " Distance: " + distance);
-
-      gaussians[i] =
-        new Gaussian(gaussians[i].mean + distance, gaussians[i].sigma
-                                                   + Math.abs(distance));
-
     }
+    for (int i = 0; i < values.length; i++)
+      sum += values[i];
+    System.out.println("Summary: " + sum);
 
-    System.out.println("Max Index: " + maxIndex + " Max Distance: " + max);
-
-    double temp2 = 0;
-    for (int i = 0; i < gaussians.length; i++)
-      temp2 += pi[i];
-
-    System.out.println("Summary Before: " + temp2);
-    // ============================================================
-
-    double diff = (interval / 100) * pi[maxIndex];
-    double portion = temp2 - pi[maxIndex];
-    pi[maxIndex] -= diff;
-
-    for (int i = 0; i < gaussians.length; i++)
-      if (i != maxIndex)
-        pi[i] = pi[i] * (1 + diff / portion);
-
-    temp2 = 0;
-    for (int i = 0; i < gaussians.length; i++)
-      temp2 += pi[i];
-
-    System.out.println("Max Index: " + maxIndex + " pi: " + pi[maxIndex]);
-
-    System.out.println("Summary After: " + temp2);
-
-  }
-
-  public void movePeakAlt (int index, int interval)
-  {
-    double temp = 0;
-    double distance = 0;
-
-    for (int i = 0; i < gaussians.length; i++) {
-
-      temp +=
-        Math.abs(pi[i] * (gaussians[i].sigma / (gaussians[i].mean - index)));
-
-    }
-
-    for (int i = 0; i < gaussians.length; i++) {
-
-      distance =
-        (interval * pi[i] * (gaussians[i].sigma / (gaussians[i].mean - index)))
-                / temp;
-
-      // System.out.println("Index:" + i + " Distance: " + distance);
-
-      gaussians[i] =
-        new Gaussian(gaussians[i].mean + distance, gaussians[i].sigma);
-
-    }
-
+    return values;
   }
 }
