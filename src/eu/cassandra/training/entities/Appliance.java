@@ -33,6 +33,7 @@ public class Appliance
 {
 
   private String name;
+  private String installation;
   private String consumptionModelString;
   private ConsumptionModel consumptionModel = new ConsumptionModel();
   private String eventsFile;
@@ -42,16 +43,18 @@ public class Appliance
   public Appliance ()
   {
     name = "";
+    installation = "";
     eventsFile = "";
     consumptionModelString = "";
     activePower = new double[0];
     reactivePower = new double[0];
   }
 
-  public Appliance (String name, String cModel, String eventFile,
-                    double[] active)
+  public Appliance (String name, String installation, String cModel,
+                    String eventFile, double[] active)
   {
     this.name = name;
+    this.installation = installation;
     this.eventsFile = eventFile;
     consumptionModelString = cModel;
     DBObject dbo = (DBObject) JSON.parse(consumptionModelString);
@@ -59,11 +62,12 @@ public class Appliance
     activePower = active;
   }
 
-  public Appliance (String name, String cModel, String eventFile,
-                    double[] active, double[] reactive)
+  public Appliance (String name, String installation, String cModel,
+                    String eventFile, double[] active, double[] reactive)
   {
 
     this.name = name;
+    this.installation = installation;
     this.eventsFile = eventFile;
     consumptionModelString = cModel;
     DBObject dbo = (DBObject) JSON.parse(consumptionModelString);
@@ -79,6 +83,7 @@ public class Appliance
   {
 
     this.name = name;
+    this.installation = installation.getName();
     parseConsumptionModel(cModelFile);
     this.eventsFile = eventFile;
 
@@ -91,6 +96,11 @@ public class Appliance
   public String getName ()
   {
     return name;
+  }
+
+  public String getInstallation ()
+  {
+    return installation;
   }
 
   public String getEventsFile ()
@@ -198,14 +208,18 @@ public class Appliance
     consumptionModel.init(dbo);
   }
 
+  public String toString ()
+  {
+    return name;
+  }
+
   public void status ()
   {
-
     System.out.println("Name: " + name);
+    System.out.println("Appliance Of Installation: " + installation);
     System.out.println("Events File: " + eventsFile);
     System.out.println("Consumption Model:" + consumptionModel.toString());
     System.out.println("Active Power:" + Arrays.toString(activePower));
     System.out.println("Reactive Power:" + Arrays.toString(reactivePower));
-
   }
 }

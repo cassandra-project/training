@@ -204,8 +204,21 @@ public class Installation
 
   public void clear ()
   {
-
     appliances.clear();
+  }
 
+  public String toString ()
+  {
+    return name;
+  }
+
+  public void status ()
+  {
+    System.out.println("Name: " + name);
+    System.out.println("Measurement File: " + measurementsFile);
+    System.out.println("Appliances: " + appliances.toString());
+    System.out.println("Person: " + person.toString());
+    System.out.println("Active Power:" + activePower.toString());
+    System.out.println("Reactive Power:" + reactivePower.toString());
   }
 }

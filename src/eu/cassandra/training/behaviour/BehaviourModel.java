@@ -39,6 +39,7 @@ public class BehaviourModel
 
   protected String name;
   protected String applianceOf;
+  protected String person;
   protected ConsumptionEventRepo consumptionEventRepo;
   protected ProbabilityDistribution startTime, startTimeBinned, duration,
           dailyTimes;
@@ -52,9 +53,11 @@ public class BehaviourModel
     consumptionEventRepo = new ConsumptionEventRepo(name);
   }
 
-  public BehaviourModel (Appliance appliance) throws FileNotFoundException
+  public BehaviourModel (Appliance appliance, String person)
+    throws FileNotFoundException
   {
-    name = appliance.getName() + " Behaviour Model";
+    name = person + " " + appliance.getName() + " Behaviour Model";
+    this.person = person;
     applianceOf = appliance.getName();
     consumptionEventRepo = new ConsumptionEventRepo(applianceOf);
     consumptionEventRepo.readEventsFile(appliance.getEventsFile());
@@ -68,6 +71,11 @@ public class BehaviourModel
   public String getApplianceOf ()
   {
     return applianceOf;
+  }
+
+  public String getPerson ()
+  {
+    return person;
   }
 
   public ConsumptionEventRepo getConsumptionEventRepo ()
@@ -370,6 +378,20 @@ public class BehaviourModel
 
     }
 
+  }
+
+  public String toString ()
+  {
+    return name;
+  }
+
+  public void status ()
+  {
+    System.out.println("Name: " + name);
+    System.out.println("Appliance Of: " + applianceOf);
+    System.out.println("Person:" + person);
+    System.out.println("Distribution Types:" + distributionTypes.toString());
+    System.out.println("File Map:" + fileMap.toString());
   }
 
 }

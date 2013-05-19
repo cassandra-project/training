@@ -18,6 +18,7 @@ limitations under the License.
 package eu.cassandra.training.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -127,6 +128,7 @@ public class MainGUI extends JFrame
     IllegalAccessException, UnsupportedLookAndFeelException,
     FileNotFoundException
   {
+    setForeground(new Color(0, 204, 51));
     addWindowListener(new WindowAdapter() {
       @Override
       public void windowClosing (WindowEvent e)
@@ -135,7 +137,9 @@ public class MainGUI extends JFrame
         System.exit(0);
       }
     });
+    // cleanFiles();
     LookAndFeel lnf = new javax.swing.plaf.nimbus.NimbusLookAndFeel();
+    UIManager.put("NimbusLookAndFeel", Color.GREEN);
     UIManager.setLookAndFeel(lnf);
     setTitle("Training Module (BETA)");
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -1036,13 +1040,13 @@ public class MainGUI extends JFrame
           }
 
           Appliance tempAppliance =
-            new Appliance(installation.getName() + " " + name, conModel,
+            new Appliance(name, installation.getName(), conModel,
                           "Demo/eventsAll11.csv", mesTemp, mesTemp2);
 
           installation.addAppliance(tempAppliance);
-          detectedAppliances.addElement(tempAppliance.getName());
-          selectedAppliances.addElement(tempAppliance.getName());
-          exportModels.addElement(tempAppliance.getName());
+          detectedAppliances.addElement(tempAppliance.toString());
+          selectedAppliances.addElement(tempAppliance.toString());
+          exportModels.addElement(tempAppliance.toString());
         }
 
         detectedApplianceList.setEnabled(true);
@@ -1077,8 +1081,7 @@ public class MainGUI extends JFrame
         Appliance appliance = null;
         try {
           appliance =
-            new Appliance(installation.getName() + " " + name,
-                          consumptionPathField.getText(),
+            new Appliance(name, consumptionPathField.getText(),
                           "Demo/eventsAll11.csv", installation,
                           activePowerRadioButton.isSelected());
         }
@@ -1088,9 +1091,9 @@ public class MainGUI extends JFrame
 
         installation.addAppliance(appliance);
 
-        detectedAppliances.addElement(appliance.getName());
-        selectedAppliances.addElement(appliance.getName());
-        exportModels.addElement(appliance.getName());
+        detectedAppliances.addElement(appliance.toString());
+        selectedAppliances.addElement(appliance.toString());
+        exportModels.addElement(appliance.toString());
 
         detectedApplianceList.setEnabled(true);
         detectedApplianceList.setModel(detectedAppliances);
@@ -1206,8 +1209,7 @@ public class MainGUI extends JFrame
         distributionPreviewPanel.updateUI();
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current.getName()
-                                                         + " Behaviour Model");
+          installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createDailyTimesDistributionChart();
@@ -1268,8 +1270,7 @@ public class MainGUI extends JFrame
         Appliance current = installation.findAppliance(selection);
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current.getName()
-                                                         + " Behaviour Model");
+          installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createDailyTimesDistributionChart();
@@ -1291,8 +1292,7 @@ public class MainGUI extends JFrame
         Appliance current = installation.findAppliance(selection);
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current.getName()
-                                                         + " Behaviour Model");
+          installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createStartTimeBinnedDistributionChart();
@@ -1314,8 +1314,7 @@ public class MainGUI extends JFrame
         Appliance current = installation.findAppliance(selection);
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current.getName()
-                                                         + " Behaviour Model");
+          installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createStartTimeDistributionChart();
@@ -1337,8 +1336,7 @@ public class MainGUI extends JFrame
         Appliance current = installation.findAppliance(selection);
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current.getName()
-                                                         + " Behaviour Model");
+          installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createDurationDistributionChart();
@@ -1369,8 +1367,7 @@ public class MainGUI extends JFrame
         consumptionPreviewPanel.validate();
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current.getName()
-                                                         + " Behaviour Model");
+          installation.getPerson().findBehaviour(current);
 
         if (behaviourModel != null) {
 
@@ -1397,6 +1394,7 @@ public class MainGUI extends JFrame
     previewResponseButton.addActionListener(new ActionListener() {
       public void actionPerformed (ActionEvent arg0)
       {
+        responsePanel.removeAll();
 
         BehaviourModel behaviour =
           installation.getPerson().findBehaviour(behaviorSelectList
@@ -1502,6 +1500,8 @@ public class MainGUI extends JFrame
         boolean newScheme = false;
         int parseBasic = 0;
         int parseNew = 0;
+
+        pricingPreviewPanel.removeAll();
 
         if (basicPricingSchemePane.getText().equalsIgnoreCase("") == false)
           basicScheme = true;
@@ -1756,12 +1756,10 @@ public class MainGUI extends JFrame
 
   private void cleanFiles ()
   {
-
     File directory = new File("Files");
     File files[] = directory.listFiles();
     for (int index = 0; index < files.length; index++) {
       {
-
         boolean wasDeleted = files[index].delete();
         if (!wasDeleted) {
           System.out.println("Not Deleted File " + files[index].toString());

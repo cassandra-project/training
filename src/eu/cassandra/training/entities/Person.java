@@ -72,13 +72,27 @@ public class Person
 
   }
 
+  public BehaviourModel findBehaviour (Appliance appliance)
+  {
+
+    BehaviourModel result = null;
+    String temp = this.name + " " + appliance.getName() + " Behaviour Model";
+    // System.out.println("Name:" + name);
+    for (BehaviourModel behaviour: behaviourModels) {
+      // System.out.println(behaviour.getName());
+      if (behaviour.getName().equalsIgnoreCase(temp)) {
+        result = behaviour;
+        break;
+      }
+    }
+    return result;
+  }
+
   public BehaviourModel findBehaviour (String name)
   {
 
     BehaviourModel result = null;
-
     for (BehaviourModel behaviour: behaviourModels) {
-
       if (behaviour.getName().equalsIgnoreCase(name)) {
         result = behaviour;
         break;
@@ -106,12 +120,12 @@ public class Person
     throws FileNotFoundException
   {
     BehaviourModel exists =
-      findBehaviour(appliance.getName() + " Behaviour Model");
+      findBehaviour(name + " " + appliance.getName() + " Behaviour Model");
 
     if (exists != null)
       behaviourModels.remove(exists);
 
-    BehaviourModel behaviourModel = new BehaviourModel(appliance);
+    BehaviourModel behaviourModel = new BehaviourModel(appliance, name);
     behaviourModel.train(distributions);
     behaviourModels.add(behaviourModel);
   }
@@ -127,16 +141,52 @@ public class Person
                                 double[] basicScheme, double[] newScheme)
     throws FileNotFoundException
   {
+    String responseTemp = "";
+
+    switch (responseType) {
+
+    case 0:
+      responseTemp = "Best";
+      break;
+    case 1:
+      responseTemp = "Normal";
+      break;
+    case 2:
+      responseTemp = "Worst";
+    }
+
+    String temp =
+      name + " " + behaviour.getApplianceOf() + " Response Model ("
+              + responseTemp + ")";
+
+    ResponseModel exists = findResponse(temp);
+
+    if (exists != null)
+      responseModels.remove(exists);
+
     String result = "";
 
-    ResponseModel response = new ResponseModel(behaviour);
+    ResponseModel response = new ResponseModel(behaviour, name, responseType);
 
     response.respond(responseType, basicScheme, newScheme);
 
     responseModels.add(response);
 
-    result = response.getName();
+    result = response.toString();
 
     return result;
+  }
+
+  public String toString ()
+  {
+    return name;
+  }
+
+  public void status ()
+  {
+    System.out.println("Name: " + name);
+    System.out.println("Person Of Installation: " + installation);
+    System.out.println("Behaviour Models:" + behaviourModels.toString());
+    System.out.println("Response Models:" + responseModels.toString());
   }
 }

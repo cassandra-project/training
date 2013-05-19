@@ -32,16 +32,32 @@ public class ResponseModel extends BehaviourModel
 
   PeakFinder pf = null;
   ValleyFinder vf = null;
+  String responseType = "";
 
   public ResponseModel ()
   {
     super();
   }
 
-  public ResponseModel (BehaviourModel behaviour) throws FileNotFoundException
+  public ResponseModel (BehaviourModel behaviour, String person,
+                        int responseType) throws FileNotFoundException
   {
     applianceOf = behaviour.getApplianceOf();
-    name = applianceOf + " Response Model";
+    name = person + " " + applianceOf + " Response Model";
+    this.person = person;
+    switch (responseType) {
+
+    case 0:
+      this.responseType = "Best";
+      break;
+    case 1:
+      this.responseType = "Normal";
+      break;
+    case 2:
+      this.responseType = "Worst";
+    }
+
+    name = name + " (" + this.responseType + ")";
     fileMap = behaviour.getFileMap();
     distributionTypes = behaviour.getDistributionTypes();
     consumptionEventRepo = behaviour.getConsumptionEventRepo();
@@ -86,17 +102,22 @@ public class ResponseModel extends BehaviourModel
                        double[] newScheme)
   {
 
-    // PeakFinder pf = new PeakFinder(startTimeBinned.getHistogram());
-    //
-    // int peakIndex = pf.findGlobalMaximum().getIndexMinute();
-    //
-    // System.out.println(peakIndex);
-
     startTime.shifting(responseType, basicScheme, newScheme);
 
     startTimeBinned =
       new Histogram(Utils.aggregateStartTimeDistribution(startTime
               .getHistogram()));
 
+  }
+
+  public String toString ()
+  {
+    return name;
+  }
+
+  public void status ()
+  {
+    super.status();
+    System.out.println("Response Type:" + responseType);
   }
 }

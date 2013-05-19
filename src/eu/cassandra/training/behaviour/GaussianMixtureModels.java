@@ -25,6 +25,7 @@ import java.util.Scanner;
 import eu.cassandra.training.response.Incentive;
 import eu.cassandra.training.response.IncentiveVector;
 import eu.cassandra.training.response.PeakFinder;
+import eu.cassandra.training.response.PricingVector;
 import eu.cassandra.training.utils.Constants;
 import eu.cassandra.training.utils.RNG;
 import eu.cassandra.training.utils.Utils;
@@ -474,7 +475,11 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   @Override
   public double[] shiftingWorst (double[] basicScheme, double[] newScheme)
   {
-    double[] result = new double[Constants.MINUTES_PER_DAY];
+    double[] result = Arrays.copyOf(histogram, histogram.length);
+
+    PricingVector pricingVector = new PricingVector(basicScheme, newScheme);
+
+    result = worstAverage(result, pricingVector);
 
     return result;
   }
@@ -665,6 +670,51 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     for (int i = 0; i < values.length; i++)
       sum += values[i];
     System.out.println("Summary: " + sum);
+
+    return values;
+  }
+
+  private double[] worstAverage (double[] values, PricingVector pricing)
+  {
+    double temp = 0;
+    double sum = 0;
+    double overDiff = 0;
+    int start, end;
+    double newPrice;
+    int cheapest = pricing.getCheapest();
+    int startCheapest =
+      pricing.getPrices(pricing.getCheapest()).getStartMinute();
+    int endCheapest = pricing.getPrices(pricing.getCheapest()).getEndMinute();
+    int durationCheapest = endCheapest - startCheapest;
+    double cheapestPrice = pricing.getPrices(pricing.getCheapest()).getPrice();
+
+    for (int i = 0; i < pricing.getPrices().size(); i++) {
+
+      if (i != cheapest) {
+        sum = 0;
+        overDiff = 0;
+        start = pricing.getPrices(i).getStartMinute();
+        end = pricing.getPrices(i).getEndMinute();
+        newPrice = pricing.getPrices(i).getPrice();
+
+        for (int j = start; j <= end; j++) {
+          temp = cheapestPrice * values[j] / newPrice;
+          overDiff += values[j] - temp;
+          values[j] = temp;
+        }
+
+        double additive = overDiff / durationCheapest;
+
+        for (int j = startCheapest; j <= endCheapest; j++)
+          values[j] += additive;
+
+        for (int j = 0; j < values.length; j++)
+          sum += values[j];
+        System.out.println("Summary after index " + i + ": " + sum);
+
+      }
+
+    }
 
     return values;
   }

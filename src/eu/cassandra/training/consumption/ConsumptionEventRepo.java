@@ -473,6 +473,7 @@ public class ConsumptionEventRepo
       }
 
       System.setOut(realSystemOut);
+      output.close();
 
     }
     catch (Exception e) {
@@ -495,6 +496,7 @@ public class ConsumptionEventRepo
         System.out.println(daysArray[i]);
 
       System.setOut(realSystemOut);
+      output.close();
 
     }
     catch (Exception e) {
@@ -553,6 +555,7 @@ public class ConsumptionEventRepo
       }
 
       System.setOut(realSystemOut);
+      output.close();
 
     }
     catch (Exception e) {
@@ -582,6 +585,7 @@ public class ConsumptionEventRepo
       }
 
       System.setOut(realSystemOut);
+      output.close();
     }
     catch (Exception e) {
       e.printStackTrace();
@@ -610,6 +614,7 @@ public class ConsumptionEventRepo
       }
 
       System.setOut(realSystemOut);
+      output.close();
     }
     catch (Exception e) {
       e.printStackTrace();
@@ -640,6 +645,7 @@ public class ConsumptionEventRepo
       }
 
       System.setOut(realSystemOut);
+      output.close();
 
     }
     catch (Exception e) {
@@ -669,6 +675,7 @@ public class ConsumptionEventRepo
       }
 
       System.setOut(realSystemOut);
+      output.close();
 
     }
     catch (Exception e) {
