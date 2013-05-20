@@ -40,6 +40,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import eu.cassandra.training.entities.Person;
+
 public class ChartUtils
 {
 
@@ -433,6 +435,25 @@ public class ChartUtils
       ChartFactory.createXYLineChart("Pricing Schemes", "Minute of Day",
                                      "Euros/kWh", dataset, orientation, show,
                                      toolTips, urls);
+
+    return new ChartPanel(chart);
+  }
+
+  public static ChartPanel createPieChart (String title, Person person)
+  {
+
+    DefaultPieDataset dataset = new DefaultPieDataset();
+    dataset.setValue("Behavior Models", person.getBehaviourModels().size());
+    dataset.setValue("Response Models", person.getResponseModels().size());
+
+    JFreeChart chart =
+      ChartFactory.createPieChart(title, dataset, true, true, true);
+
+    PiePlot plot = (PiePlot) chart.getPlot();
+    PieSectionLabelGenerator generator =
+      new StandardPieSectionLabelGenerator("{0} = {1}", new DecimalFormat("0"),
+                                           new DecimalFormat("0.00%"));
+    plot.setLabelGenerator(generator);
 
     return new ChartPanel(chart);
   }

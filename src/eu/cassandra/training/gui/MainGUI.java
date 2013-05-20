@@ -969,7 +969,7 @@ public class MainGUI extends JFrame
 
           ChartPanel chartPanel = null;
           try {
-            chartPanel = installation.measurementsChart(power);
+            chartPanel = installation.measurementsChart();
           }
           catch (IOException e1) {
             e1.printStackTrace();
@@ -988,6 +988,14 @@ public class MainGUI extends JFrame
             consumptionPathField.setEnabled(true);
             consumptionBrowseButton.setEnabled(true);
           }
+
+          exportModels.addElement(installation.toString());
+          exportModels.addElement(installation.getPerson().getName());
+
+          exportModelList.setEnabled(true);
+          exportModelList.setModel(exportModels);
+          tabbedPane.setEnabledAt(3, true);
+
         }
         else {
           JFrame error = new JFrame();
@@ -1588,7 +1596,28 @@ public class MainGUI extends JFrame
 
           ChartPanel chartPanel = null;
 
-          if (appliance != null) {
+          if (selection.equalsIgnoreCase(installation.getName())) {
+
+            try {
+              chartPanel = installation.measurementsChart();
+            }
+            catch (IOException e1) {
+              e1.printStackTrace();
+            }
+
+          }
+          else if (selection.equalsIgnoreCase(installation.getPerson()
+                  .getName())) {
+
+            chartPanel = installation.getPerson().statisticGraphs();
+
+            exportDailyButton.setEnabled(false);
+            exportDurationButton.setEnabled(false);
+            exportStartButton.setEnabled(false);
+            exportStartBinnedButton.setEnabled(false);
+
+          }
+          else if (appliance != null) {
 
             chartPanel =
               ChartUtils.createHistogram("Test", "Time Step", "Power",

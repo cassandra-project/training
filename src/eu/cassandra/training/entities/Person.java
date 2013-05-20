@@ -24,6 +24,7 @@ import org.jfree.chart.ChartPanel;
 
 import eu.cassandra.training.behaviour.BehaviourModel;
 import eu.cassandra.training.response.ResponseModel;
+import eu.cassandra.training.utils.ChartUtils;
 
 public class Person
 {
@@ -188,5 +189,12 @@ public class Person
     System.out.println("Person Of Installation: " + installation);
     System.out.println("Behaviour Models:" + behaviourModels.toString());
     System.out.println("Response Models:" + responseModels.toString());
+  }
+
+  public ChartPanel statisticGraphs ()
+  {
+    String title = name + " Statistics";
+
+    return ChartUtils.createPieChart(title, this);
   }
 }

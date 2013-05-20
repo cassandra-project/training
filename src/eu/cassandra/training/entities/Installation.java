@@ -35,6 +35,7 @@ public class Installation
   ArrayList<Appliance> appliances;
   Person person;
   String measurementsFile;
+  boolean power = true;
   double[] activePower = null;
   double[] reactivePower = null;
 
@@ -53,8 +54,8 @@ public class Installation
     measurementsFile = filename;
     appliances = new ArrayList<Appliance>();
     person = new Person("Person", name);
-
-    parseMeasurementsFile(power);
+    this.power = power;
+    parseMeasurementsFile();
 
   }
 
@@ -126,7 +127,7 @@ public class Installation
     return reactivePower[index];
   }
 
-  public void parseMeasurementsFile (boolean power) throws IOException
+  public void parseMeasurementsFile () throws IOException
   {
 
     ArrayList<Double> temp = new ArrayList<Double>();
@@ -190,7 +191,7 @@ public class Installation
 
   }
 
-  public ChartPanel measurementsChart (boolean power) throws IOException
+  public ChartPanel measurementsChart () throws IOException
   {
 
     if (power)
