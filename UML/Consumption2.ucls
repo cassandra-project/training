@@ -4,7 +4,8 @@
   <package id="1" language="java" name="eu.cassandra.training.consumption" project="Training Module" 
     file="/Training Module/src/eu/cassandra/training/consumption" binary="false" corner="BOTTOM_RIGHT">    
     <position height="50" width="225" x="327" y="6"/>    
-    <display autosize="true" stereotype="true" accessors="true"/>  
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true"/>  
   </package>  
   <class id="2" language="java" name="eu.cassandra.training.consumption.ConsumptionEvent" project="Training Module" 
     file="/Training Module/src/eu/cassandra/training/consumption/ConsumptionEvent.java" binary="false" 
@@ -36,8 +37,8 @@
       <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </class>  
-  <class id="5" language="java" name="eu.cassandra.training.consumption.ConsumptionModel" project="Training Module" 
-    file="/Training Module/src/eu/cassandra/training/consumption/ConsumptionModel.java" binary="false" 
+  <class id="5" language="java" name="eu.cassandra.training.consumption.PowerConsumptionModelModel" project="Training Module" 
+    file="/Training Module/src/eu/cassandra/training/consumption/PowerConsumptionModel.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="885" y="413"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
@@ -46,8 +47,8 @@
       <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </class>  
-  <class id="6" language="java" name="eu.cassandra.training.consumption.Triplet" project="Training Module" 
-    file="/Training Module/src/eu/cassandra/training/consumption/Triplet.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="6" language="java" name="eu.cassandra.training.consumption.TripletPower" project="Training Module" 
+    file="/Training Module/src/eu/cassandra/training/consumption/TripletPower.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="883" y="133"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      

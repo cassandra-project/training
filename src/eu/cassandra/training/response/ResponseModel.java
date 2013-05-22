@@ -42,8 +42,10 @@ public class ResponseModel extends BehaviourModel
   public ResponseModel (BehaviourModel behaviour, String person,
                         int responseType) throws FileNotFoundException
   {
-    applianceOf = behaviour.getApplianceOf();
-    name = person + " " + applianceOf + " Response Model";
+    applianceOf = new String[0];
+    applianceOf = behaviour.getAppliancesOf();
+    nameActivity = person + " " + applianceOf[0] + " Response Activity";
+    name = nameActivity + " Response Model";
     this.person = person;
     switch (responseType) {
 

@@ -27,22 +27,25 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.jfree.chart.ChartPanel;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
 import eu.cassandra.training.utils.ChartUtils;
 
 public class Installation
 {
-  String name;
+  String name = "";
+  String type = "";
+  String installationID = "";
   ArrayList<Appliance> appliances;
   Person person;
-  String measurementsFile;
+  String measurementsFile = "";
   boolean power = true;
   double[] activePower = null;
   double[] reactivePower = null;
 
   public Installation ()
   {
-    name = "";
-    measurementsFile = "";
     appliances = new ArrayList<Appliance>();
     person = null;
   }
@@ -51,6 +54,7 @@ public class Installation
   {
     File file = new File(filename);
     name = file.getName().substring(0, file.getName().length() - 4);
+    type = "";
     measurementsFile = filename;
     appliances = new ArrayList<Appliance>();
     person = new Person("Person", name);
@@ -83,6 +87,18 @@ public class Installation
   {
 
     return name;
+  }
+
+  public String getType ()
+  {
+
+    return type;
+  }
+
+  public String getInstallationID ()
+  {
+
+    return installationID;
   }
 
   public ArrayList<Appliance> getAppliances ()
@@ -125,6 +141,11 @@ public class Installation
   {
 
     return reactivePower[index];
+  }
+
+  public void setInstallationID (String id)
+  {
+    installationID = id;
   }
 
   public void parseMeasurementsFile () throws IOException
@@ -211,6 +232,24 @@ public class Installation
   public String toString ()
   {
     return name;
+  }
+
+  public DBObject toJSON (String userID)
+  {
+
+    DBObject temp = new BasicDBObject();
+
+    temp.put("name", name);
+    temp.put("type", type);
+    temp.put("description", name + " " + type);
+    temp.put("scenario_id", userID);
+    temp.put("belongsToInstallation", "");
+    temp.put("location", "");
+    temp.put("x", 0.0);
+    temp.put("y", 0.0);
+
+    return temp;
+
   }
 
   public void status ()

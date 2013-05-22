@@ -16,6 +16,7 @@ limitations under the License.
 */
 package eu.cassandra.training.utils;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -28,9 +29,11 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.PieSectionLabelGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.function.Function2D;
 import org.jfree.data.function.NormalDistributionFunction2D;
@@ -179,6 +182,39 @@ public class ChartUtils
     return new ChartPanel(chart);
   }
 
+  public static ChartPanel createArea (String title, String x, String y,
+                                       Double[] doubles, Double[] doubles2)
+  {
+    JFreeChart chart = null;
+    if (doubles.length != doubles2.length) {
+      System.out.println("ERROR with lengths.");
+    }
+    else {
+      Double[][] data = new Double[2][doubles.length];
+
+      data[0] = doubles;
+      data[1] = doubles2;
+
+      final CategoryDataset dataset =
+        DatasetUtilities.createCategoryDataset("Power ", "Type ", data);
+
+      chart =
+        ChartFactory.createAreaChart(title, x, y, dataset,
+                                     PlotOrientation.VERTICAL, true, true,
+                                     false);
+
+      chart.setBackgroundPaint(Color.white);
+
+      final CategoryPlot plot = chart.getCategoryPlot();
+      plot.setForegroundAlpha(0.5f);
+
+      // plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
+      plot.setBackgroundPaint(Color.lightGray);
+
+    }
+    return new ChartPanel(chart);
+  }
+
   public static <T> void createHistogram (String title, String x, String y,
                                           Map<T, Double> data)
   {
@@ -254,98 +290,6 @@ public class ChartUtils
                                      toolTips, urls);
 
     return new ChartPanel(chart);
-
-  }
-
-  public static void createPieChart (String title, double[] data)
-  {
-
-    DefaultPieDataset dataset = new DefaultPieDataset();
-    dataset.setValue("Night", data[0]);
-    dataset.setValue("Morning", data[1]);
-    dataset.setValue("Noon", data[2]);
-    dataset.setValue("Evening", data[3]);
-
-    JFreeChart chart =
-      ChartFactory.createPieChart(title, dataset, true, true, true);
-
-    PiePlot plot = (PiePlot) chart.getPlot();
-    PieSectionLabelGenerator generator =
-      new StandardPieSectionLabelGenerator("{0} = {2}", new DecimalFormat("0"),
-                                           new DecimalFormat("0.00%"));
-    plot.setLabelGenerator(generator);
-
-    int width = 500;
-    int height = 300;
-
-    try {
-      ChartUtilities.saveChartAsPNG(new File("Charts/Pie/" + title + ".PNG"),
-                                    chart, width, height);
-    }
-    catch (IOException e) {
-    }
-
-  }
-
-  public static void createPeakPieChart (String title, double[] data)
-  {
-
-    DefaultPieDataset dataset = new DefaultPieDataset();
-
-    for (int i = 0; i < data.length; i++) {
-
-      dataset.setValue("Appliance " + i, data[i]);
-
-    }
-
-    JFreeChart chart =
-      ChartFactory.createPieChart(title, dataset, true, true, true);
-
-    PiePlot plot = (PiePlot) chart.getPlot();
-    PieSectionLabelGenerator generator =
-      new StandardPieSectionLabelGenerator("{0} = {2}", new DecimalFormat("0"),
-                                           new DecimalFormat("0.00%"));
-    plot.setLabelGenerator(generator);
-
-    int width = 500;
-    int height = 300;
-
-    try {
-      ChartUtilities.saveChartAsPNG(new File("Charts/Pie/" + title + ".PNG"),
-                                    chart, width, height);
-    }
-    catch (IOException e) {
-    }
-
-  }
-
-  public static void createPieChart (String title, int[] data)
-  {
-
-    DefaultPieDataset dataset = new DefaultPieDataset();
-    dataset.setValue("Night", data[0]);
-    dataset.setValue("Morning", data[1]);
-    dataset.setValue("Noon", data[2]);
-    dataset.setValue("Evening", data[3]);
-
-    JFreeChart chart =
-      ChartFactory.createPieChart(title, dataset, true, true, true);
-
-    PiePlot plot = (PiePlot) chart.getPlot();
-    PieSectionLabelGenerator generator =
-      new StandardPieSectionLabelGenerator("{0} = {2}", new DecimalFormat("0"),
-                                           new DecimalFormat("0.00%"));
-    plot.setLabelGenerator(generator);
-
-    int width = 500;
-    int height = 300;
-
-    try {
-      ChartUtilities.saveChartAsPNG(new File("Charts/Pie/" + title + ".PNG"),
-                                    chart, width, height);
-    }
-    catch (IOException e) {
-    }
 
   }
 

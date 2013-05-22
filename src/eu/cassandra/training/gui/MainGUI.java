@@ -31,6 +31,8 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
@@ -64,12 +66,15 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.apache.http.auth.AuthenticationException;
 import org.jfree.chart.ChartPanel;
 
 import eu.cassandra.training.behaviour.BehaviourModel;
 import eu.cassandra.training.entities.Appliance;
 import eu.cassandra.training.entities.Installation;
+import eu.cassandra.training.entities.Person;
 import eu.cassandra.training.response.ResponseModel;
+import eu.cassandra.training.utils.APIUtilities;
 import eu.cassandra.training.utils.ChartUtils;
 import eu.cassandra.training.utils.Utils;
 
@@ -769,11 +774,17 @@ public class MainGUI extends JFrame
     connectionPanel.add(usernameTextField);
 
     final JButton exportButton = new JButton("Export");
+
     exportButton.setEnabled(false);
     exportButton.setBounds(201, 217, 147, 28);
     connectionPanel.add(exportButton);
 
     final JButton exportAllButton = new JButton("Export All");
+    exportAllButton.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent e)
+      {
+      }
+    });
     exportAllButton.setEnabled(false);
     exportAllButton.setBounds(390, 217, 181, 28);
     connectionPanel.add(exportAllButton);
@@ -788,7 +799,7 @@ public class MainGUI extends JFrame
 
     final JTextField urlTextField;
     urlTextField = new JTextField();
-    urlTextField.setText("https://xant.ee.auth.gr:8443/cassandra/api/usr");
+    urlTextField.setText("https://160.40.50.233:8443/cassandra/api");
     urlTextField.setColumns(10);
     urlTextField.setBounds(122, 147, 405, 28);
     connectionPanel.add(urlTextField);
@@ -1023,19 +1034,26 @@ public class MainGUI extends JFrame
         for (int i = 0; i < temp; i++) {
 
           String name = "Appliance " + i;
-          String conModel = "";
+          String powerModel = "";
+          String reactiveModel = "";
           switch (i % 3) {
           case 0:
-            conModel =
+            powerModel =
               "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 117.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 0.0, \"d\" : 73, \"s\": 0.0}]},{ \"n\" : 1, \"values\" : [ {\"p\" : 14.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 11.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 5.0, \"d\" : 73, \"s\": 0.0}]}]}";
+            reactiveModel =
+              "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : -140.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : 117.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 73, \"s\": 0.0}]},{ \"n\" : 1, \"values\" : [ {\"q\" : -14.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : 11.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : 5.0, \"d\" : 73, \"s\": 0.0}]}]}";
             break;
           case 1:
-            conModel =
+            powerModel =
               "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}]}]}";
+            reactiveModel =
+              "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : -140.0, \"d\" : 20, \"s\": 0.0}]}]}";
             break;
           case 2:
-            conModel =
+            powerModel =
               "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 117.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 0.0, \"d\" : 73, \"s\": 0.0}]},{ \"n\" : 1, \"values\" : [ {\"p\" : 14.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 11.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 355.0, \"d\" : 73, \"s\": 0.0}]}]}";
+            reactiveModel =
+              "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : 140.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : -117.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 73, \"s\": 0.0}]},{ \"n\" : 1, \"values\" : [ {\"q\" : 14.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : 11.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : -355.0, \"d\" : 73, \"s\": 0.0}]}]}";
             break;
           }
 
@@ -1048,8 +1066,9 @@ public class MainGUI extends JFrame
           }
 
           Appliance tempAppliance =
-            new Appliance(name, installation.getName(), conModel,
-                          "Demo/eventsAll11.csv", mesTemp, mesTemp2);
+            new Appliance(name, installation.getName(), powerModel,
+                          reactiveModel, "Demo/eventsAll11.csv", mesTemp,
+                          mesTemp2);
 
           installation.addAppliance(tempAppliance);
           detectedAppliances.addElement(tempAppliance.toString());
@@ -1090,6 +1109,7 @@ public class MainGUI extends JFrame
         try {
           appliance =
             new Appliance(name, consumptionPathField.getText(),
+                          consumptionPathField.getText().replace("p", "q"),
                           "Demo/eventsAll11.csv", installation,
                           activePowerRadioButton.isSelected());
         }
@@ -1138,9 +1158,7 @@ public class MainGUI extends JFrame
 
         // System.out.println("Appliance:" + current.getName());
 
-        ChartPanel chartPanel =
-          ChartUtils.createHistogram("Test", "Time Step", "Power",
-                                     current.getConsumptionModel());
+        ChartPanel chartPanel = current.consumptionGraph();
 
         consumptionModelPanel.add(chartPanel, BorderLayout.CENTER);
         consumptionModelPanel.validate();
@@ -1367,9 +1385,7 @@ public class MainGUI extends JFrame
 
         Appliance current = installation.findAppliance(selection);
 
-        ChartPanel chartPanel =
-          ChartUtils.createHistogram("Test Second", "Time Step", "Power",
-                                     current.getConsumptionModel());
+        ChartPanel chartPanel = current.consumptionGraph();
 
         consumptionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
         consumptionPreviewPanel.validate();
@@ -1619,9 +1635,7 @@ public class MainGUI extends JFrame
           }
           else if (appliance != null) {
 
-            chartPanel =
-              ChartUtils.createHistogram("Test", "Time Step", "Power",
-                                         appliance.getConsumptionModel());
+            chartPanel = appliance.consumptionGraph();
 
             exportDailyButton.setEnabled(false);
             exportDurationButton.setEnabled(false);
@@ -1776,9 +1790,250 @@ public class MainGUI extends JFrame
                            + String.valueOf(passwordField.getPassword())
                            + " URL: " + urlTextField.getText());
 
+        // File directory =
+        // new File(System.getProperty("java.home") + "/jre/lib/security");
+        //
+        // File files[] = directory.listFiles();
+        // for (int index = 0; index < files.length; index++) {
+        // System.out.println(files[index].toString());
+        // }
+
+        try {
+          APIUtilities.setUrl(urlTextField.getText());
+        }
+        catch (MalformedURLException e1) {
+          // TODO Auto-generated catch block
+          e1.printStackTrace();
+        }
+
+        try {
+          APIUtilities.getUserID(usernameTextField.getText(),
+                                 passwordField.getPassword());
+        }
+        catch (Exception e1) {
+          // TODO Auto-generated catch block
+          e1.printStackTrace();
+        }
+
         exportButton.setEnabled(true);
         exportAllButton.setEnabled(true);
 
+      }
+    });
+
+    exportButton.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent e)
+      {
+        String selection = exportModelList.getSelectedValue();
+
+        Appliance appliance = installation.findAppliance(selection);
+
+        BehaviourModel behaviour =
+          installation.getPerson().findBehaviour(selection);
+
+        ResponseModel response =
+          installation.getPerson().findResponse(selection);
+
+        ChartPanel chartPanel = null;
+
+        if (selection.equalsIgnoreCase(installation.getName())) {
+
+          try {
+            String id =
+              APIUtilities.sendEntity(installation.toJSON(APIUtilities
+                                                                  .getUserID())
+                                              .toString(), "/inst");
+            System.out.println("Id:" + id);
+            installation.setInstallationID(id);
+          }
+          catch (IOException | AuthenticationException
+                 | NoSuchAlgorithmException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+          }
+
+        }
+        else if (selection.equalsIgnoreCase(installation.getPerson().getName())) {
+
+          try {
+            String id =
+              APIUtilities.sendEntity(installation.getPerson()
+                                              .toJSON(APIUtilities.getUserID())
+                                              .toString(), "/pers");
+            System.out.println("Id:" + id);
+            installation.getPerson().setPersonID(id);
+          }
+          catch (IOException | AuthenticationException
+                 | NoSuchAlgorithmException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+          }
+
+        }
+        else if (appliance != null) {
+
+          try {
+            String id =
+              APIUtilities.sendEntity(appliance
+                      .toJSON(APIUtilities.getUserID()).toString(), "/app");
+            System.out.println("Appliance Id:" + id);
+            appliance.setApplianceID(id);
+
+            id =
+              APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
+                      .toString(), "/consmod");
+            System.out.println("Power Consumption Id:" + id);
+
+          }
+          catch (IOException | AuthenticationException
+                 | NoSuchAlgorithmException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+          }
+
+        }
+        else if (behaviour != null) {
+
+          Appliance behaviorAppliance =
+            installation.findAppliance(behaviour.getAppliancesOf()[0]);
+          String applianceTemp = "";
+
+          Person person = installation.getPerson();
+          String personTemp = "";
+
+          try {
+            // In case appliance is not in the database, we send the object
+            // there
+            if (behaviorAppliance.getApplianceID().equalsIgnoreCase("")) {
+
+              String id =
+                APIUtilities.sendEntity(behaviorAppliance
+                                                .toJSON(APIUtilities
+                                                                .getUserID())
+                                                .toString(), "/app");
+              System.out.println("Appliance Id:" + id);
+              behaviorAppliance.setApplianceID(id);
+              applianceTemp = id;
+
+              id =
+                APIUtilities.sendEntity(behaviorAppliance
+                        .powerConsumptionModelToJSON().toString(), "/consmod");
+              // System.out.println("Power Consumption Id:" + id);
+
+            }
+            else
+              applianceTemp = behaviorAppliance.getApplianceID();
+
+            if (person.getPersonID().equalsIgnoreCase("")) {
+
+              String id =
+                APIUtilities.sendEntity(person.toJSON(APIUtilities.getUserID())
+                        .toString(), "/pers");
+              System.out.println("Person Id:" + id);
+              person.setPersonID(id);
+              personTemp = id;
+
+            }
+            else
+              personTemp = installation.getPerson().getPersonID();
+
+            String id =
+              APIUtilities.sendEntity(behaviour.activityToJSON(personTemp)
+                      .toString(), "/act");
+            System.out.println("Activity Id:" + id);
+
+            behaviour.setActivityID(id);
+
+            String[] appliancesID = { applianceTemp };
+
+            id =
+              APIUtilities
+                      .sendEntity(behaviour.toJSON(appliancesID).toString(),
+                                  "/actmod");
+            System.out.println("Activity Model Id:" + id);
+            behaviour.setBehaviourID(id);
+
+          }
+          catch (IOException | AuthenticationException
+                 | NoSuchAlgorithmException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+          }
+
+        }
+        else if (response != null) {
+          Appliance responseAppliance =
+            installation.findAppliance(response.getAppliancesOf()[0]);
+          String applianceTemp = "";
+
+          Person person = installation.getPerson();
+          String personTemp = "";
+
+          try {
+            // In case appliance is not in the database, we send the object
+            // there
+            if (responseAppliance.getApplianceID().equalsIgnoreCase("")) {
+
+              String id =
+                APIUtilities.sendEntity(responseAppliance
+                                                .toJSON(APIUtilities
+                                                                .getUserID())
+                                                .toString(), "/app");
+              System.out.println("Appliance Id:" + id);
+              responseAppliance.setApplianceID(id);
+              applianceTemp = id;
+
+              id =
+                APIUtilities.sendEntity(responseAppliance
+                        .powerConsumptionModelToJSON().toString(), "/consmod");
+              // System.out.println("Power Consumption Id:" + id);
+
+            }
+            else
+              applianceTemp = responseAppliance.getApplianceID();
+
+            if (person.getPersonID().equalsIgnoreCase("")) {
+
+              String id =
+                APIUtilities.sendEntity(person.toJSON(APIUtilities.getUserID())
+                        .toString(), "/pers");
+              System.out.println("Person Id:" + id);
+              person.setPersonID(id);
+              personTemp = id;
+
+            }
+            else
+              personTemp = installation.getPerson().getPersonID();
+
+            String id =
+              APIUtilities.sendEntity(response.activityToJSON(personTemp)
+                      .toString(), "/act");
+            System.out.println("Response Activity Id:" + id);
+
+            response.setActivityID(id);
+
+            String[] appliancesID = { applianceTemp };
+
+            id =
+              APIUtilities.sendEntity(response.toJSON(appliancesID).toString(),
+                                      "/actmod");
+            System.out.println("Response Activity Model Id:" + id);
+            response.setBehaviourID(id);
+
+          }
+          catch (IOException | AuthenticationException
+                 | NoSuchAlgorithmException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+          }
+
+        }
+      }
+    });
+
+    exportAllButton.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent e)
+      {
       }
     });
   }

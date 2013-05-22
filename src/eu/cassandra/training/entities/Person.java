@@ -22,21 +22,24 @@ import java.util.ArrayList;
 
 import org.jfree.chart.ChartPanel;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
 import eu.cassandra.training.behaviour.BehaviourModel;
 import eu.cassandra.training.response.ResponseModel;
 import eu.cassandra.training.utils.ChartUtils;
 
 public class Person
 {
-  private String installation;
-  private String name;
+  private String installation = "";
+  private String name = "";
+  private String type = "";
+  private String personID = "";
   private ArrayList<BehaviourModel> behaviourModels;
   private ArrayList<ResponseModel> responseModels;
 
   public Person ()
   {
-    name = "";
-    installation = "";
     behaviourModels = new ArrayList<BehaviourModel>();
     responseModels = new ArrayList<ResponseModel>();
   }
@@ -54,9 +57,19 @@ public class Person
     return name;
   }
 
+  public String getType ()
+  {
+    return type;
+  }
+
   public String getInstallation ()
   {
     return installation;
+  }
+
+  public String getPersonID ()
+  {
+    return personID;
   }
 
   public ArrayList<BehaviourModel> getBehaviourModels ()
@@ -71,6 +84,11 @@ public class Person
 
     return responseModels;
 
+  }
+
+  public void setPersonID (String id)
+  {
+    personID = id;
   }
 
   public BehaviourModel findBehaviour (Appliance appliance)
@@ -157,7 +175,7 @@ public class Person
     }
 
     String temp =
-      name + " " + behaviour.getApplianceOf() + " Response Model ("
+      name + " " + behaviour.getAppliancesOf()[0] + " Response Model ("
               + responseTemp + ")";
 
     ResponseModel exists = findResponse(temp);
@@ -181,6 +199,20 @@ public class Person
   public String toString ()
   {
     return name;
+  }
+
+  public DBObject toJSON (String installationID)
+  {
+
+    DBObject temp = new BasicDBObject();
+
+    temp.put("name", name);
+    temp.put("type", type);
+    temp.put("description", name + " " + type);
+    temp.put("inst_id", installationID);
+
+    return temp;
+
   }
 
   public void status ()

@@ -24,6 +24,9 @@ import java.util.Scanner;
 
 import org.jfree.chart.ChartPanel;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
 import eu.cassandra.training.consumption.ConsumptionEventRepo;
 import eu.cassandra.training.entities.Appliance;
 import eu.cassandra.training.utils.ChartUtils;
@@ -37,8 +40,14 @@ public class BehaviourModel
   protected static final int START_TIME = 2;
   protected static final int START_TIME_BINNED = 3;
 
-  protected String name;
-  protected String applianceOf;
+  protected String name = "";
+  protected String nameActivity = "";
+  protected String type = "";
+  protected String activityID = "";
+  protected String behaviourID = "";
+  protected boolean shiftable = false;
+  protected String dayType = "working";
+  protected String[] applianceOf;
   protected String person;
   protected ConsumptionEventRepo consumptionEventRepo;
   protected ProbabilityDistribution startTime, startTimeBinned, duration,
@@ -56,10 +65,12 @@ public class BehaviourModel
   public BehaviourModel (Appliance appliance, String person)
     throws FileNotFoundException
   {
+    nameActivity = person + " " + appliance.getName() + " Activity";
     name = person + " " + appliance.getName() + " Behaviour Model";
     this.person = person;
-    applianceOf = appliance.getName();
-    consumptionEventRepo = new ConsumptionEventRepo(applianceOf);
+    applianceOf = new String[1];
+    applianceOf[0] = appliance.getName();
+    consumptionEventRepo = new ConsumptionEventRepo(applianceOf[0]);
     consumptionEventRepo.readEventsFile(appliance.getEventsFile());
   }
 
@@ -68,7 +79,37 @@ public class BehaviourModel
     return name;
   }
 
-  public String getApplianceOf ()
+  public String getNameActivity ()
+  {
+    return nameActivity;
+  }
+
+  public String getType ()
+  {
+    return type;
+  }
+
+  public String getDayType ()
+  {
+    return dayType;
+  }
+
+  public boolean getShiftable ()
+  {
+    return shiftable;
+  }
+
+  public String getActivityID ()
+  {
+    return activityID;
+  }
+
+  public String getBehaviourID ()
+  {
+    return behaviourID;
+  }
+
+  public String[] getAppliancesOf ()
   {
     return applianceOf;
   }
@@ -123,6 +164,16 @@ public class BehaviourModel
     return fileMap.get(key);
   }
 
+  public void setActivityID (String id)
+  {
+    activityID = id;
+  }
+
+  public void setBehaviourID (String id)
+  {
+    behaviourID = id;
+  }
+
   public void train (String[] distributions) throws FileNotFoundException
   {
 
@@ -134,21 +185,6 @@ public class BehaviourModel
     }
 
   }
-
-  // public void distributionFromFiles (String[] files, String[] distributions)
-  // throws FileNotFoundException
-  // {
-  //
-  // System.out.println(Arrays.toString(distributions));
-  // System.out.println(Arrays.toString(files));
-  //
-  // for (int i = 0; i < 4; i++)
-  // fillDistribution(files[i], distributions[i], i);
-  //
-  // // System.out.println(distributionTypes);
-  // // System.out.println(this.fileMap);
-  //
-  // }
 
   private String fileDistribution (int variable) throws FileNotFoundException
   {
@@ -383,6 +419,37 @@ public class BehaviourModel
   public String toString ()
   {
     return name;
+  }
+
+  public DBObject activityToJSON (String personID)
+  {
+
+    DBObject temp = new BasicDBObject();
+
+    temp.put("name", nameActivity);
+    temp.put("type", type);
+    temp.put("description", nameActivity + " " + type);
+    temp.put("pers_id", personID);
+
+    return temp;
+
+  }
+
+  public DBObject toJSON (String[] appliancesID)
+  {
+
+    DBObject temp = new BasicDBObject();
+
+    temp.put("name", name);
+    temp.put("type", type);
+    temp.put("description", name + " " + type);
+    temp.put("shiftable", shiftable);
+    temp.put("day_type", dayType);
+    temp.put("containsAppliances", appliancesID);
+    temp.put("act_id", activityID);
+
+    return temp;
+
   }
 
   public void status ()
