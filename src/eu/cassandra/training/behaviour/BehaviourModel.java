@@ -45,6 +45,11 @@ public class BehaviourModel
   protected String type = "";
   protected String activityID = "";
   protected String behaviourID = "";
+  protected String dailyID = "";
+  protected String durationID = "";
+  protected String startID = "";
+  // protected String startBinnedID = "";
+
   protected boolean shiftable = false;
   protected String dayType = "working";
   protected String[] applianceOf;
@@ -109,6 +114,26 @@ public class BehaviourModel
     return behaviourID;
   }
 
+  public String getDurationID ()
+  {
+    return durationID;
+  }
+
+  public String getDailyID ()
+  {
+    return dailyID;
+  }
+
+  public String getStartID ()
+  {
+    return startID;
+  }
+
+  // public String getStartBinnedID ()
+  // {
+  // return startBinnedID;
+  // }
+
   public String[] getAppliancesOf ()
   {
     return applianceOf;
@@ -124,7 +149,7 @@ public class BehaviourModel
     return consumptionEventRepo;
   }
 
-  public ProbabilityDistribution getDailyTimesDistribution ()
+  public ProbabilityDistribution getDailyTimes ()
   {
     return dailyTimes;
   }
@@ -173,6 +198,26 @@ public class BehaviourModel
   {
     behaviourID = id;
   }
+
+  public void setDailyID (String id)
+  {
+    dailyID = id;
+  }
+
+  public void setDurationID (String id)
+  {
+    durationID = id;
+  }
+
+  public void setStartID (String id)
+  {
+    startID = id;
+  }
+
+  // public void setStartBinnedID (String id)
+  // {
+  // startBinnedID = id;
+  // }
 
   public void train (String[] distributions) throws FileNotFoundException
   {
@@ -447,6 +492,9 @@ public class BehaviourModel
     temp.put("day_type", dayType);
     temp.put("containsAppliances", appliancesID);
     temp.put("act_id", activityID);
+    temp.put("duration", durationID);
+    temp.put("startTime", startID);
+    temp.put("repeatsNrOfTime", dailyID);
 
     return temp;
 

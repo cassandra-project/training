@@ -16,6 +16,8 @@
 
 package eu.cassandra.training.behaviour;
 
+import com.mongodb.DBObject;
+
 /**
  * @author Christos Diou <diou remove this at iti dot gr>
  * @version prelim
@@ -169,6 +171,24 @@ public interface ProbabilityDistribution
    * 
    */
   public double[] shiftingWorst (double[] basicScheme, double[] newScheme);
+
+  /**
+   * Returning the distribution ID
+   * 
+   */
+  public String getDistributionID ();
+
+  /**
+   * Setting the distribution ID
+   * 
+   */
+  public void setDistributionID (String id);
+
+  /**
+   * Creating a JSON object out of the distribution
+   * 
+   */
+  public DBObject toJSON (String activityModelID);
 
   /**
    * Return the distribution probability histogram.

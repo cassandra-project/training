@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
 import eu.cassandra.training.response.Incentive;
 import eu.cassandra.training.response.IncentiveVector;
 import eu.cassandra.training.response.PeakFinder;
@@ -37,6 +40,10 @@ import eu.cassandra.training.utils.Utils;
  */
 public class GaussianMixtureModels implements ProbabilityDistribution
 {
+
+  private String name = "";
+  private String type = "";
+  private String distributionID = "";
   protected double[] pi;
   protected Gaussian[] gaussians;
 
@@ -53,6 +60,8 @@ public class GaussianMixtureModels implements ProbabilityDistribution
    */
   public GaussianMixtureModels (int n)
   {
+    name = "Generic Mixture";
+    type = "Gaussian Mixture Models";
     pi = new double[n];
     for (int i = 0; i < n; i++) {
       pi[i] = (1.0 / n);
@@ -69,6 +78,8 @@ public class GaussianMixtureModels implements ProbabilityDistribution
    */
   public GaussianMixtureModels (int n, double[] pi, double[] mu, double[] s)
   {
+    name = "Generic Mixture";
+    type = "Gaussian Mixture Models";
     gaussians = new Gaussian[n];
     for (int i = 0; i < n; i++) {
       this.pi = pi;
@@ -79,7 +90,8 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
   public GaussianMixtureModels (String filename) throws FileNotFoundException
   {
-
+    name = filename;
+    type = "Gaussian Mixture Models";
     File file = new File(filename);
     Scanner input = new Scanner(file);
     String nextLine = input.nextLine();
@@ -135,6 +147,26 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
   }
 
+  public String getName ()
+  {
+    return name;
+  }
+
+  public String getType ()
+  {
+    return type;
+  }
+
+  public String getDistributionID ()
+  {
+    return distributionID;
+  }
+
+  public void setDistributionID (String id)
+  {
+    distributionID = id;
+  }
+
   public String getDescription ()
   {
     String description = "Gaussian Mixture Models probability density function";
@@ -169,7 +201,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   public void precompute (int startValue, int endValue, int nBins)
   {
     if (startValue >= endValue) {
-      // TODO Throw an exception or whatever.
+      System.out.println("The end point is before the start point.");
       return;
     }
     precomputeFrom = startValue;
@@ -311,7 +343,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     System.out.println(pf.findGlobalIntervalMaximum().toString());
     System.out.println();
 
-    int peakIndex = pf.findGlobalIntervalMaximum().getIndexMinute();
+    // int peakIndex = pf.findGlobalIntervalMaximum().getIndexMinute();
 
     // g.movePeak(peakIndex * Constants.MINUTES_PER_BIN, 30);
 
@@ -717,5 +749,36 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     }
 
     return values;
+  }
+
+  public DBObject toJSON (String activityModelID)
+  {
+
+    DBObject temp = new BasicDBObject();
+    DBObject[] param = new BasicDBObject[1];
+
+    param[0] = new BasicDBObject();
+
+    double[] means = new double[gaussians.length];
+    double[] sigmas = new double[gaussians.length];
+
+    for (int i = 0; i < gaussians.length; i++) {
+      means[i] = gaussians[i].mean;
+      sigmas[i] = gaussians[i].sigma;
+    }
+
+    param[0].put("pi", pi);
+    param[0].put("means", means);
+    param[0].put("stds", sigmas);
+
+    temp.put("name", name);
+    temp.put("type", type);
+    temp.put("description", name + " " + type);
+    temp.put("distrType", type);
+    temp.put("actmod_id", activityModelID);
+    temp.put("parameters", param);
+
+    return temp;
+
   }
 }

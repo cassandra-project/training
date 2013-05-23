@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
 import eu.cassandra.training.response.Incentive;
 import eu.cassandra.training.response.IncentiveVector;
 import eu.cassandra.training.response.PricingVector;
@@ -32,19 +35,26 @@ import eu.cassandra.training.utils.Utils;
 
 public class Histogram implements ProbabilityDistribution
 {
-  protected int numberOfBins;
 
+  private String name = "";
+  private String type = "";
+  private String distributionID = "";
+
+  protected int numberOfBins;
   protected double[] values;
 
-  public Histogram (double[] values)
+  public Histogram (String name, double[] values)
   {
+    this.name = name;
+    type = "Histogram";
     numberOfBins = values.length;
     this.values = values;
   }
 
   public Histogram (String filename) throws FileNotFoundException
   {
-    // System.out.println(filename);
+    name = filename;
+    type = "Histogram";
     Map<Integer, Double> histogram = new HashMap<Integer, Double>();
     File file = new File(filename);
     Scanner input = new Scanner(file);
@@ -84,6 +94,26 @@ public class Histogram implements ProbabilityDistribution
      */
     input.close();
     file.deleteOnExit();
+  }
+
+  public String getName ()
+  {
+    return name;
+  }
+
+  public String getType ()
+  {
+    return type;
+  }
+
+  public String getDistributionID ()
+  {
+    return distributionID;
+  }
+
+  public void setDistributionID (String id)
+  {
+    distributionID = id;
   }
 
   @Override
@@ -512,5 +542,21 @@ public class Histogram implements ProbabilityDistribution
     result = worstAverage(result, pricingVector);
 
     return result;
+  }
+
+  public DBObject toJSON (String activityModelID)
+  {
+
+    DBObject temp = new BasicDBObject();
+
+    temp.put("name", name);
+    temp.put("type", type);
+    temp.put("description", name + " " + type);
+    temp.put("distrType", type);
+    temp.put("actmod_id", activityModelID);
+    temp.put("values", values);
+
+    return temp;
+
   }
 }

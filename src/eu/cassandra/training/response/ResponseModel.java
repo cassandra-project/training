@@ -107,8 +107,9 @@ public class ResponseModel extends BehaviourModel
     startTime.shifting(responseType, basicScheme, newScheme);
 
     startTimeBinned =
-      new Histogram(Utils.aggregateStartTimeDistribution(startTime
-              .getHistogram()));
+      new Histogram(name + "Start Time Binned",
+                    Utils.aggregateStartTimeDistribution(startTime
+                            .getHistogram()));
 
   }
 

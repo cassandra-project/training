@@ -31,7 +31,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.swing.ButtonGroup;
@@ -1098,8 +1097,6 @@ public class MainGUI extends JFrame
       public void actionPerformed (ActionEvent e)
       {
 
-        DefaultListModel<String> dlm = new DefaultListModel<String>();
-
         File file = new File(consumptionPathField.getText());
         String temp = file.getName();
         temp = temp.replace(".", " ");
@@ -1479,7 +1476,7 @@ public class MainGUI extends JFrame
                                                     basicScheme, newScheme);
         }
         catch (FileNotFoundException e) {
-          // TODO Auto-generated catch block
+
           e.printStackTrace();
         }
 
@@ -1800,18 +1797,11 @@ public class MainGUI extends JFrame
 
         try {
           APIUtilities.setUrl(urlTextField.getText());
-        }
-        catch (MalformedURLException e1) {
-          // TODO Auto-generated catch block
-          e1.printStackTrace();
-        }
 
-        try {
           APIUtilities.getUserID(usernameTextField.getText(),
                                  passwordField.getPassword());
         }
         catch (Exception e1) {
-          // TODO Auto-generated catch block
           e1.printStackTrace();
         }
 
@@ -1834,21 +1824,15 @@ public class MainGUI extends JFrame
         ResponseModel response =
           installation.getPerson().findResponse(selection);
 
-        ChartPanel chartPanel = null;
-
         if (selection.equalsIgnoreCase(installation.getName())) {
 
           try {
-            String id =
-              APIUtilities.sendEntity(installation.toJSON(APIUtilities
-                                                                  .getUserID())
-                                              .toString(), "/inst");
-            System.out.println("Id:" + id);
-            installation.setInstallationID(id);
+            installation.setInstallationID(APIUtilities.sendEntity(installation
+                    .toJSON(APIUtilities.getUserID()).toString(), "/inst"));
+
           }
           catch (IOException | AuthenticationException
                  | NoSuchAlgorithmException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
           }
 
@@ -1856,16 +1840,17 @@ public class MainGUI extends JFrame
         else if (selection.equalsIgnoreCase(installation.getPerson().getName())) {
 
           try {
-            String id =
-              APIUtilities.sendEntity(installation.getPerson()
-                                              .toJSON(APIUtilities.getUserID())
-                                              .toString(), "/pers");
-            System.out.println("Id:" + id);
-            installation.getPerson().setPersonID(id);
+            installation
+                    .getPerson()
+                    .setPersonID(APIUtilities.sendEntity(installation
+                                                                 .getPerson()
+                                                                 .toJSON(APIUtilities
+                                                                                 .getUserID())
+                                                                 .toString(),
+                                                         "/pers"));
           }
           catch (IOException | AuthenticationException
                  | NoSuchAlgorithmException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
           }
 
@@ -1873,90 +1858,122 @@ public class MainGUI extends JFrame
         else if (appliance != null) {
 
           try {
-            String id =
-              APIUtilities.sendEntity(appliance
-                      .toJSON(APIUtilities.getUserID()).toString(), "/app");
-            System.out.println("Appliance Id:" + id);
-            appliance.setApplianceID(id);
+            appliance.setApplianceID(APIUtilities
+                    .sendEntity(appliance.toJSON(APIUtilities.getUserID())
+                            .toString(), "/app"));
 
-            id =
-              APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
-                      .toString(), "/consmod");
-            System.out.println("Power Consumption Id:" + id);
+            APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
+                    .toString(), "/consmod");
 
           }
           catch (IOException | AuthenticationException
                  | NoSuchAlgorithmException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
           }
 
         }
         else if (behaviour != null) {
 
-          Appliance behaviorAppliance =
+          Appliance behaviourAppliance =
             installation.findAppliance(behaviour.getAppliancesOf()[0]);
           String applianceTemp = "";
 
           Person person = installation.getPerson();
           String personTemp = "";
+          String behaviourTemp = "";
+          String durationTemp = "";
+          String dailyTemp = "";
+          String startTemp = "";
+          // String startBinnedTemp = "";
 
           try {
             // In case appliance is not in the database, we send the object
             // there
-            if (behaviorAppliance.getApplianceID().equalsIgnoreCase("")) {
+            if (behaviourAppliance.getApplianceID().equalsIgnoreCase("")) {
 
-              String id =
-                APIUtilities.sendEntity(behaviorAppliance
-                                                .toJSON(APIUtilities
-                                                                .getUserID())
-                                                .toString(), "/app");
-              System.out.println("Appliance Id:" + id);
-              behaviorAppliance.setApplianceID(id);
-              applianceTemp = id;
+              behaviourAppliance.setApplianceID(APIUtilities
+                      .sendEntity(behaviourAppliance
+                                          .toJSON(APIUtilities.getUserID())
+                                          .toString(), "/app"));
 
-              id =
-                APIUtilities.sendEntity(behaviorAppliance
-                        .powerConsumptionModelToJSON().toString(), "/consmod");
-              // System.out.println("Power Consumption Id:" + id);
-
+              APIUtilities.sendEntity(behaviourAppliance
+                      .powerConsumptionModelToJSON().toString(), "/consmod");
             }
-            else
-              applianceTemp = behaviorAppliance.getApplianceID();
+            applianceTemp = behaviourAppliance.getApplianceID();
 
+            // In case person is not in the database, we send the object
+            // there
             if (person.getPersonID().equalsIgnoreCase("")) {
 
-              String id =
-                APIUtilities.sendEntity(person.toJSON(APIUtilities.getUserID())
-                        .toString(), "/pers");
-              System.out.println("Person Id:" + id);
-              person.setPersonID(id);
-              personTemp = id;
+              person.setPersonID(APIUtilities
+                      .sendEntity(person.toJSON(APIUtilities.getUserID())
+                              .toString(), "/pers"));
 
             }
-            else
-              personTemp = installation.getPerson().getPersonID();
+            personTemp = installation.getPerson().getPersonID();
 
-            String id =
-              APIUtilities.sendEntity(behaviour.activityToJSON(personTemp)
-                      .toString(), "/act");
-            System.out.println("Activity Id:" + id);
-
-            behaviour.setActivityID(id);
+            behaviour.setActivityID(APIUtilities.sendEntity(behaviour
+                    .activityToJSON(personTemp).toString(), "/act"));
 
             String[] appliancesID = { applianceTemp };
 
-            id =
-              APIUtilities
-                      .sendEntity(behaviour.toJSON(appliancesID).toString(),
-                                  "/actmod");
-            System.out.println("Activity Model Id:" + id);
-            behaviour.setBehaviourID(id);
+            behaviour.setBehaviourID(APIUtilities
+                    .sendEntity(behaviour.toJSON(appliancesID).toString(),
+                                "/actmod"));
+            behaviourTemp = behaviour.getBehaviourID();
+
+            behaviour
+                    .getDailyTimes()
+                    .setDistributionID(APIUtilities
+                                               .sendEntity(behaviour
+                                                                   .getDailyTimes()
+                                                                   .toJSON(behaviourTemp)
+                                                                   .toString(),
+                                                           "/distr"));
+            behaviour.setDailyID(behaviour.getDailyTimes().getDistributionID());
+            dailyTemp = behaviour.getDailyID();
+
+            behaviour
+                    .getDuration()
+                    .setDistributionID(APIUtilities
+                                               .sendEntity(behaviour
+                                                                   .getDuration()
+                                                                   .toJSON(behaviourTemp)
+                                                                   .toString(),
+                                                           "/distr"));
+
+            behaviour
+                    .setDurationID(behaviour.getDuration().getDistributionID());
+            durationTemp = behaviour.getDurationID();
+
+            behaviour
+                    .getStartTime()
+                    .setDistributionID(APIUtilities
+                                               .sendEntity(behaviour
+                                                                   .getStartTime()
+                                                                   .toJSON(behaviourTemp)
+                                                                   .toString(),
+                                                           "/distr"));
+
+            behaviour.setStartID(behaviour.getStartTime().getDistributionID());
+            startTemp = behaviour.getStartID();
+
+            // id =
+            // APIUtilities
+            // .sendEntity(behaviour.getStartTimeBinned()
+            // .toJSON(behaviourTemp).toString(),
+            // "/distr");
+            // System.out.println("Start Time Binned Distribution Id:" + id);
+            // behaviour.getStartTimeBinned().setDistributionID(id);
+            // startBinnedTemp = id;
+
+            APIUtilities
+                    .updateEntity(behaviour.toJSON(appliancesID).toString(),
+                                  "/actmod", behaviourTemp);
 
           }
           catch (IOException | AuthenticationException
                  | NoSuchAlgorithmException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
           }
 
@@ -1968,65 +1985,94 @@ public class MainGUI extends JFrame
 
           Person person = installation.getPerson();
           String personTemp = "";
+          String responseTemp = "";
+          String durationTemp = "";
+          String dailyTemp = "";
+          String startTemp = "";
+          // String startBinnedTemp = "";
 
           try {
             // In case appliance is not in the database, we send the object
             // there
             if (responseAppliance.getApplianceID().equalsIgnoreCase("")) {
 
-              String id =
-                APIUtilities.sendEntity(responseAppliance
-                                                .toJSON(APIUtilities
-                                                                .getUserID())
-                                                .toString(), "/app");
-              System.out.println("Appliance Id:" + id);
-              responseAppliance.setApplianceID(id);
-              applianceTemp = id;
+              responseAppliance.setApplianceID(APIUtilities
+                      .sendEntity(responseAppliance
+                                          .toJSON(APIUtilities.getUserID())
+                                          .toString(), "/app"));
 
-              id =
-                APIUtilities.sendEntity(responseAppliance
-                        .powerConsumptionModelToJSON().toString(), "/consmod");
-              // System.out.println("Power Consumption Id:" + id);
-
+              APIUtilities.sendEntity(responseAppliance
+                      .powerConsumptionModelToJSON().toString(), "/consmod");
             }
-            else
-              applianceTemp = responseAppliance.getApplianceID();
+            applianceTemp = responseAppliance.getApplianceID();
 
+            // In case person is not in the database, we send the object
+            // there
             if (person.getPersonID().equalsIgnoreCase("")) {
 
-              String id =
-                APIUtilities.sendEntity(person.toJSON(APIUtilities.getUserID())
-                        .toString(), "/pers");
-              System.out.println("Person Id:" + id);
-              person.setPersonID(id);
-              personTemp = id;
+              person.setPersonID(APIUtilities
+                      .sendEntity(person.toJSON(APIUtilities.getUserID())
+                              .toString(), "/pers"));
 
             }
-            else
-              personTemp = installation.getPerson().getPersonID();
+            personTemp = installation.getPerson().getPersonID();
 
-            String id =
-              APIUtilities.sendEntity(response.activityToJSON(personTemp)
-                      .toString(), "/act");
-            System.out.println("Response Activity Id:" + id);
-
-            response.setActivityID(id);
+            response.setActivityID(APIUtilities.sendEntity(response
+                    .activityToJSON(personTemp).toString(), "/act"));
 
             String[] appliancesID = { applianceTemp };
 
-            id =
-              APIUtilities.sendEntity(response.toJSON(appliancesID).toString(),
-                                      "/actmod");
-            System.out.println("Response Activity Model Id:" + id);
-            response.setBehaviourID(id);
+            response.setBehaviourID(APIUtilities
+                    .sendEntity(response.toJSON(appliancesID).toString(),
+                                "/actmod"));
+            responseTemp = response.getBehaviourID();
+
+            response.getDailyTimes()
+                    .setDistributionID(APIUtilities
+                                               .sendEntity(response.getDailyTimes()
+                                                                   .toJSON(responseTemp)
+                                                                   .toString(),
+                                                           "/distr"));
+            response.setDailyID(response.getDailyTimes().getDistributionID());
+            dailyTemp = response.getDailyID();
+
+            response.getDuration()
+                    .setDistributionID(APIUtilities
+                                               .sendEntity(response.getDuration()
+                                                                   .toJSON(responseTemp)
+                                                                   .toString(),
+                                                           "/distr"));
+
+            response.setDurationID(response.getDuration().getDistributionID());
+            durationTemp = response.getDurationID();
+
+            response.getStartTime()
+                    .setDistributionID(APIUtilities
+                                               .sendEntity(response.getStartTime()
+                                                                   .toJSON(responseTemp)
+                                                                   .toString(),
+                                                           "/distr"));
+
+            response.setStartID(response.getStartTime().getDistributionID());
+            startTemp = response.getStartID();
+
+            // id =
+            // APIUtilities
+            // .sendEntity(behaviour.getStartTimeBinned()
+            // .toJSON(behaviourTemp).toString(),
+            // "/distr");
+            // System.out.println("Start Time Binned Distribution Id:" + id);
+            // behaviour.getStartTimeBinned().setDistributionID(id);
+            // startBinnedTemp = id;
+
+            APIUtilities.updateEntity(response.toJSON(appliancesID).toString(),
+                                      "/actmod", responseTemp);
 
           }
           catch (IOException | AuthenticationException
                  | NoSuchAlgorithmException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
           }
-
         }
       }
     });
@@ -2034,6 +2080,10 @@ public class MainGUI extends JFrame
     exportAllButton.addActionListener(new ActionListener() {
       public void actionPerformed (ActionEvent e)
       {
+        for (int i = 0; i < exportModelList.getModel().getSize(); i++) {
+          exportModelList.setSelectedIndex(i);
+          System.out.println(exportModelList.getSelectedValue());
+        }
       }
     });
   }
@@ -2042,11 +2092,21 @@ public class MainGUI extends JFrame
   {
     File directory = new File("Files");
     File files[] = directory.listFiles();
+    String extension = "";
     for (int index = 0; index < files.length; index++) {
       {
-        boolean wasDeleted = files[index].delete();
-        if (!wasDeleted) {
-          System.out.println("Not Deleted File " + files[index].toString());
+        extension =
+          files[index].getAbsolutePath().substring(files[index]
+                                                           .getAbsolutePath()
+                                                           .length() - 3,
+                                                   files[index]
+                                                           .getAbsolutePath()
+                                                           .length());
+        if (extension.equalsIgnoreCase("csv")) {
+          boolean wasDeleted = files[index].delete();
+          if (!wasDeleted) {
+            System.out.println("Not Deleted File " + files[index].toString());
+          }
         }
       }
     }

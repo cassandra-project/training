@@ -267,7 +267,7 @@ public class ConsumptionEventRepo
     }
 
     // System.out.println(tempDurationHistogram.toString());
-    double sum = 0;
+    // double sum = 0;
 
     for (Integer duration: tempDurationHistogram.keySet()) {
 
@@ -275,7 +275,7 @@ public class ConsumptionEventRepo
                                 Double.valueOf(tempDurationHistogram
                                         .get(duration) / events.size()));
 
-      sum += tempDurationHistogram.get(duration);
+      // sum += tempDurationHistogram.get(duration);
     }
 
     eventsDurationHistogram =
@@ -315,14 +315,14 @@ public class ConsumptionEventRepo
 
     }
 
-    double sum = 0;
+    // double sum = 0;
     for (Integer dailyTimes: tempDailyTimesHistogram.keySet()) {
 
       tempDailyTimesHistogram.put(dailyTimes,
                                   Double.valueOf(tempDailyTimesHistogram
                                           .get(dailyTimes) / total));
 
-      sum += tempDailyTimesHistogram.get(dailyTimes);
+      // sum += tempDailyTimesHistogram.get(dailyTimes);
     }
 
     eventsDailyTimesHistogram =
@@ -357,7 +357,7 @@ public class ConsumptionEventRepo
     }
 
     // System.out.println(tempStartTimeHistogram.toString());
-    double sum = 0;
+    // double sum = 0;
 
     for (Integer startTime: tempStartTimeHistogram.keySet()) {
 
@@ -365,7 +365,7 @@ public class ConsumptionEventRepo
                                  Double.valueOf(tempStartTimeHistogram
                                          .get(startTime) / events.size()));
 
-      sum += tempStartTimeHistogram.get(startTime);
+      // sum += tempStartTimeHistogram.get(startTime);
     }
 
     eventsStartTimeHistogram =
@@ -382,8 +382,6 @@ public class ConsumptionEventRepo
   public void
     createStartTimeBinnedHistogram (int minuteInterval, int intervals)
   {
-
-    int fold;
 
     Map<Integer, Double> tempStartTimeBinnedHistogram =
       new HashMap<Integer, Double>();
@@ -407,12 +405,12 @@ public class ConsumptionEventRepo
 
     }
 
-    double sum = 0;
+    // double sum = 0;
 
-    for (Integer startTime: tempStartTimeBinnedHistogram.keySet()) {
-
-      sum += tempStartTimeBinnedHistogram.get(startTime);
-    }
+    // for (Integer startTime: tempStartTimeBinnedHistogram.keySet()) {
+    //
+    // sum += tempStartTimeBinnedHistogram.get(startTime);
+    // }
 
     eventsStartTimeBinnedHistogram =
       new TreeMap<Integer, Double>(tempStartTimeBinnedHistogram);
@@ -421,21 +419,6 @@ public class ConsumptionEventRepo
      * System.out.println(sum);
      */
 
-  }
-
-  private double[] Map2Double (int max, Map<Integer, Double> temp)
-  {
-
-    double[] result = new double[max];
-
-    for (int i = 0; i < max; i++) {
-      if (temp.containsKey(i))
-        result[i] = temp.get(i);
-      else
-        result[i] = 0;
-    }
-
-    return result;
   }
 
   // =========================FILE CREATING

@@ -20,6 +20,9 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
 import eu.cassandra.training.response.Incentive;
 import eu.cassandra.training.response.IncentiveVector;
 import eu.cassandra.training.response.PricingVector;
@@ -36,6 +39,9 @@ public class Gaussian implements ProbabilityDistribution
 {
   // private static double small_number = 1.0E7;
 
+  private String name = "";
+  private String type = "";
+  private String distributionID = "";
   protected double mean;
   protected double sigma;
 
@@ -89,6 +95,8 @@ public class Gaussian implements ProbabilityDistribution
    */
   public Gaussian ()
   {
+    name = "Generic Normal";
+    type = "Normal Distribution";
     mean = 0.0;
     sigma = 1.0;
     precomputed = false;
@@ -102,6 +110,8 @@ public class Gaussian implements ProbabilityDistribution
    */
   public Gaussian (double mu, double s)
   {
+    name = "Generic";
+    type = "Normal Distribution";
     mean = mu;
     sigma = s;
     precomputed = false;
@@ -109,7 +119,8 @@ public class Gaussian implements ProbabilityDistribution
 
   public Gaussian (String filename) throws FileNotFoundException
   {
-
+    name = filename;
+    type = "Normal Distribution";
     File file = new File(filename);
     Scanner input = new Scanner(file);
     String nextLine = input.nextLine();
@@ -129,6 +140,26 @@ public class Gaussian implements ProbabilityDistribution
 
     input.close();
 
+  }
+
+  public String getName ()
+  {
+    return name;
+  }
+
+  public String getType ()
+  {
+    return type;
+  }
+
+  public String getDistributionID ()
+  {
+    return distributionID;
+  }
+
+  public void setDistributionID (String id)
+  {
+    distributionID = id;
   }
 
   public String getDescription ()
@@ -645,4 +676,25 @@ public class Gaussian implements ProbabilityDistribution
     return values;
   }
 
+  public DBObject toJSON (String activityModelID)
+  {
+
+    DBObject temp = new BasicDBObject();
+    DBObject[] param = new BasicDBObject[1];
+
+    param[0] = new BasicDBObject();
+
+    param[0].put("mean", mean);
+    param[0].put("std", sigma);
+
+    temp.put("name", name);
+    temp.put("type", type);
+    temp.put("description", name + " " + type);
+    temp.put("distrType", type);
+    temp.put("actmod_id", activityModelID);
+    temp.put("parameters", param);
+
+    return temp;
+
+  }
 }

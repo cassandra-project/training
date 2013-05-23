@@ -20,7 +20,6 @@ package eu.cassandra.training.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -35,9 +34,6 @@ public class Utils
   {
 
     int result = -1;
-
-    ArrayList<Double> temp = new ArrayList<Double>();
-    ArrayList<Double> temp2 = new ArrayList<Double>();
 
     String extension =
       measurementsFile.substring(measurementsFile.length() - 3,

@@ -17,14 +17,10 @@ limitations under the License.
 package eu.cassandra.training.utils;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Map;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.PieSectionLabelGenerator;
@@ -213,35 +209,6 @@ public class ChartUtils
 
     }
     return new ChartPanel(chart);
-  }
-
-  public static <T> void createHistogram (String title, String x, String y,
-                                          Map<T, Double> data)
-  {
-
-    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-    for (T key: data.keySet()) {
-      dataset.addValue(data.get(key), y, (Comparable) key);
-    }
-
-    PlotOrientation orientation = PlotOrientation.VERTICAL;
-    boolean show = false;
-    boolean toolTips = false;
-    boolean urls = false;
-    JFreeChart chart =
-      ChartFactory.createBarChart(title, x, y, dataset, orientation, show,
-                                  toolTips, urls);
-    int width = 1024;
-    int height = 768;
-
-    try {
-      ChartUtilities.saveChartAsPNG(new File("Charts/Histogram/" + title
-                                             + ".PNG"), chart, width, height);
-    }
-    catch (IOException e) {
-    }
-
   }
 
   public static ChartPanel createNormalDistribution (String title, String x,
