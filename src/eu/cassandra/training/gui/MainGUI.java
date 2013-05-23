@@ -2082,7 +2082,208 @@ public class MainGUI extends JFrame
       {
         for (int i = 0; i < exportModelList.getModel().getSize(); i++) {
           exportModelList.setSelectedIndex(i);
-          System.out.println(exportModelList.getSelectedValue());
+
+          String selection = exportModelList.getSelectedValue();
+
+          Appliance appliance = installation.findAppliance(selection);
+
+          BehaviourModel behaviour =
+            installation.getPerson().findBehaviour(selection);
+
+          ResponseModel response =
+            installation.getPerson().findResponse(selection);
+
+          if (selection.equalsIgnoreCase(installation.getName())) {
+
+            try {
+              installation.setInstallationID(APIUtilities
+                      .sendEntity(installation.toJSON(APIUtilities.getUserID())
+                              .toString(), "/inst"));
+
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+
+          }
+          else if (selection.equalsIgnoreCase(installation.getPerson()
+                  .getName())) {
+
+            try {
+              installation
+                      .getPerson()
+                      .setPersonID(APIUtilities.sendEntity(installation
+                                                                   .getPerson()
+                                                                   .toJSON(installation
+                                                                                   .getInstallationID())
+                                                                   .toString(),
+                                                           "/pers"));
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+
+          }
+          else if (appliance != null) {
+
+            try {
+              appliance.setApplianceID(APIUtilities.sendEntity(appliance
+                      .toJSON(installation.getInstallationID().toString())
+                      .toString(), "/app"));
+
+              APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
+                      .toString(), "/consmod");
+
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+
+          }
+          else if (behaviour != null) {
+
+            Appliance behaviourAppliance =
+              installation.findAppliance(behaviour.getAppliancesOf()[0]);
+            String applianceTemp = "";
+
+            String personTemp = "";
+            String behaviourTemp = "";
+            String durationTemp = "";
+            String dailyTemp = "";
+            String startTemp = "";
+            // String startBinnedTemp = "";
+
+            try {
+
+              applianceTemp = behaviourAppliance.getApplianceID();
+
+              personTemp = installation.getPerson().getPersonID();
+
+              behaviour.setActivityID(APIUtilities.sendEntity(behaviour
+                      .activityToJSON(personTemp).toString(), "/act"));
+
+              String[] appliancesID = { applianceTemp };
+
+              behaviour.setBehaviourID(APIUtilities.sendEntity(behaviour
+                      .toJSON(appliancesID).toString(), "/actmod"));
+              behaviourTemp = behaviour.getBehaviourID();
+
+              behaviour
+                      .getDailyTimes()
+                      .setDistributionID(APIUtilities
+                                                 .sendEntity(behaviour
+                                                         .getDailyTimes()
+                                                         .toJSON(behaviourTemp)
+                                                         .toString(), "/distr"));
+              behaviour.setDailyID(behaviour.getDailyTimes()
+                      .getDistributionID());
+              dailyTemp = behaviour.getDailyID();
+
+              behaviour
+                      .getDuration()
+                      .setDistributionID(APIUtilities
+                                                 .sendEntity(behaviour
+                                                                     .getDuration()
+                                                                     .toJSON(behaviourTemp)
+                                                                     .toString(),
+                                                             "/distr"));
+
+              behaviour.setDurationID(behaviour.getDuration()
+                      .getDistributionID());
+              durationTemp = behaviour.getDurationID();
+
+              behaviour
+                      .getStartTime()
+                      .setDistributionID(APIUtilities
+                                                 .sendEntity(behaviour
+                                                         .getStartTime()
+                                                         .toJSON(behaviourTemp)
+                                                         .toString(), "/distr"));
+
+              behaviour
+                      .setStartID(behaviour.getStartTime().getDistributionID());
+              startTemp = behaviour.getStartID();
+
+              APIUtilities.updateEntity(behaviour.toJSON(appliancesID)
+                      .toString(), "/actmod", behaviourTemp);
+
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+
+          }
+          else if (response != null) {
+            Appliance responseAppliance =
+              installation.findAppliance(response.getAppliancesOf()[0]);
+            String applianceTemp = "";
+
+            String personTemp = "";
+            String responseTemp = "";
+            String durationTemp = "";
+            String dailyTemp = "";
+            String startTemp = "";
+            // String startBinnedTemp = "";
+
+            try {
+
+              applianceTemp = responseAppliance.getApplianceID();
+
+              personTemp = installation.getPerson().getPersonID();
+
+              response.setActivityID(APIUtilities.sendEntity(response
+                      .activityToJSON(personTemp).toString(), "/act"));
+
+              String[] appliancesID = { applianceTemp };
+
+              response.setBehaviourID(APIUtilities
+                      .sendEntity(response.toJSON(appliancesID).toString(),
+                                  "/actmod"));
+              responseTemp = response.getBehaviourID();
+
+              response.getDailyTimes()
+                      .setDistributionID(APIUtilities
+                                                 .sendEntity(response
+                                                         .getDailyTimes()
+                                                         .toJSON(responseTemp)
+                                                         .toString(), "/distr"));
+              response.setDailyID(response.getDailyTimes().getDistributionID());
+              dailyTemp = response.getDailyID();
+
+              response.getDuration()
+                      .setDistributionID(APIUtilities
+                                                 .sendEntity(response.getDuration()
+                                                                     .toJSON(responseTemp)
+                                                                     .toString(),
+                                                             "/distr"));
+
+              response.setDurationID(response.getDuration().getDistributionID());
+              durationTemp = response.getDurationID();
+
+              response.getStartTime()
+                      .setDistributionID(APIUtilities
+                                                 .sendEntity(response
+                                                         .getStartTime()
+                                                         .toJSON(responseTemp)
+                                                         .toString(), "/distr"));
+
+              response.setStartID(response.getStartTime().getDistributionID());
+              startTemp = response.getStartID();
+
+              APIUtilities.updateEntity(response.toJSON(appliancesID)
+                      .toString(), "/actmod", responseTemp);
+
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+          }
+
         }
       }
     });
