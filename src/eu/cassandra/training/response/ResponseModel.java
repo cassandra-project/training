@@ -17,7 +17,7 @@ limitations under the License.
 
 package eu.cassandra.training.response;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.jfree.chart.ChartPanel;
@@ -40,7 +40,7 @@ public class ResponseModel extends BehaviourModel
   }
 
   public ResponseModel (BehaviourModel behaviour, String person,
-                        int responseType) throws FileNotFoundException
+                        int responseType) throws IOException
   {
     applianceOf = new String[0];
     applianceOf = behaviour.getAppliancesOf();

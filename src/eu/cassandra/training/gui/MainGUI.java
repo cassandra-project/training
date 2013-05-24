@@ -510,12 +510,14 @@ public class MainGUI extends JFrame
 
     final JRadioButton timesNormalRadioButton =
       new JRadioButton("Normal Distribution");
+    timesNormalRadioButton.setEnabled(false);
     timesDailyButtonGroup.add(timesNormalRadioButton);
     timesNormalRadioButton.setBounds(304, 40, 137, 18);
     trainingParametersPanel.add(timesNormalRadioButton);
 
     JRadioButton timesGaussianRadioButton =
       new JRadioButton("Gaussian Mixture");
+    timesGaussianRadioButton.setEnabled(false);
     timesDailyButtonGroup.add(timesGaussianRadioButton);
     timesGaussianRadioButton.setBounds(478, 38, 137, 18);
     trainingParametersPanel.add(timesGaussianRadioButton);
@@ -1222,7 +1224,7 @@ public class MainGUI extends JFrame
         try {
           installation.getPerson().train(current, distributions);
         }
-        catch (FileNotFoundException e1) {
+        catch (IOException e1) {
           e1.printStackTrace();
         }
 
@@ -1475,7 +1477,7 @@ public class MainGUI extends JFrame
             installation.getPerson().createResponse(behaviour, responseType,
                                                     basicScheme, newScheme);
         }
-        catch (FileNotFoundException e) {
+        catch (IOException e) {
 
           e.printStackTrace();
         }

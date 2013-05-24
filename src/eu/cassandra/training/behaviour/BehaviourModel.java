@@ -18,6 +18,7 @@ limitations under the License.
 package eu.cassandra.training.behaviour;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -219,7 +220,7 @@ public class BehaviourModel
   // startBinnedID = id;
   // }
 
-  public void train (String[] distributions) throws FileNotFoundException
+  public void train (String[] distributions) throws IOException
   {
 
     for (int i = 0; i < 4; i++) {
@@ -275,7 +276,7 @@ public class BehaviourModel
   }
 
   public void fillDistribution (String file, String type, int index)
-    throws FileNotFoundException
+    throws IOException
   {
 
     Scanner input = new Scanner(file);

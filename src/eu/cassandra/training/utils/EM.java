@@ -23,13 +23,13 @@ import jMEF.UnivariateGaussian;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Vector;
-
 
 public class EM
 {
@@ -47,7 +47,7 @@ public class EM
   }
 
   public void createGMM (String input, String output, String variable)
-    throws FileNotFoundException
+    throws IOException
   {
 
     temp = readFile(input);
@@ -109,7 +109,7 @@ public class EM
   }
 
   public void createNormal (String input, String output, String variable)
-    throws FileNotFoundException
+    throws IOException
   {
 
     temp = readFile(input);
@@ -191,8 +191,7 @@ public class EM
     return result;
   }
 
-  private void GMM2File (MixtureModel mm, String filename)
-    throws FileNotFoundException
+  private void GMM2File (MixtureModel mm, String filename) throws IOException
   {
 
     String line;
@@ -263,10 +262,12 @@ public class EM
 
     System.setOut(realSystemOut);
 
+    output.close();
+
   }
 
   private void Gaussian2File (MixtureModel mm, String filename)
-    throws FileNotFoundException
+    throws IOException
   {
 
     String line;
@@ -320,6 +321,8 @@ public class EM
     }
 
     System.setOut(realSystemOut);
+
+    output.close();
 
   }
 

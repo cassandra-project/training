@@ -17,7 +17,7 @@ limitations under the License.
 
 package eu.cassandra.training.entities;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.jfree.chart.ChartPanel;
@@ -136,7 +136,7 @@ public class Person
   }
 
   public void train (Appliance appliance, String[] distributions)
-    throws FileNotFoundException
+    throws IOException
   {
     BehaviourModel exists =
       findBehaviour(name + " " + appliance.getName() + " Behaviour Model");
@@ -158,7 +158,7 @@ public class Person
 
   public String createResponse (BehaviourModel behaviour, int responseType,
                                 double[] basicScheme, double[] newScheme)
-    throws FileNotFoundException
+    throws IOException
   {
     String responseTemp = "";
 
