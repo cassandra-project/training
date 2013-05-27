@@ -806,11 +806,13 @@ public class MainGUI extends JFrame
     connectionPanel.add(urlTextField);
 
     final JButton connectButton = new JButton("Connect");
+    connectButton.setEnabled(false);
     connectButton.setBounds(30, 217, 147, 28);
     connectionPanel.add(connectButton);
 
     final JPasswordField passwordField;
     passwordField = new JPasswordField();
+
     passwordField.setBounds(122, 87, 405, 28);
     connectionPanel.add(passwordField);
 
@@ -888,6 +890,8 @@ public class MainGUI extends JFrame
         dataReviewPanel.updateUI();
         consumptionModelPanel.removeAll();
         consumptionModelPanel.updateUI();
+        detectedApplianceList.setSelectedIndex(-1);
+        detectedAppliances.clear();
         detectedApplianceList.setListData(new String[0]);
         detectedApplianceList.repaint();
 
@@ -895,6 +899,8 @@ public class MainGUI extends JFrame
         distributionPreviewPanel.updateUI();
         consumptionPreviewPanel.removeAll();
         consumptionPreviewPanel.updateUI();
+        selectedApplianceList.setSelectedIndex(-1);
+        selectedAppliances.clear();
         selectedApplianceList.setListData(new String[0]);
         selectedApplianceList.repaint();
 
@@ -907,12 +913,18 @@ public class MainGUI extends JFrame
         pricingPreviewPanel.updateUI();
         responsePanel.removeAll();
         responsePanel.updateUI();
+        behaviorSelectList.setSelectedIndex(-1);
+        behaviorSelectList.clearSelection();
+        behaviorModels.clear();
         behaviorSelectList.setListData(new String[0]);
         behaviorSelectList.repaint();
         basicPricingSchemePane.setText("00:00-23:59-0.05");
         newPricingSchemePane.setText("");
         commitButton.setEnabled(false);
 
+        exportModelList.setSelectedIndex(-1);
+        exportModelList.clearSelection();
+        exportModels.clear();
         exportModelList.setListData(new String[0]);
         exportModelList.repaint();
         exportPreviewPanel.removeAll();
@@ -1151,24 +1163,26 @@ public class MainGUI extends JFrame
         dataReviewPanel.removeAll();
         dataReviewPanel.updateUI();
 
-        String selection = detectedApplianceList.getSelectedValue();
+        if (detectedAppliances.size() > 1) {
 
-        Appliance current = installation.findAppliance(selection);
+          String selection = detectedApplianceList.getSelectedValue();
 
-        // System.out.println("Appliance:" + current.getName());
+          Appliance current = installation.findAppliance(selection);
 
-        ChartPanel chartPanel = current.consumptionGraph();
+          // System.out.println("Appliance:" + current.getName());
 
-        consumptionModelPanel.add(chartPanel, BorderLayout.CENTER);
-        consumptionModelPanel.validate();
+          ChartPanel chartPanel = current.consumptionGraph();
 
-        ChartPanel chartPanel2 =
-          ChartUtils.createLineDiagram("Test", "Time Step", "Power",
-                                       current.getActivePower());
+          consumptionModelPanel.add(chartPanel, BorderLayout.CENTER);
+          consumptionModelPanel.validate();
 
-        dataReviewPanel.add(chartPanel2, BorderLayout.CENTER);
-        dataReviewPanel.validate();
+          ChartPanel chartPanel2 =
+            ChartUtils.createLineDiagram("Test", "Time Step", "Power",
+                                         current.getActivePower());
 
+          dataReviewPanel.add(chartPanel2, BorderLayout.CENTER);
+          dataReviewPanel.validate();
+        }
       }
     });
 
@@ -1783,7 +1797,7 @@ public class MainGUI extends JFrame
     connectButton.addActionListener(new ActionListener() {
       public void actionPerformed (ActionEvent e)
       {
-
+        boolean result = false;
         System.out.println("Username: " + usernameTextField.getText()
                            + " Password: "
                            + String.valueOf(passwordField.getPassword())
@@ -1800,16 +1814,42 @@ public class MainGUI extends JFrame
         try {
           APIUtilities.setUrl(urlTextField.getText());
 
-          APIUtilities.getUserID(usernameTextField.getText(),
-                                 passwordField.getPassword());
+          result =
+            APIUtilities.getUserID(usernameTextField.getText(),
+                                   passwordField.getPassword());
         }
         catch (Exception e1) {
           e1.printStackTrace();
         }
 
-        exportButton.setEnabled(true);
-        exportAllButton.setEnabled(true);
+        if (result) {
 
+          exportButton.setEnabled(true);
+          exportAllButton.setEnabled(true);
+        }
+        else {
+          JFrame error = new JFrame();
+
+          JOptionPane
+                  .showMessageDialog(error,
+                                     "User Credentials are not correct! Please try again.",
+                                     "Inane error", JOptionPane.ERROR_MESSAGE);
+          passwordField.setText("");
+        }
+
+      }
+    });
+
+    passwordField.addCaretListener(new CaretListener() {
+      public void caretUpdate (CaretEvent e)
+      {
+        String pass = String.valueOf(passwordField.getPassword());
+
+        if (pass.equals("")) {
+          connectButton.setEnabled(false);
+        }
+        else
+          connectButton.setEnabled(true);
       }
     });
 

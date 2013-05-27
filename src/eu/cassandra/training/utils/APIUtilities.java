@@ -106,7 +106,7 @@ public class APIUtilities
 
   }
 
-  public static void sendUserCredentials (String username, char[] password)
+  public static boolean sendUserCredentials (String username, char[] password)
     throws IOException, NoSuchAlgorithmException, AuthenticationException
   {
 
@@ -123,9 +123,11 @@ public class APIUtilities
     Scheme scheme = new Scheme("https", 8443, sf);
     httpclient.getConnectionManager().getSchemeRegistry().register(scheme);
 
+    String pass = String.valueOf(password);
+
     try {
       UsernamePasswordCredentials usernamePasswordCredentials =
-        new UsernamePasswordCredentials("antonis", "lala123");
+        new UsernamePasswordCredentials(username, pass);
 
       HttpGet httpget = new HttpGet(url + "/usr");
       httpget.addHeader(new BasicScheme()
@@ -140,13 +142,22 @@ public class APIUtilities
 
       DBObject dbo = (DBObject) JSON.parse(responseString);
 
-      BasicDBList dataObj = (BasicDBList) dbo.get("data");
+      if (dbo.get("success") == "true") {
 
-      DBObject dbo2 = (DBObject) dataObj.get(0);
+        BasicDBList dataObj = (BasicDBList) dbo.get("data");
 
-      userID = dbo2.get("usr_id").toString();
+        DBObject dbo2 = (DBObject) dataObj.get(0);
 
-      System.out.println("userId: " + userID);
+        userID = dbo2.get("usr_id").toString();
+
+        System.out.println("userId: " + userID);
+
+        return true;
+      }
+      else {
+        System.out.println(false);
+        return false;
+      }
 
     }
     finally {
@@ -154,10 +165,10 @@ public class APIUtilities
 
   }
 
-  public static void getUserID (String username, char[] password)
+  public static boolean getUserID (String username, char[] password)
     throws Exception
   {
-    sendUserCredentials(username, password);
+    return sendUserCredentials(username, password);
   }
 
 }
