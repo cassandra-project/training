@@ -40,7 +40,7 @@ public class Appliance
 
   private String name = "";
   private String installation = "";
-  private String type = "";
+  private String type = "Generic";
   private String applianceID = "";
   private String energyClass = "";
   private boolean controllable = false;
@@ -365,12 +365,14 @@ public class Appliance
 
     DBObject temp = new BasicDBObject();
 
-    temp.put("name", name + " P Consumption Model");
+    temp.put("name", name + " Consumption Model");
+    temp.put("type", type);
+    temp.put("description", "P and Q Consumption Model");
     temp.put("app_id", applianceID);
     temp.put("pmodel", JSON.parse(powerConsumptionModelString));
     temp.put("qmodel", JSON.parse(reactiveConsumptionModelString));
-    temp.put("pvalues", new double[0]);
-    temp.put("qvalues", new double[0]);
+    temp.put("pvalues", new double[1]);
+    temp.put("qvalues", new double[1]);
     return temp;
 
   }
