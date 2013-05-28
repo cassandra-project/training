@@ -679,6 +679,7 @@ public class Gaussian implements ProbabilityDistribution
   public DBObject toJSON (String activityModelID)
   {
 
+    double[] values = new double[1];
     DBObject temp = new BasicDBObject();
     DBObject[] param = new BasicDBObject[1];
 
@@ -693,6 +694,7 @@ public class Gaussian implements ProbabilityDistribution
     temp.put("distrType", type);
     temp.put("actmod_id", activityModelID);
     temp.put("parameters", param);
+    temp.put("values", values);
 
     return temp;
 

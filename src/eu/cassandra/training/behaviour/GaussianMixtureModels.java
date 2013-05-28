@@ -754,7 +754,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
   public DBObject toJSON (String activityModelID)
   {
-
+    double[] values = new double[1];
     DBObject temp = new BasicDBObject();
     BasicDBList param = new BasicDBList();
 
@@ -780,7 +780,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     temp.put("distrType", type);
     temp.put("actmod_id", activityModelID);
     temp.put("parameters", param);
-
+    temp.put("values", values);
     return temp;
 
   }

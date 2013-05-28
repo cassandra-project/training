@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -546,7 +547,7 @@ public class Histogram implements ProbabilityDistribution
 
   public DBObject toJSON (String activityModelID)
   {
-
+    BasicDBList param = new BasicDBList();
     DBObject temp = new BasicDBObject();
 
     temp.put("name", name);
@@ -555,7 +556,7 @@ public class Histogram implements ProbabilityDistribution
     temp.put("distrType", type);
     temp.put("actmod_id", activityModelID);
     temp.put("values", values);
-
+    temp.put("parameters", param);
     return temp;
 
   }
