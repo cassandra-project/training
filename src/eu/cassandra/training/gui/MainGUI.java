@@ -934,7 +934,6 @@ public class MainGUI extends JFrame
         responsePanel.removeAll();
         responsePanel.updateUI();
         behaviorSelectList.setSelectedIndex(-1);
-        behaviorSelectList.clearSelection();
         behaviorModels.clear();
         behaviorSelectList.setListData(new String[0]);
         behaviorSelectList.repaint();
@@ -943,7 +942,6 @@ public class MainGUI extends JFrame
         commitButton.setEnabled(false);
 
         exportModelList.setSelectedIndex(-1);
-        exportModelList.clearSelection();
         exportModels.clear();
         exportModelList.setListData(new String[0]);
         exportModelList.repaint();
@@ -1538,28 +1536,30 @@ public class MainGUI extends JFrame
         consumptionPreviewPanel.updateUI();
         distributionPreviewPanel.removeAll();
         distributionPreviewPanel.updateUI();
+        if (selectedAppliances.size() > 1) {
+          String selection = selectedApplianceList.getSelectedValue();
 
-        String selection = selectedApplianceList.getSelectedValue();
+          Appliance current = installation.findAppliance(selection);
 
-        Appliance current = installation.findAppliance(selection);
+          ChartPanel chartPanel = current.consumptionGraph();
 
-        ChartPanel chartPanel = current.consumptionGraph();
+          consumptionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
+          consumptionPreviewPanel.validate();
 
-        consumptionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
-        consumptionPreviewPanel.validate();
+          BehaviourModel behaviourModel =
+            installation.getPerson().findBehaviour(current);
 
-        BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current);
+          if (behaviourModel != null) {
 
-        if (behaviourModel != null) {
+            ChartPanel chartPanel2 =
+              behaviourModel.createDailyTimesDistributionChart();
+            distributionPreviewPanel.add(chartPanel2, BorderLayout.CENTER);
+            distributionPreviewPanel.validate();
+            distributionPreviewPanel.updateUI();
 
-          ChartPanel chartPanel2 =
-            behaviourModel.createDailyTimesDistributionChart();
-          distributionPreviewPanel.add(chartPanel2, BorderLayout.CENTER);
-          distributionPreviewPanel.validate();
-          distributionPreviewPanel.updateUI();
-
+          }
         }
+
       }
     });
 
@@ -1769,70 +1769,72 @@ public class MainGUI extends JFrame
           exportPreviewPanel.removeAll();
           exportPreviewPanel.updateUI();
 
-          String selection = exportModelList.getSelectedValue();
+          if (exportModels.size() > 1) {
+            String selection = exportModelList.getSelectedValue();
 
-          Appliance appliance = installation.findAppliance(selection);
+            Appliance appliance = installation.findAppliance(selection);
 
-          BehaviourModel behaviour =
-            installation.getPerson().findBehaviour(selection);
+            BehaviourModel behaviour =
+              installation.getPerson().findBehaviour(selection);
 
-          ResponseModel response =
-            installation.getPerson().findResponse(selection);
+            ResponseModel response =
+              installation.getPerson().findResponse(selection);
 
-          ChartPanel chartPanel = null;
+            ChartPanel chartPanel = null;
 
-          if (selection.equalsIgnoreCase(installation.getName())) {
+            if (selection.equalsIgnoreCase(installation.getName())) {
 
-            try {
-              chartPanel = installation.measurementsChart();
+              try {
+                chartPanel = installation.measurementsChart();
+              }
+              catch (IOException e1) {
+                e1.printStackTrace();
+              }
+
             }
-            catch (IOException e1) {
-              e1.printStackTrace();
+            else if (selection.equalsIgnoreCase(installation.getPerson()
+                    .getName())) {
+
+              chartPanel = installation.getPerson().statisticGraphs();
+
+              exportDailyButton.setEnabled(false);
+              exportDurationButton.setEnabled(false);
+              exportStartButton.setEnabled(false);
+              exportStartBinnedButton.setEnabled(false);
+
+            }
+            else if (appliance != null) {
+
+              chartPanel = appliance.consumptionGraph();
+
+              exportDailyButton.setEnabled(false);
+              exportDurationButton.setEnabled(false);
+              exportStartButton.setEnabled(false);
+              exportStartBinnedButton.setEnabled(false);
+
+            }
+            else if (behaviour != null) {
+
+              chartPanel = behaviour.createDailyTimesDistributionChart();
+
+              exportDailyButton.setEnabled(true);
+              exportDurationButton.setEnabled(true);
+              exportStartButton.setEnabled(true);
+              exportStartBinnedButton.setEnabled(true);
+            }
+            else if (response != null) {
+
+              chartPanel = response.createDailyTimesDistributionChart();
+
+              exportDailyButton.setEnabled(true);
+              exportDurationButton.setEnabled(true);
+              exportStartButton.setEnabled(true);
+              exportStartBinnedButton.setEnabled(true);
             }
 
+            exportPreviewPanel.add(chartPanel, BorderLayout.CENTER);
+            exportPreviewPanel.validate();
           }
-          else if (selection.equalsIgnoreCase(installation.getPerson()
-                  .getName())) {
-
-            chartPanel = installation.getPerson().statisticGraphs();
-
-            exportDailyButton.setEnabled(false);
-            exportDurationButton.setEnabled(false);
-            exportStartButton.setEnabled(false);
-            exportStartBinnedButton.setEnabled(false);
-
-          }
-          else if (appliance != null) {
-
-            chartPanel = appliance.consumptionGraph();
-
-            exportDailyButton.setEnabled(false);
-            exportDurationButton.setEnabled(false);
-            exportStartButton.setEnabled(false);
-            exportStartBinnedButton.setEnabled(false);
-
-          }
-          else if (behaviour != null) {
-
-            chartPanel = behaviour.createDailyTimesDistributionChart();
-
-            exportDailyButton.setEnabled(true);
-            exportDurationButton.setEnabled(true);
-            exportStartButton.setEnabled(true);
-            exportStartBinnedButton.setEnabled(true);
-          }
-          else if (response != null) {
-
-            chartPanel = response.createDailyTimesDistributionChart();
-
-            exportDailyButton.setEnabled(true);
-            exportDurationButton.setEnabled(true);
-            exportStartButton.setEnabled(true);
-            exportStartBinnedButton.setEnabled(true);
-          }
-
-          exportPreviewPanel.add(chartPanel, BorderLayout.CENTER);
-          exportPreviewPanel.validate();
         }
       }
     });
