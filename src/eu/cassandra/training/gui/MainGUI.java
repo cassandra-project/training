@@ -311,7 +311,7 @@ public class MainGUI extends JFrame
                                                        TitledBorder.LEADING,
                                                        TitledBorder.TOP, null,
                                                        null));
-    responseParametersPanel.setBounds(6, 6, 391, 244);
+    responseParametersPanel.setBounds(6, 6, 391, 271);
     createResponseTab.add(responseParametersPanel);
 
     final JPanel behaviorModelSelectionPanel = new JPanel();
@@ -320,7 +320,7 @@ public class MainGUI extends JFrame
             .setBorder(new TitledBorder(null, "Behavior Model Selection",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    behaviorModelSelectionPanel.setBounds(6, 248, 391, 254);
+    behaviorModelSelectionPanel.setBounds(6, 276, 391, 226);
     createResponseTab.add(behaviorModelSelectionPanel);
 
     final JPanel responsePanel = new JPanel();
@@ -692,6 +692,11 @@ public class MainGUI extends JFrame
     createResponseButton.setBounds(191, 198, 162, 28);
     responseParametersPanel.add(createResponseButton);
 
+    final JButton createResponseAllButton = new JButton("Create Response All");
+    createResponseAllButton.setEnabled(false);
+    createResponseAllButton.setBounds(111, 232, 157, 28);
+    responseParametersPanel.add(createResponseAllButton);
+
     // SELECT BEHAVIOR MODEL //
 
     final JLabel label_8 = new JLabel("Selected Appliance");
@@ -923,6 +928,7 @@ public class MainGUI extends JFrame
         normalCaseRadioButton.setSelected(true);
         previewResponseButton.setEnabled(false);
         createResponseButton.setEnabled(false);
+        createResponseAllButton.setEnabled(false);
         pricingPreviewPanel.removeAll();
         pricingPreviewPanel.updateUI();
         responsePanel.removeAll();
@@ -1164,14 +1170,15 @@ public class MainGUI extends JFrame
         }
         else {
 
-          int temp = 10 + ((int) (Math.random() * 2));
+          int temp = 8 + ((int) (Math.random() * 2));
 
           for (int i = 0; i < temp; i++) {
 
             String name = "Appliance " + i;
             String powerModel = "";
             String reactiveModel = "";
-            switch (i % 5) {
+            int tempIndex = i % 5;
+            switch (tempIndex) {
             case 0:
               powerModel =
                 "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"p\":1900,\"d\":1,\"s\":0}]},{\"n\":0,\"values\":[{\"p\":300,\"d\":1,\"s\":0}]}]}";
@@ -1214,8 +1221,8 @@ public class MainGUI extends JFrame
 
             Appliance tempAppliance =
               new Appliance(name, installation.getName(), powerModel,
-                            reactiveModel, "Demo/eventsAll11.csv", mesTemp,
-                            mesTemp2);
+                            reactiveModel, "Demo/eventsAll" + tempIndex
+                                           + ".csv", mesTemp, mesTemp2);
 
             installation.addAppliance(tempAppliance);
             detectedAppliances.addElement(tempAppliance.toString());
@@ -1601,6 +1608,7 @@ public class MainGUI extends JFrame
         responsePanel.validate();
 
         createResponseButton.setEnabled(true);
+        createResponseAllButton.setEnabled(true);
       }
     });
 
@@ -1655,6 +1663,16 @@ public class MainGUI extends JFrame
         }
         exportModelList.setModel(exportModels);
 
+      }
+    });
+
+    createResponseAllButton.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent arg0)
+      {
+        for (int i = 0; i < behaviorSelectList.getModel().getSize(); i++) {
+          behaviorSelectList.setSelectedIndex(i);
+          createResponseButton.doClick();
+        }
       }
     });
 
