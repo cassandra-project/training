@@ -43,6 +43,7 @@ public class Appliance
   private String type = "Generic";
   private String applianceID = "";
   private String energyClass = "";
+  private boolean base = false;
   private boolean controllable = false;
   private boolean shiftable = false;
   private double standbyConsumption = 0.0;
@@ -352,6 +353,7 @@ public class Appliance
     temp.put("description", name + " " + type);
     temp.put("controllable", controllable);
     temp.put("shiftable", shiftable);
+    temp.put("base", base);
     temp.put("energy_class", "Class A");
     temp.put("standy_consumption", standbyConsumption);
     temp.put("inst_id", installationID);
@@ -389,6 +391,7 @@ public class Appliance
   {
     System.out.println("Name: " + name);
     System.out.println("Type: " + type);
+    System.out.println("Base: " + base);
     System.out.println("Controllable: " + controllable);
     System.out.println("Shiftable: " + shiftable);
     System.out.println("Energy Class: " + energyClass);
