@@ -352,7 +352,7 @@ public class Appliance
     temp.put("description", name + " " + type);
     temp.put("controllable", controllable);
     temp.put("shiftable", shiftable);
-    temp.put("energy_class", energyClass);
+    temp.put("energy_class", "Class A");
     temp.put("standy_consumption", standbyConsumption);
     temp.put("inst_id", installationID);
 
@@ -369,6 +369,8 @@ public class Appliance
     temp.put("app_id", applianceID);
     temp.put("pmodel", JSON.parse(powerConsumptionModelString));
     temp.put("qmodel", JSON.parse(reactiveConsumptionModelString));
+    temp.put("pvalues", new double[0]);
+    temp.put("qvalues", new double[0]);
     return temp;
 
   }
