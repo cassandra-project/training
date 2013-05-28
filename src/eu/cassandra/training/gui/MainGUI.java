@@ -1344,7 +1344,7 @@ public class MainGUI extends JFrame
         Appliance current =
           installation.findAppliance(selectedApplianceList.getSelectedValue());
 
-        String startTime, startTimeBinned, duration, dailyTimes;
+        String startTime, duration, dailyTimes;
 
         if (timesHistogramRadioButton.isSelected())
           dailyTimes = "Histogram";
@@ -1360,21 +1360,15 @@ public class MainGUI extends JFrame
         else
           duration = "GMM";
 
-        if (startHistogramRadioButton.isSelected()) {
+        if (startHistogramRadioButton.isSelected())
           startTime = "Histogram";
-          startTimeBinned = "Histogram";
-        }
-        else if (startNormalRadioButton.isSelected()) {
+        else if (startNormalRadioButton.isSelected())
           startTime = "Normal";
-          startTimeBinned = "Normal";
-        }
-        else {
+        else
           startTime = "GMM";
-          startTimeBinned = "GMM";
-        }
 
         String[] distributions =
-          { dailyTimes, duration, startTime, startTimeBinned };
+          { dailyTimes, duration, startTime, "Histogram" };
 
         try {
           installation.getPerson().train(current, distributions);
