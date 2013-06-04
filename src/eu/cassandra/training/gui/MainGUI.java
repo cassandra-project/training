@@ -96,7 +96,7 @@ public class MainGUI extends JFrame
   private final ButtonGroup responseModelButtonGroup = new ButtonGroup();
   private Installation installation = new Installation();
   private final ButtonGroup powerButtonGroup = new ButtonGroup();
-  private static int threshold = 2;
+  // private static int threshold = 2;
 
   private static ArrayList<ApplianceTemp> tempAppliances =
     new ArrayList<ApplianceTemp>();
@@ -275,8 +275,8 @@ public class MainGUI extends JFrame
 
     final JPanel applianceSelectionPanel = new JPanel();
     applianceSelectionPanel.setLayout(null);
-    applianceSelectionPanel.setBorder(new TitledBorder(null,
-                                                       "Appliance Selection",
+    applianceSelectionPanel.setBorder(new TitledBorder(UIManager
+            .getBorder("TitledBorder.border"), "Appliance/Activity Selection",
                                                        TitledBorder.LEADING,
                                                        TitledBorder.TOP, null,
                                                        null));
@@ -295,7 +295,9 @@ public class MainGUI extends JFrame
 
     final JPanel consumptionPreviewPanel = new JPanel();
     consumptionPreviewPanel
-            .setBorder(new TitledBorder(null, "Consumption Model Preview",
+            .setBorder(new TitledBorder(UIManager
+                    .getBorder("TitledBorder.border"),
+                                        "Example Consumption Model Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
     consumptionPreviewPanel.setBounds(630, 261, 557, 483);
@@ -1082,7 +1084,7 @@ public class MainGUI extends JFrame
             nextLine = input.nextLine();
             line = nextLine.split(",");
 
-            String name = line[line.length - 1];
+            String name = line[line.length - 2] + " " + line[line.length - 1];
             String activity = line[line.length - 2];
             String[] temp = line[line.length - 1].split(" ");
 
@@ -1099,7 +1101,8 @@ public class MainGUI extends JFrame
             double p = Double.parseDouble(line[0]);
             double q = Double.parseDouble(line[1]);
 
-            tempAppliances.add(new ApplianceTemp(name, type, activity, p, q));
+            tempAppliances.add(new ApplianceTemp(name, installation.getName(),
+                                                 type, activity, p, q));
 
           }
 
@@ -1148,9 +1151,9 @@ public class MainGUI extends JFrame
               tempActivities.get(activityIndex).addEvent(start, end);
           }
 
-          for (int i = tempActivities.size() - 1; i >= 0; i--)
-            if (tempActivities.get(i).getEvents().size() < threshold)
-              tempActivities.remove(i);
+          // for (int i = tempActivities.size() - 1; i >= 0; i--)
+          // if (tempActivities.get(i).getEvents().size() < threshold)
+          // tempActivities.remove(i);
 
           for (int i = 0; i < tempActivities.size(); i++) {
             // tempActivities.get(i).status();
@@ -1162,9 +1165,30 @@ public class MainGUI extends JFrame
             }
           }
 
-          System.out.println("Activities:" + tempActivities.size());
-
           input.close();
+
+          for (ApplianceTemp temp: tempAppliances) {
+
+            Appliance tempAppliance = temp.toAppliance();
+
+            installation.addAppliance(tempAppliance);
+            detectedAppliances.addElement(tempAppliance.toString());
+            exportModels.addElement(tempAppliance.toString());
+
+          }
+
+          for (int i = tempActivities.size() - 1; i >= 0; i--) {
+
+            tempActivities.get(i).setAppliances(findAppliances(tempActivities
+                                                        .get(i)));
+            if (tempActivities.get(i).getAppliances().size() == 0) {
+              tempActivities.remove(i);
+            }
+            else
+              selectedAppliances.addElement(tempActivities.get(i).toString());
+
+          }
+
         }
         else {
 
@@ -1299,8 +1323,6 @@ public class MainGUI extends JFrame
 
         consumptionModelPanel.removeAll();
         consumptionModelPanel.updateUI();
-        // dataReviewPanel.removeAll();
-        // dataReviewPanel.updateUI();
 
         if (detectedAppliances.size() > 1) {
 
@@ -1308,19 +1330,11 @@ public class MainGUI extends JFrame
 
           Appliance current = installation.findAppliance(selection);
 
-          // System.out.println("Appliance:" + current.getName());
-
           ChartPanel chartPanel = current.consumptionGraph();
 
           consumptionModelPanel.add(chartPanel, BorderLayout.CENTER);
           consumptionModelPanel.validate();
-          //
-          // ChartPanel chartPanel2 =
-          // ChartUtils.createLineDiagram("Test", "Time Step", "Power",
-          // current.getActivePower());
-          //
-          // dataReviewPanel.add(chartPanel2, BorderLayout.CENTER);
-          // dataReviewPanel.validate();
+
         }
       }
     });
@@ -1339,8 +1353,14 @@ public class MainGUI extends JFrame
       public void actionPerformed (ActionEvent e)
       {
         tabbedPane.setEnabledAt(2, true);
-        Appliance current =
-          installation.findAppliance(selectedApplianceList.getSelectedValue());
+
+        String selection = selectedApplianceList.getSelectedValue();
+        ActivityTemp activity = null;
+
+        if (tempActivities.size() > 0)
+          activity = tempActivities.get(findActivity(selection));
+
+        Appliance current = installation.findAppliance(selection);
 
         String startTime, duration, dailyTimes;
 
@@ -1368,11 +1388,24 @@ public class MainGUI extends JFrame
         String[] distributions =
           { dailyTimes, duration, startTime, "Histogram" };
 
-        try {
-          installation.getPerson().train(current, distributions);
+        if (activity == null) {
+
+          try {
+            installation.getPerson().train(current, distributions);
+          }
+          catch (IOException e1) {
+            e1.printStackTrace();
+          }
         }
-        catch (IOException e1) {
-          e1.printStackTrace();
+        else {
+
+          try {
+            installation.getPerson().train(activity, distributions);
+          }
+          catch (IOException e1) {
+            e1.printStackTrace();
+          }
+
         }
 
         System.out.println("Training OK!");
@@ -1381,7 +1414,10 @@ public class MainGUI extends JFrame
         distributionPreviewPanel.updateUI();
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current);
+          installation.getPerson().findBehaviour(selection);
+
+        if (behaviourModel == null)
+          behaviourModel = installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createDailyTimesDistributionChart();
@@ -1426,6 +1462,7 @@ public class MainGUI extends JFrame
         exportDurationButton.setEnabled(true);
         exportStartButton.setEnabled(true);
         exportStartBinnedButton.setEnabled(true);
+
       }
 
     });
@@ -1536,18 +1573,32 @@ public class MainGUI extends JFrame
         consumptionPreviewPanel.updateUI();
         distributionPreviewPanel.removeAll();
         distributionPreviewPanel.updateUI();
+
         if (selectedAppliances.size() > 1) {
           String selection = selectedApplianceList.getSelectedValue();
 
-          Appliance current = installation.findAppliance(selection);
+          Appliance currentAppliance = installation.findAppliance(selection);
 
-          ChartPanel chartPanel = current.consumptionGraph();
+          ChartPanel chartPanel = null;
+          if (currentAppliance != null)
+            chartPanel = currentAppliance.consumptionGraph();
+          else {
+            ActivityTemp currentActivity =
+              tempActivities.get(findActivity(selection));
+            chartPanel = currentActivity.consumptionGraph();
+          }
 
           consumptionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
           consumptionPreviewPanel.validate();
 
-          BehaviourModel behaviourModel =
-            installation.getPerson().findBehaviour(current);
+          BehaviourModel behaviourModel = null;
+
+          if (currentAppliance != null)
+            behaviourModel =
+              installation.getPerson().findBehaviour(currentAppliance);
+
+          if (behaviourModel == null)
+            behaviourModel = installation.getPerson().findBehaviour(selection);
 
           if (behaviourModel != null) {
 
@@ -2528,5 +2579,30 @@ public class MainGUI extends JFrame
     }
 
     return result;
+  }
+
+  private ArrayList<Appliance> findAppliances (ActivityTemp activity)
+  {
+
+    ArrayList<Appliance> appliances = new ArrayList<Appliance>();
+    // System.out.println("Activity:" + activity.getName());
+    for (Appliance appliance: installation.getAppliances()) {
+
+      String nameTemp = appliance.getName();
+
+      if (appliance.getName().split(" ").length != 2) {
+        nameTemp = nameTemp.replaceAll("[0-9]", "");
+        nameTemp = nameTemp.trim();
+      }
+
+      if (activity.getName().equalsIgnoreCase(nameTemp)) {
+        // System.out.println(appliance.getName());
+        appliances.add(appliance);
+      }
+    }
+
+    // System.out.println(appliances.size());
+
+    return appliances;
   }
 }

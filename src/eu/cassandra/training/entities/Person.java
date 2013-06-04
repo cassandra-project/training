@@ -91,6 +91,13 @@ public class Person
     personID = id;
   }
 
+  public void addBehaviour (BehaviourModel behaviour)
+  {
+
+    behaviourModels.add(behaviour);
+
+  }
+
   public BehaviourModel findBehaviour (Appliance appliance)
   {
 
@@ -111,8 +118,9 @@ public class Person
   {
 
     BehaviourModel result = null;
+    String temp = this.name + " " + name + " Behaviour Model";
     for (BehaviourModel behaviour: behaviourModels) {
-      if (behaviour.getName().equalsIgnoreCase(name)) {
+      if (behaviour.getName().equalsIgnoreCase(temp)) {
         result = behaviour;
         break;
       }
@@ -145,6 +153,20 @@ public class Person
       behaviourModels.remove(exists);
 
     BehaviourModel behaviourModel = new BehaviourModel(appliance, name);
+    behaviourModel.train(distributions);
+    behaviourModels.add(behaviourModel);
+  }
+
+  public void train (ActivityTemp activity, String[] distributions)
+    throws IOException
+  {
+    BehaviourModel exists =
+      findBehaviour(activity.getName() + " Behaviour Model");
+
+    if (exists != null)
+      behaviourModels.remove(exists);
+
+    BehaviourModel behaviourModel = activity.toBehaviourModel(name);
     behaviourModel.train(distributions);
     behaviourModels.add(behaviourModel);
   }

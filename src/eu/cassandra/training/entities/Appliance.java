@@ -40,6 +40,7 @@ public class Appliance
 
   private String name = "";
   private String installation = "";
+  private String activity = "";
   private String type = "Generic";
   private String applianceID = "";
   private String energyClass = "";
@@ -124,6 +125,21 @@ public class Appliance
     return type;
   }
 
+  public String getActivity ()
+  {
+    return activity;
+  }
+
+  public void setActivity (String activity)
+  {
+    this.activity = activity;
+  }
+
+  public void setType (String type)
+  {
+    this.type = type;
+  }
+
   public double getStandbyConsumption ()
   {
     return standbyConsumption;
@@ -152,6 +168,11 @@ public class Appliance
   public String getInstallation ()
   {
     return installation;
+  }
+
+  public void setEventsFile (String eventsFile)
+  {
+    this.eventsFile = eventsFile;
   }
 
   public String getEventsFile ()

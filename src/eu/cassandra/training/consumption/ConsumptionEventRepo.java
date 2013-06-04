@@ -678,6 +678,8 @@ public class ConsumptionEventRepo
     DateTime endDate = new DateTime();
     DateTime date = new DateTime(2010, 1, 1, 0, 0);
 
+    System.out.println(filename);
+
     File file = new File(filename);
 
     Scanner scanner = new Scanner(file);

@@ -81,6 +81,17 @@ public class BehaviourModel
     consumptionEventRepo.readEventsFile(appliance.getEventsFile());
   }
 
+  public BehaviourModel (String activity, String person, String[] appliances,
+                         String eventsFile) throws FileNotFoundException
+  {
+    nameActivity = person + " " + activity + " Activity";
+    name = person + " " + activity + " Behaviour Model";
+    this.person = person;
+    applianceOf = appliances;
+    consumptionEventRepo = new ConsumptionEventRepo(activity);
+    consumptionEventRepo.readEventsFile(eventsFile);
+  }
+
   public String getName ()
   {
     return name;
