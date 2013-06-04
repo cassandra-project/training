@@ -58,11 +58,11 @@ public class EM
     }
     else if (variable.equals("StartTime")) {
       max = Constants.MINUTES_PER_DAY;
-      n = 30;
+      n = 25;
     }
     else if (variable.equals("StartTimeBinned")) {
       max = Constants.MINUTES_PER_DAY / Constants.MINUTES_PER_BIN;
-      n = 30;
+      n = 25;
     }
 
     interval = (int) (max / n);
