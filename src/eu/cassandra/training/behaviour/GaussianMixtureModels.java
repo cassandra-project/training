@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -753,23 +754,25 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
   public DBObject toJSON (String activityModelID)
   {
-
+    double[] values = new double[1];
     DBObject temp = new BasicDBObject();
-    DBObject[] param = new BasicDBObject[1];
-
-    param[0] = new BasicDBObject();
-
-    double[] means = new double[gaussians.length];
-    double[] sigmas = new double[gaussians.length];
+    BasicDBList param = new BasicDBList();
 
     for (int i = 0; i < gaussians.length; i++) {
+      DBObject paramItem = new BasicDBObject();
+
+      double[] means = new double[gaussians.length];
+      double[] sigmas = new double[gaussians.length];
+
       means[i] = gaussians[i].mean;
       sigmas[i] = gaussians[i].sigma;
-    }
 
-    param[0].put("pi", pi);
-    param[0].put("means", means);
-    param[0].put("stds", sigmas);
+      paramItem.put("w", pi[i]);
+      paramItem.put("mean", means[i]);
+      paramItem.put("std", sigmas[i]);
+
+      param.add(paramItem);
+    }
 
     temp.put("name", name);
     temp.put("type", type);
@@ -777,7 +780,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     temp.put("distrType", type);
     temp.put("actmod_id", activityModelID);
     temp.put("parameters", param);
-
+    temp.put("values", values);
     return temp;
 
   }

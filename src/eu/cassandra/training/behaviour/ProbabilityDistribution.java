@@ -197,4 +197,5 @@ public interface ProbabilityDistribution
    * @return The parameter value.
    */
   public double[] getHistogram ();
+
 }

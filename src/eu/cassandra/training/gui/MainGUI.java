@@ -32,6 +32,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
@@ -69,7 +71,9 @@ import org.apache.http.auth.AuthenticationException;
 import org.jfree.chart.ChartPanel;
 
 import eu.cassandra.training.behaviour.BehaviourModel;
+import eu.cassandra.training.entities.ActivityTemp;
 import eu.cassandra.training.entities.Appliance;
+import eu.cassandra.training.entities.ApplianceTemp;
 import eu.cassandra.training.entities.Installation;
 import eu.cassandra.training.entities.Person;
 import eu.cassandra.training.response.ResponseModel;
@@ -92,6 +96,12 @@ public class MainGUI extends JFrame
   private final ButtonGroup responseModelButtonGroup = new ButtonGroup();
   private Installation installation = new Installation();
   private final ButtonGroup powerButtonGroup = new ButtonGroup();
+  // private static int threshold = 2;
+
+  private static ArrayList<ApplianceTemp> tempAppliances =
+    new ArrayList<ApplianceTemp>();
+  private static ArrayList<ActivityTemp> tempActivities =
+    new ArrayList<ActivityTemp>();
   private DefaultListModel<String> detectedAppliances =
     new DefaultListModel<String>();
   private DefaultListModel<String> selectedAppliances =
@@ -265,8 +275,8 @@ public class MainGUI extends JFrame
 
     final JPanel applianceSelectionPanel = new JPanel();
     applianceSelectionPanel.setLayout(null);
-    applianceSelectionPanel.setBorder(new TitledBorder(null,
-                                                       "Appliance Selection",
+    applianceSelectionPanel.setBorder(new TitledBorder(UIManager
+            .getBorder("TitledBorder.border"), "Appliance/Activity Selection",
                                                        TitledBorder.LEADING,
                                                        TitledBorder.TOP, null,
                                                        null));
@@ -285,7 +295,9 @@ public class MainGUI extends JFrame
 
     final JPanel consumptionPreviewPanel = new JPanel();
     consumptionPreviewPanel
-            .setBorder(new TitledBorder(null, "Consumption Model Preview",
+            .setBorder(new TitledBorder(UIManager
+                    .getBorder("TitledBorder.border"),
+                                        "Example Consumption Model Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
     consumptionPreviewPanel.setBounds(630, 261, 557, 483);
@@ -301,7 +313,7 @@ public class MainGUI extends JFrame
                                                        TitledBorder.LEADING,
                                                        TitledBorder.TOP, null,
                                                        null));
-    responseParametersPanel.setBounds(6, 6, 391, 244);
+    responseParametersPanel.setBounds(6, 6, 391, 271);
     createResponseTab.add(responseParametersPanel);
 
     final JPanel behaviorModelSelectionPanel = new JPanel();
@@ -310,7 +322,7 @@ public class MainGUI extends JFrame
             .setBorder(new TitledBorder(null, "Behavior Model Selection",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    behaviorModelSelectionPanel.setBounds(6, 248, 391, 254);
+    behaviorModelSelectionPanel.setBounds(6, 276, 391, 226);
     createResponseTab.add(behaviorModelSelectionPanel);
 
     final JPanel responsePanel = new JPanel();
@@ -461,13 +473,13 @@ public class MainGUI extends JFrame
     final JRadioButton activePowerRadioButton =
       new JRadioButton("Active Power (P)");
     powerButtonGroup.add(activePowerRadioButton);
-    activePowerRadioButton.setSelected(true);
     activePowerRadioButton.setEnabled(false);
     activePowerRadioButton.setBounds(242, 140, 115, 18);
     dataFilePanel.add(activePowerRadioButton);
 
     final JRadioButton activeAndReactivePowerRadioButton =
       new JRadioButton("Active and Reactive Power (P, Q)");
+    activeAndReactivePowerRadioButton.setSelected(true);
     powerButtonGroup.add(activeAndReactivePowerRadioButton);
     activeAndReactivePowerRadioButton.setEnabled(false);
     activeAndReactivePowerRadioButton.setBounds(242, 161, 262, 18);
@@ -568,9 +580,13 @@ public class MainGUI extends JFrame
     durationGaussianRadioButton.setBounds(478, 84, 137, 18);
     trainingParametersPanel.add(durationGaussianRadioButton);
 
-    JButton trainingButton = new JButton("Training");
-    trainingButton.setBounds(251, 194, 115, 28);
+    final JButton trainingButton = new JButton("Train");
+    trainingButton.setBounds(125, 194, 115, 28);
     trainingParametersPanel.add(trainingButton);
+
+    final JButton trainAllButton = new JButton("Train All");
+    trainAllButton.setBounds(366, 194, 115, 28);
+    trainingParametersPanel.add(trainAllButton);
 
     // APPLIANCE SELECTION //
 
@@ -678,6 +694,11 @@ public class MainGUI extends JFrame
     createResponseButton.setBounds(191, 198, 162, 28);
     responseParametersPanel.add(createResponseButton);
 
+    final JButton createResponseAllButton = new JButton("Create Response All");
+    createResponseAllButton.setEnabled(false);
+    createResponseAllButton.setBounds(111, 232, 157, 28);
+    responseParametersPanel.add(createResponseAllButton);
+
     // SELECT BEHAVIOR MODEL //
 
     final JLabel label_8 = new JLabel("Selected Appliance");
@@ -769,7 +790,7 @@ public class MainGUI extends JFrame
 
     final JTextField usernameTextField;
     usernameTextField = new JTextField();
-    usernameTextField.setText("antonis");
+    usernameTextField.setText("user");
     usernameTextField.setColumns(10);
     usernameTextField.setBounds(122, 21, 405, 28);
     connectionPanel.add(usernameTextField);
@@ -883,9 +904,9 @@ public class MainGUI extends JFrame
         installationRadioButton.setEnabled(false);
         installationRadioButton.setSelected(true);
         singleApplianceRadioButton.setEnabled(false);
-        activePowerRadioButton.setSelected(true);
         activePowerRadioButton.setEnabled(false);
         activeAndReactivePowerRadioButton.setEnabled(false);
+        activeAndReactivePowerRadioButton.setSelected(true);
         dataReviewPanel.removeAll();
         dataReviewPanel.updateUI();
         consumptionModelPanel.removeAll();
@@ -909,12 +930,12 @@ public class MainGUI extends JFrame
         normalCaseRadioButton.setSelected(true);
         previewResponseButton.setEnabled(false);
         createResponseButton.setEnabled(false);
+        createResponseAllButton.setEnabled(false);
         pricingPreviewPanel.removeAll();
         pricingPreviewPanel.updateUI();
         responsePanel.removeAll();
         responsePanel.updateUI();
         behaviorSelectList.setSelectedIndex(-1);
-        behaviorSelectList.clearSelection();
         behaviorModels.clear();
         behaviorSelectList.setListData(new String[0]);
         behaviorSelectList.repaint();
@@ -923,7 +944,6 @@ public class MainGUI extends JFrame
         commitButton.setEnabled(false);
 
         exportModelList.setSelectedIndex(-1);
-        exportModelList.clearSelection();
         exportModels.clear();
         exportModelList.setListData(new String[0]);
         exportModelList.repaint();
@@ -1040,55 +1060,198 @@ public class MainGUI extends JFrame
       public void actionPerformed (ActionEvent e)
       {
 
-        // TODO Stuff done by disaggregation
+        String filename =
+          pathField.getText().substring(0, pathField.getText().length() - 4);
 
-        int temp = 10 + ((int) (Math.random() * 2));
+        File appliancesFile = new File(filename + "IdentificationList.csv");
+        File activitiesFile = new File(filename + "IdentifiedAppliances.csv");
 
-        for (int i = 0; i < temp; i++) {
+        if (appliancesFile.exists() && activitiesFile.exists()) {
 
-          String name = "Appliance " + i;
-          String powerModel = "";
-          String reactiveModel = "";
-          switch (i % 3) {
-          case 0:
-            powerModel =
-              "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 117.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 0.0, \"d\" : 73, \"s\": 0.0}]},{ \"n\" : 1, \"values\" : [ {\"p\" : 14.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 11.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 5.0, \"d\" : 73, \"s\": 0.0}]}]}";
-            reactiveModel =
-              "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : -140.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : 117.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 73, \"s\": 0.0}]},{ \"n\" : 1, \"values\" : [ {\"q\" : -14.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : 11.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : 5.0, \"d\" : 73, \"s\": 0.0}]}]}";
-            break;
-          case 1:
-            powerModel =
-              "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}]}]}";
-            reactiveModel =
-              "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : -140.0, \"d\" : 20, \"s\": 0.0}]}]}";
-            break;
-          case 2:
-            powerModel =
-              "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 117.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 0.0, \"d\" : 73, \"s\": 0.0}]},{ \"n\" : 1, \"values\" : [ {\"p\" : 14.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 11.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 355.0, \"d\" : 73, \"s\": 0.0}]}]}";
-            reactiveModel =
-              "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : 140.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : -117.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 73, \"s\": 0.0}]},{ \"n\" : 1, \"values\" : [ {\"q\" : 14.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : 11.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : -355.0, \"d\" : 73, \"s\": 0.0}]}]}";
-            break;
+          // Appliance Parsing
+
+          Scanner input = null;
+          try {
+            input = new Scanner(appliancesFile);
+          }
+          catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+          }
+          String nextLine;
+          String[] line;
+
+          while (input.hasNext()) {
+            nextLine = input.nextLine();
+            line = nextLine.split(",");
+
+            String name = line[line.length - 2] + " " + line[line.length - 1];
+            String activity = line[line.length - 2];
+            String[] temp = line[line.length - 1].split(" ");
+
+            String type = "";
+
+            if (temp.length == 1)
+              type = temp[0];
+            else {
+              for (int i = 0; i < temp.length - 1; i++)
+                type += temp[i] + " ";
+              type = type.trim();
+
+            }
+            double p = Double.parseDouble(line[0]);
+            double q = Double.parseDouble(line[1]);
+
+            tempAppliances.add(new ApplianceTemp(name, installation.getName(),
+                                                 type, activity, p, q));
+
           }
 
-          double[] mesTemp = new double[100];
-          double[] mesTemp2 = new double[100];
+          System.out.println("Appliances:" + tempAppliances.size());
 
-          for (int j = 0; j < mesTemp.length; j++) {
-            mesTemp[j] = Math.random() * 100;
-            mesTemp2[j] = Math.random() * 100;
+          input.close();
+
+          // Activity Parsing
+
+          try {
+            input = new Scanner(activitiesFile);
+          }
+          catch (FileNotFoundException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
           }
 
-          Appliance tempAppliance =
-            new Appliance(name, installation.getName(), powerModel,
-                          reactiveModel, "Demo/eventsAll11.csv", mesTemp,
-                          mesTemp2);
+          while (input.hasNext()) {
+            nextLine = input.nextLine();
+            line = nextLine.split(",");
 
-          installation.addAppliance(tempAppliance);
-          detectedAppliances.addElement(tempAppliance.toString());
-          selectedAppliances.addElement(tempAppliance.toString());
-          exportModels.addElement(tempAppliance.toString());
+            String[] temp = line[line.length - 1].split(" ");
+            String type = "";
+            if (temp.length == 1)
+              type = temp[0];
+            else {
+              for (int i = 0; i < temp.length - 1; i++)
+                type += temp[i] + " ";
+
+              type = type.trim();
+            }
+            String name = line[line.length - 2] + " " + type;
+            int start = Integer.parseInt(line[0]);
+            int end = Integer.parseInt(line[1]);
+
+            int activityIndex = findActivity(name);
+
+            if (activityIndex == -1) {
+
+              ActivityTemp newActivity = new ActivityTemp(name);
+              newActivity.addEvent(start, end);
+              tempActivities.add(newActivity);
+
+            }
+            else
+              tempActivities.get(activityIndex).addEvent(start, end);
+          }
+
+          // for (int i = tempActivities.size() - 1; i >= 0; i--)
+          // if (tempActivities.get(i).getEvents().size() < threshold)
+          // tempActivities.remove(i);
+
+          for (int i = 0; i < tempActivities.size(); i++) {
+            // tempActivities.get(i).status();
+            try {
+              tempActivities.get(i).createEventFile();
+            }
+            catch (IOException e1) {
+              e1.printStackTrace();
+            }
+          }
+
+          input.close();
+
+          for (ApplianceTemp temp: tempAppliances) {
+
+            Appliance tempAppliance = temp.toAppliance();
+
+            installation.addAppliance(tempAppliance);
+            detectedAppliances.addElement(tempAppliance.toString());
+            exportModels.addElement(tempAppliance.toString());
+
+          }
+
+          for (int i = tempActivities.size() - 1; i >= 0; i--) {
+
+            tempActivities.get(i).setAppliances(findAppliances(tempActivities
+                                                        .get(i)));
+            if (tempActivities.get(i).getAppliances().size() == 0) {
+              tempActivities.remove(i);
+            }
+            else
+              selectedAppliances.addElement(tempActivities.get(i).toString());
+
+          }
+
         }
+        else {
 
+          int temp = 8 + ((int) (Math.random() * 2));
+
+          for (int i = 0; i < temp; i++) {
+
+            String name = "Appliance " + i;
+            String powerModel = "";
+            String reactiveModel = "";
+            int tempIndex = i % 5;
+            switch (tempIndex) {
+            case 0:
+              powerModel =
+                "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"p\":1900,\"d\":1,\"s\":0}]},{\"n\":0,\"values\":[{\"p\":300,\"d\":1,\"s\":0}]}]}";
+              reactiveModel =
+                "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"q\":-40,\"d\":1,\"s\":0}]},{\"n\":0,\"values\":[{\"q\":-10,\"d\":1,\"s\":0}]}]}";
+              break;
+            case 1:
+              powerModel =
+                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}]}]}";
+              reactiveModel =
+                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : 120.0, \"d\" : 20, \"s\": 0.0}]}]}";
+              break;
+            case 2:
+              powerModel =
+                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 95.0, \"d\" : 20, \"s\": 0.0}, {\"p\" :80.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 0.0, \"d\" : 73, \"s\": 0.0}]}]}]}";
+              reactiveModel =
+                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : 0.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 73, \"s\": 0.0}]}]}]}";
+              break;
+            case 3:
+              powerModel =
+                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 30.0, \"d\" : 20, \"s\": 0.0}]}]}";
+              reactiveModel =
+                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : -5.0, \"d\" : 20, \"s\": 0.0}]}]}";
+              break;
+            case 4:
+              powerModel =
+                "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"p\":150,\"d\":25,\"s\":0},{\"p\":2000,\"d\":13,\"s\":0},{\"p\":100,\"d\":62,\"s\":0}]}]}";
+              reactiveModel =
+                "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"q\":400,\"d\":25,\"s\":0},{\"q\":200,\"d\":13,\"s\":0},{\"q\":300,\"d\":62,\"s\":0}]}]}";
+              break;
+            }
+
+            double[] mesTemp = new double[100];
+            double[] mesTemp2 = new double[100];
+
+            for (int j = 0; j < mesTemp.length; j++) {
+              mesTemp[j] = Math.random() * 100;
+              mesTemp2[j] = Math.random() * 100;
+            }
+
+            Appliance tempAppliance =
+              new Appliance(name, installation.getName(), powerModel,
+                            reactiveModel, "Demo/eventsAll" + tempIndex
+                                           + ".csv", mesTemp, mesTemp2);
+
+            installation.addAppliance(tempAppliance);
+            detectedAppliances.addElement(tempAppliance.toString());
+            selectedAppliances.addElement(tempAppliance.toString());
+            exportModels.addElement(tempAppliance.toString());
+          }
+        }
         detectedApplianceList.setEnabled(true);
         detectedApplianceList.setModel(detectedAppliances);
         detectedApplianceList.setSelectedIndex(0);
@@ -1160,8 +1323,6 @@ public class MainGUI extends JFrame
 
         consumptionModelPanel.removeAll();
         consumptionModelPanel.updateUI();
-        dataReviewPanel.removeAll();
-        dataReviewPanel.updateUI();
 
         if (detectedAppliances.size() > 1) {
 
@@ -1169,19 +1330,11 @@ public class MainGUI extends JFrame
 
           Appliance current = installation.findAppliance(selection);
 
-          // System.out.println("Appliance:" + current.getName());
-
           ChartPanel chartPanel = current.consumptionGraph();
 
           consumptionModelPanel.add(chartPanel, BorderLayout.CENTER);
           consumptionModelPanel.validate();
 
-          ChartPanel chartPanel2 =
-            ChartUtils.createLineDiagram("Test", "Time Step", "Power",
-                                         current.getActivePower());
-
-          dataReviewPanel.add(chartPanel2, BorderLayout.CENTER);
-          dataReviewPanel.validate();
         }
       }
     });
@@ -1200,10 +1353,16 @@ public class MainGUI extends JFrame
       public void actionPerformed (ActionEvent e)
       {
         tabbedPane.setEnabledAt(2, true);
-        Appliance current =
-          installation.findAppliance(selectedApplianceList.getSelectedValue());
 
-        String startTime, startTimeBinned, duration, dailyTimes;
+        String selection = selectedApplianceList.getSelectedValue();
+        ActivityTemp activity = null;
+
+        if (tempActivities.size() > 0)
+          activity = tempActivities.get(findActivity(selection));
+
+        Appliance current = installation.findAppliance(selection);
+
+        String startTime, duration, dailyTimes;
 
         if (timesHistogramRadioButton.isSelected())
           dailyTimes = "Histogram";
@@ -1219,27 +1378,34 @@ public class MainGUI extends JFrame
         else
           duration = "GMM";
 
-        if (startHistogramRadioButton.isSelected()) {
+        if (startHistogramRadioButton.isSelected())
           startTime = "Histogram";
-          startTimeBinned = "Histogram";
-        }
-        else if (startNormalRadioButton.isSelected()) {
+        else if (startNormalRadioButton.isSelected())
           startTime = "Normal";
-          startTimeBinned = "Normal";
-        }
-        else {
+        else
           startTime = "GMM";
-          startTimeBinned = "GMM";
-        }
 
         String[] distributions =
-          { dailyTimes, duration, startTime, startTimeBinned };
+          { dailyTimes, duration, startTime, "Histogram" };
 
-        try {
-          installation.getPerson().train(current, distributions);
+        if (activity == null) {
+
+          try {
+            installation.getPerson().train(current, distributions);
+          }
+          catch (IOException e1) {
+            e1.printStackTrace();
+          }
         }
-        catch (IOException e1) {
-          e1.printStackTrace();
+        else {
+
+          try {
+            installation.getPerson().train(activity, distributions);
+          }
+          catch (IOException e1) {
+            e1.printStackTrace();
+          }
+
         }
 
         System.out.println("Training OK!");
@@ -1248,7 +1414,10 @@ public class MainGUI extends JFrame
         distributionPreviewPanel.updateUI();
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current);
+          installation.getPerson().findBehaviour(selection);
+
+        if (behaviourModel == null)
+          behaviourModel = installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createDailyTimesDistributionChart();
@@ -1293,8 +1462,19 @@ public class MainGUI extends JFrame
         exportDurationButton.setEnabled(true);
         exportStartButton.setEnabled(true);
         exportStartBinnedButton.setEnabled(true);
+
       }
 
+    });
+
+    trainAllButton.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent e)
+      {
+        for (int i = 0; i < selectedApplianceList.getModel().getSize(); i++) {
+          selectedApplianceList.setSelectedIndex(i);
+          trainingButton.doClick();
+        }
+      }
     });
 
     dailyTimesButton.addActionListener(new ActionListener() {
@@ -1394,27 +1574,43 @@ public class MainGUI extends JFrame
         distributionPreviewPanel.removeAll();
         distributionPreviewPanel.updateUI();
 
-        String selection = selectedApplianceList.getSelectedValue();
+        if (selectedAppliances.size() > 1) {
+          String selection = selectedApplianceList.getSelectedValue();
 
-        Appliance current = installation.findAppliance(selection);
+          Appliance currentAppliance = installation.findAppliance(selection);
 
-        ChartPanel chartPanel = current.consumptionGraph();
+          ChartPanel chartPanel = null;
+          if (currentAppliance != null)
+            chartPanel = currentAppliance.consumptionGraph();
+          else {
+            ActivityTemp currentActivity =
+              tempActivities.get(findActivity(selection));
+            chartPanel = currentActivity.consumptionGraph();
+          }
 
-        consumptionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
-        consumptionPreviewPanel.validate();
+          consumptionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
+          consumptionPreviewPanel.validate();
 
-        BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current);
+          BehaviourModel behaviourModel = null;
 
-        if (behaviourModel != null) {
+          if (currentAppliance != null)
+            behaviourModel =
+              installation.getPerson().findBehaviour(currentAppliance);
 
-          ChartPanel chartPanel2 =
-            behaviourModel.createDailyTimesDistributionChart();
-          distributionPreviewPanel.add(chartPanel2, BorderLayout.CENTER);
-          distributionPreviewPanel.validate();
-          distributionPreviewPanel.updateUI();
+          if (behaviourModel == null)
+            behaviourModel = installation.getPerson().findBehaviour(selection);
 
+          if (behaviourModel != null) {
+
+            ChartPanel chartPanel2 =
+              behaviourModel.createDailyTimesDistributionChart();
+            distributionPreviewPanel.add(chartPanel2, BorderLayout.CENTER);
+            distributionPreviewPanel.validate();
+            distributionPreviewPanel.updateUI();
+
+          }
         }
+
       }
     });
 
@@ -1457,6 +1653,7 @@ public class MainGUI extends JFrame
         responsePanel.validate();
 
         createResponseButton.setEnabled(true);
+        createResponseAllButton.setEnabled(true);
       }
     });
 
@@ -1511,6 +1708,16 @@ public class MainGUI extends JFrame
         }
         exportModelList.setModel(exportModels);
 
+      }
+    });
+
+    createResponseAllButton.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent arg0)
+      {
+        for (int i = 0; i < behaviorSelectList.getModel().getSize(); i++) {
+          behaviorSelectList.setSelectedIndex(i);
+          createResponseButton.doClick();
+        }
       }
     });
 
@@ -1613,70 +1820,72 @@ public class MainGUI extends JFrame
           exportPreviewPanel.removeAll();
           exportPreviewPanel.updateUI();
 
-          String selection = exportModelList.getSelectedValue();
+          if (exportModels.size() > 1) {
+            String selection = exportModelList.getSelectedValue();
 
-          Appliance appliance = installation.findAppliance(selection);
+            Appliance appliance = installation.findAppliance(selection);
 
-          BehaviourModel behaviour =
-            installation.getPerson().findBehaviour(selection);
+            BehaviourModel behaviour =
+              installation.getPerson().findBehaviour(selection);
 
-          ResponseModel response =
-            installation.getPerson().findResponse(selection);
+            ResponseModel response =
+              installation.getPerson().findResponse(selection);
 
-          ChartPanel chartPanel = null;
+            ChartPanel chartPanel = null;
 
-          if (selection.equalsIgnoreCase(installation.getName())) {
+            if (selection.equalsIgnoreCase(installation.getName())) {
 
-            try {
-              chartPanel = installation.measurementsChart();
+              try {
+                chartPanel = installation.measurementsChart();
+              }
+              catch (IOException e1) {
+                e1.printStackTrace();
+              }
+
             }
-            catch (IOException e1) {
-              e1.printStackTrace();
+            else if (selection.equalsIgnoreCase(installation.getPerson()
+                    .getName())) {
+
+              chartPanel = installation.getPerson().statisticGraphs();
+
+              exportDailyButton.setEnabled(false);
+              exportDurationButton.setEnabled(false);
+              exportStartButton.setEnabled(false);
+              exportStartBinnedButton.setEnabled(false);
+
+            }
+            else if (appliance != null) {
+
+              chartPanel = appliance.consumptionGraph();
+
+              exportDailyButton.setEnabled(false);
+              exportDurationButton.setEnabled(false);
+              exportStartButton.setEnabled(false);
+              exportStartBinnedButton.setEnabled(false);
+
+            }
+            else if (behaviour != null) {
+
+              chartPanel = behaviour.createDailyTimesDistributionChart();
+
+              exportDailyButton.setEnabled(true);
+              exportDurationButton.setEnabled(true);
+              exportStartButton.setEnabled(true);
+              exportStartBinnedButton.setEnabled(true);
+            }
+            else if (response != null) {
+
+              chartPanel = response.createDailyTimesDistributionChart();
+
+              exportDailyButton.setEnabled(true);
+              exportDurationButton.setEnabled(true);
+              exportStartButton.setEnabled(true);
+              exportStartBinnedButton.setEnabled(true);
             }
 
+            exportPreviewPanel.add(chartPanel, BorderLayout.CENTER);
+            exportPreviewPanel.validate();
           }
-          else if (selection.equalsIgnoreCase(installation.getPerson()
-                  .getName())) {
-
-            chartPanel = installation.getPerson().statisticGraphs();
-
-            exportDailyButton.setEnabled(false);
-            exportDurationButton.setEnabled(false);
-            exportStartButton.setEnabled(false);
-            exportStartBinnedButton.setEnabled(false);
-
-          }
-          else if (appliance != null) {
-
-            chartPanel = appliance.consumptionGraph();
-
-            exportDailyButton.setEnabled(false);
-            exportDurationButton.setEnabled(false);
-            exportStartButton.setEnabled(false);
-            exportStartBinnedButton.setEnabled(false);
-
-          }
-          else if (behaviour != null) {
-
-            chartPanel = behaviour.createDailyTimesDistributionChart();
-
-            exportDailyButton.setEnabled(true);
-            exportDurationButton.setEnabled(true);
-            exportStartButton.setEnabled(true);
-            exportStartBinnedButton.setEnabled(true);
-          }
-          else if (response != null) {
-
-            chartPanel = response.createDailyTimesDistributionChart();
-
-            exportDailyButton.setEnabled(true);
-            exportDurationButton.setEnabled(true);
-            exportStartButton.setEnabled(true);
-            exportStartBinnedButton.setEnabled(true);
-          }
-
-          exportPreviewPanel.add(chartPanel, BorderLayout.CENTER);
-          exportPreviewPanel.validate();
         }
       }
     });
@@ -2353,5 +2562,47 @@ public class MainGUI extends JFrame
         }
       }
     }
+  }
+
+  private static int findActivity (String name)
+  {
+
+    int result = -1;
+
+    for (int i = 0; i < tempActivities.size(); i++) {
+      if (tempActivities.get(i).getName().equals(name)) {
+
+        result = i;
+        break;
+      }
+
+    }
+
+    return result;
+  }
+
+  private ArrayList<Appliance> findAppliances (ActivityTemp activity)
+  {
+
+    ArrayList<Appliance> appliances = new ArrayList<Appliance>();
+    // System.out.println("Activity:" + activity.getName());
+    for (Appliance appliance: installation.getAppliances()) {
+
+      String nameTemp = appliance.getName();
+
+      if (appliance.getName().split(" ").length != 2) {
+        nameTemp = nameTemp.replaceAll("[0-9]", "");
+        nameTemp = nameTemp.trim();
+      }
+
+      if (activity.getName().equalsIgnoreCase(nameTemp)) {
+        // System.out.println(appliance.getName());
+        appliances.add(appliance);
+      }
+    }
+
+    // System.out.println(appliances.size());
+
+    return appliances;
   }
 }

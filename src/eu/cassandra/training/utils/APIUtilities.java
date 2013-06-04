@@ -142,7 +142,7 @@ public class APIUtilities
 
       DBObject dbo = (DBObject) JSON.parse(responseString);
 
-      if (dbo.get("success") == "true") {
+      if (dbo.get("success").toString().equalsIgnoreCase("true")) {
 
         BasicDBList dataObj = (BasicDBList) dbo.get("data");
 

@@ -45,7 +45,7 @@ public class ResponseModel extends BehaviourModel
     applianceOf = new String[0];
     applianceOf = behaviour.getAppliancesOf();
     nameActivity = person + " " + applianceOf[0] + " Response Activity";
-    name = nameActivity + " Response Model";
+    name = person + " " + applianceOf[0] + " Response Model";
     this.person = person;
     switch (responseType) {
 

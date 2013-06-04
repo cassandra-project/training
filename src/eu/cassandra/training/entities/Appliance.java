@@ -40,9 +40,11 @@ public class Appliance
 
   private String name = "";
   private String installation = "";
-  private String type = "";
+  private String activity = "";
+  private String type = "Generic";
   private String applianceID = "";
   private String energyClass = "";
+  private boolean base = false;
   private boolean controllable = false;
   private boolean shiftable = false;
   private double standbyConsumption = 0.0;
@@ -123,6 +125,21 @@ public class Appliance
     return type;
   }
 
+  public String getActivity ()
+  {
+    return activity;
+  }
+
+  public void setActivity (String activity)
+  {
+    this.activity = activity;
+  }
+
+  public void setType (String type)
+  {
+    this.type = type;
+  }
+
   public double getStandbyConsumption ()
   {
     return standbyConsumption;
@@ -151,6 +168,11 @@ public class Appliance
   public String getInstallation ()
   {
     return installation;
+  }
+
+  public void setEventsFile (String eventsFile)
+  {
+    this.eventsFile = eventsFile;
   }
 
   public String getEventsFile ()
@@ -352,7 +374,8 @@ public class Appliance
     temp.put("description", name + " " + type);
     temp.put("controllable", controllable);
     temp.put("shiftable", shiftable);
-    temp.put("energy_class", energyClass);
+    temp.put("base", base);
+    temp.put("energy_class", "Class A");
     temp.put("standy_consumption", standbyConsumption);
     temp.put("inst_id", installationID);
 
@@ -365,10 +388,14 @@ public class Appliance
 
     DBObject temp = new BasicDBObject();
 
-    temp.put("name", name + " P Consumption Model");
+    temp.put("name", name + " Consumption Model");
+    temp.put("type", type);
+    temp.put("description", "P and Q Consumption Model");
     temp.put("app_id", applianceID);
     temp.put("pmodel", JSON.parse(powerConsumptionModelString));
     temp.put("qmodel", JSON.parse(reactiveConsumptionModelString));
+    temp.put("pvalues", new double[1]);
+    temp.put("qvalues", new double[1]);
     return temp;
 
   }
@@ -385,6 +412,7 @@ public class Appliance
   {
     System.out.println("Name: " + name);
     System.out.println("Type: " + type);
+    System.out.println("Base: " + base);
     System.out.println("Controllable: " + controllable);
     System.out.println("Shiftable: " + shiftable);
     System.out.println("Energy Class: " + energyClass);

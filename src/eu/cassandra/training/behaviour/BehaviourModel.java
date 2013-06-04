@@ -33,6 +33,7 @@ import eu.cassandra.training.entities.Appliance;
 import eu.cassandra.training.utils.ChartUtils;
 import eu.cassandra.training.utils.Constants;
 import eu.cassandra.training.utils.EM;
+import eu.cassandra.training.utils.Utils;
 
 public class BehaviourModel
 {
@@ -78,6 +79,17 @@ public class BehaviourModel
     applianceOf[0] = appliance.getName();
     consumptionEventRepo = new ConsumptionEventRepo(applianceOf[0]);
     consumptionEventRepo.readEventsFile(appliance.getEventsFile());
+  }
+
+  public BehaviourModel (String activity, String person, String[] appliances,
+                         String eventsFile) throws FileNotFoundException
+  {
+    nameActivity = person + " " + activity + " Activity";
+    name = person + " " + activity + " Behaviour Model";
+    this.person = person;
+    applianceOf = appliances;
+    consumptionEventRepo = new ConsumptionEventRepo(activity);
+    consumptionEventRepo.readEventsFile(eventsFile);
   }
 
   public String getName ()
@@ -257,7 +269,7 @@ public class BehaviourModel
 
     case START_TIME_BINNED:
 
-      variablePath = Constants.START_TIME_BINNED_FILE;
+      variablePath = "";
       break;
 
     default:
@@ -307,10 +319,12 @@ public class BehaviourModel
       else if (index == 2) {
         consumptionEventRepo.StartTimeHistogramToFile(file);
         startTime = new Histogram(file);
+        double[] temp =
+          Utils.aggregateStartTimeDistribution(startTime.getHistogram());
+        startTimeBinned = new Histogram(file + " Binned", temp);
       }
       else if (index == 3) {
-        consumptionEventRepo.StartTimeBinnedHistogramToFile(file);
-        startTimeBinned = new Histogram(file);
+
       }
       else
         System.out.println("ERROR in index");
@@ -328,10 +342,15 @@ public class BehaviourModel
         dailyTimes = new Gaussian(newFile);
       else if (index == 1)
         duration = new Gaussian(newFile);
-      else if (index == 2)
+      else if (index == 2) {
         startTime = new Gaussian(newFile);
-      else if (index == 3)
-        startTimeBinned = new Gaussian(newFile);
+        double[] temp =
+          Utils.aggregateStartTimeDistribution(startTime.getHistogram());
+        startTimeBinned = new Histogram(file + " Binned", temp);
+      }
+      else if (index == 3) {
+
+      }
       else
         System.out.println("ERROR in index");
 
@@ -348,10 +367,15 @@ public class BehaviourModel
         dailyTimes = new GaussianMixtureModels(newFile);
       else if (index == 1)
         duration = new GaussianMixtureModels(newFile);
-      else if (index == 2)
+      else if (index == 2) {
         startTime = new GaussianMixtureModels(newFile);
-      else if (index == 3)
-        startTimeBinned = new GaussianMixtureModels(newFile);
+        double[] temp =
+          Utils.aggregateStartTimeDistribution(startTime.getHistogram());
+        startTimeBinned = new Histogram(file + " Binned", temp);
+      }
+      else if (index == 3) {
+
+      }
       else
         System.out.println("ERROR in index");
 
