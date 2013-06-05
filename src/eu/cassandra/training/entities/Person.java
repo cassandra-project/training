@@ -114,11 +114,16 @@ public class Person
     return result;
   }
 
-  public BehaviourModel findBehaviour (String name)
+  public BehaviourModel findBehaviour (String name, boolean suffix)
   {
 
     BehaviourModel result = null;
-    String temp = this.name + " " + name + " Behaviour Model";
+    String temp = "";
+    if (suffix)
+      temp = this.name + " " + name + " Behaviour Model";
+    else
+      temp = name;
+
     for (BehaviourModel behaviour: behaviourModels) {
       if (behaviour.getName().equalsIgnoreCase(temp)) {
         result = behaviour;
@@ -147,7 +152,8 @@ public class Person
     throws IOException
   {
     BehaviourModel exists =
-      findBehaviour(name + " " + appliance.getName() + " Behaviour Model");
+      findBehaviour(name + " " + appliance.getName() + " Behaviour Model",
+                    false);
 
     if (exists != null)
       behaviourModels.remove(exists);
@@ -161,7 +167,7 @@ public class Person
     throws IOException
   {
     BehaviourModel exists =
-      findBehaviour(activity.getName() + " Behaviour Model");
+      findBehaviour(activity.getName() + " Behaviour Model", false);
 
     if (exists != null)
       behaviourModels.remove(exists);
@@ -196,14 +202,28 @@ public class Person
       responseTemp = "Worst";
     }
 
-    String temp =
-      name + " " + behaviour.getAppliancesOf()[0] + " Response Model ("
-              + responseTemp + ")";
+    if (behaviour.getActivity()) {
 
-    ResponseModel exists = findResponse(temp);
+      String temp =
+        behaviour.getNameActivity().replace(" Activity",
+                                            " Response Model (" + responseTemp
+                                                    + ")");
 
-    if (exists != null)
-      responseModels.remove(exists);
+      ResponseModel exists = findResponse(temp);
+
+      if (exists != null)
+        responseModels.remove(exists);
+    }
+    else {
+      String temp =
+        name + " " + behaviour.getAppliancesOf()[0] + " Response Model ("
+                + responseTemp + ")";
+
+      ResponseModel exists = findResponse(temp);
+
+      if (exists != null)
+        responseModels.remove(exists);
+    }
 
     String result = "";
 

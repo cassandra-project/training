@@ -419,11 +419,14 @@ public class Gaussian implements ProbabilityDistribution
   {
     double[] result = Arrays.copyOf(histogram, histogram.length);
 
+    PricingVector pricingVector = new PricingVector(basicScheme, newScheme);
+
     IncentiveVector inc = new IncentiveVector(basicScheme, newScheme);
 
-    for (Incentive incentive: inc.getIncentives()) {
-      result = movingAverage(result, incentive);
-    }
+    if (pricingVector.getPrices().size() > 1)
+      for (Incentive incentive: inc.getIncentives()) {
+        result = movingAverage(result, incentive);
+      }
 
     return result;
 
@@ -436,7 +439,8 @@ public class Gaussian implements ProbabilityDistribution
 
     PricingVector pricingVector = new PricingVector(basicScheme, newScheme);
 
-    result = worstAverage(result, pricingVector);
+    if (pricingVector.getPrices().size() > 1)
+      result = worstAverage(result, pricingVector);
 
     return result;
   }

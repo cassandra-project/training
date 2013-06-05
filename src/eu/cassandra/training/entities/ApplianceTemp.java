@@ -80,35 +80,4 @@ public class ApplianceTemp
     return appliance;
   }
 
-  // private String searchEventsFile ()
-  // {
-  //
-  // String result = "";
-  // String nameTemp = "";
-  //
-  // File folder = new File("./Files/");
-  // String[] files = folder.list();
-  // if (name.split(" ").length != 1) {
-  // nameTemp = name.replaceAll("[0-9]", "");
-  // nameTemp = nameTemp.trim();
-  // // System.out.println(nameTemp);
-  // }
-  // else {
-  // nameTemp = name;
-  // // System.out.println(nameTemp);
-  // }
-  //
-  // String comp = activity + " " + nameTemp + " events.csv";
-  // // for (String file: files) {
-  // //
-  // // if (comp.equalsIgnoreCase(file))
-  // // System.out.println(file);
-  // //
-  // // }
-  //
-  // result = "./Files/" + comp;
-  //
-  // return result;
-  //
-  // }
 }

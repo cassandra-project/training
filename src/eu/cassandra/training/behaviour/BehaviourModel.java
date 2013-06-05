@@ -19,6 +19,7 @@ package eu.cassandra.training.behaviour;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -41,7 +42,7 @@ public class BehaviourModel
   protected static final int DURATION = 1;
   protected static final int START_TIME = 2;
   protected static final int START_TIME_BINNED = 3;
-
+  protected boolean activity = false;
   protected String name = "";
   protected String nameActivity = "";
   protected String type = "";
@@ -86,6 +87,7 @@ public class BehaviourModel
   {
     nameActivity = person + " " + activity + " Activity";
     name = person + " " + activity + " Behaviour Model";
+    this.activity = true;
     this.person = person;
     applianceOf = appliances;
     consumptionEventRepo = new ConsumptionEventRepo(activity);
@@ -105,6 +107,11 @@ public class BehaviourModel
   public String getType ()
   {
     return type;
+  }
+
+  public boolean getActivity ()
+  {
+    return activity;
   }
 
   public String getDayType ()
@@ -528,7 +535,7 @@ public class BehaviourModel
   public void status ()
   {
     System.out.println("Name: " + name);
-    System.out.println("Appliance Of: " + applianceOf);
+    System.out.println("Appliance Of: " + Arrays.toString(applianceOf));
     System.out.println("Person:" + person);
     System.out.println("Distribution Types:" + distributionTypes.toString());
     System.out.println("File Map:" + fileMap.toString());

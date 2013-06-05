@@ -705,12 +705,12 @@ public class MainGUI extends JFrame
     label_8.setBounds(10, 21, 130, 16);
     behaviorModelSelectionPanel.add(label_8);
 
-    JScrollPane behaviorListScrollPane = new JScrollPane();
-    behaviorListScrollPane.setBounds(10, 48, 365, 195);
-    behaviorModelSelectionPanel.add(behaviorListScrollPane);
+    JScrollPane behaviourListScrollPane = new JScrollPane();
+    behaviourListScrollPane.setBounds(20, 39, 355, 176);
+    behaviorModelSelectionPanel.add(behaviourListScrollPane);
 
     final JList<String> behaviorSelectList = new JList<String>();
-    behaviorListScrollPane.setViewportView(behaviorSelectList);
+    behaviourListScrollPane.setViewportView(behaviorSelectList);
     behaviorSelectList.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null,
                                                   null));
 
@@ -960,6 +960,9 @@ public class MainGUI extends JFrame
         tabbedPane.setEnabledAt(2, false);
         tabbedPane.setEnabledAt(3, false);
 
+        tempAppliances = new ArrayList<ApplianceTemp>();
+        tempActivities = new ArrayList<ActivityTemp>();
+
         cleanFiles();
 
       }
@@ -1124,17 +1127,7 @@ public class MainGUI extends JFrame
             nextLine = input.nextLine();
             line = nextLine.split(",");
 
-            String[] temp = line[line.length - 1].split(" ");
-            String type = "";
-            if (temp.length == 1)
-              type = temp[0];
-            else {
-              for (int i = 0; i < temp.length - 1; i++)
-                type += temp[i] + " ";
-
-              type = type.trim();
-            }
-            String name = line[line.length - 2] + " " + type;
+            String name = line[line.length - 2];
             int start = Integer.parseInt(line[0]);
             int end = Integer.parseInt(line[1]);
 
@@ -1150,6 +1143,8 @@ public class MainGUI extends JFrame
             else
               tempActivities.get(activityIndex).addEvent(start, end);
           }
+
+          // System.out.println(tempActivities.size());
 
           // for (int i = tempActivities.size() - 1; i >= 0; i--)
           // if (tempActivities.get(i).getEvents().size() < threshold)
@@ -1414,7 +1409,7 @@ public class MainGUI extends JFrame
         distributionPreviewPanel.updateUI();
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(selection);
+          installation.getPerson().findBehaviour(selection, true);
 
         if (behaviourModel == null)
           behaviourModel = installation.getPerson().findBehaviour(current);
@@ -1489,7 +1484,10 @@ public class MainGUI extends JFrame
         Appliance current = installation.findAppliance(selection);
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current);
+          installation.getPerson().findBehaviour(selection, true);
+
+        if (behaviourModel == null)
+          behaviourModel = installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createDailyTimesDistributionChart();
@@ -1511,7 +1509,10 @@ public class MainGUI extends JFrame
         Appliance current = installation.findAppliance(selection);
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current);
+          installation.getPerson().findBehaviour(selection, true);
+
+        if (behaviourModel == null)
+          behaviourModel = installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createStartTimeBinnedDistributionChart();
@@ -1533,7 +1534,10 @@ public class MainGUI extends JFrame
         Appliance current = installation.findAppliance(selection);
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current);
+          installation.getPerson().findBehaviour(selection, true);
+
+        if (behaviourModel == null)
+          behaviourModel = installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createStartTimeDistributionChart();
@@ -1555,7 +1559,10 @@ public class MainGUI extends JFrame
         Appliance current = installation.findAppliance(selection);
 
         BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(current);
+          installation.getPerson().findBehaviour(selection, true);
+
+        if (behaviourModel == null)
+          behaviourModel = installation.getPerson().findBehaviour(current);
 
         ChartPanel chartPanel =
           behaviourModel.createDurationDistributionChart();
@@ -1598,7 +1605,8 @@ public class MainGUI extends JFrame
               installation.getPerson().findBehaviour(currentAppliance);
 
           if (behaviourModel == null)
-            behaviourModel = installation.getPerson().findBehaviour(selection);
+            behaviourModel =
+              installation.getPerson().findBehaviour(selection, true);
 
           if (behaviourModel != null) {
 
@@ -1631,7 +1639,8 @@ public class MainGUI extends JFrame
 
         BehaviourModel behaviour =
           installation.getPerson().findBehaviour(behaviorSelectList
-                                                         .getSelectedValue());
+                                                         .getSelectedValue(),
+                                                 false);
 
         int response = -1;
 
@@ -1679,7 +1688,8 @@ public class MainGUI extends JFrame
 
         BehaviourModel behaviour =
           installation.getPerson().findBehaviour(behaviorSelectList
-                                                         .getSelectedValue());
+                                                         .getSelectedValue(),
+                                                 false);
 
         String response = "";
 
@@ -1826,7 +1836,7 @@ public class MainGUI extends JFrame
             Appliance appliance = installation.findAppliance(selection);
 
             BehaviourModel behaviour =
-              installation.getPerson().findBehaviour(selection);
+              installation.getPerson().findBehaviour(selection, false);
 
             ResponseModel response =
               installation.getPerson().findResponse(selection);
@@ -1900,7 +1910,7 @@ public class MainGUI extends JFrame
         String selection = exportModelList.getSelectedValue();
 
         BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection);
+          installation.getPerson().findBehaviour(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
@@ -1928,7 +1938,7 @@ public class MainGUI extends JFrame
         String selection = exportModelList.getSelectedValue();
 
         BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection);
+          installation.getPerson().findBehaviour(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
@@ -1957,7 +1967,7 @@ public class MainGUI extends JFrame
         String selection = exportModelList.getSelectedValue();
 
         BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection);
+          installation.getPerson().findBehaviour(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
@@ -1985,7 +1995,7 @@ public class MainGUI extends JFrame
         String selection = exportModelList.getSelectedValue();
 
         BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection);
+          installation.getPerson().findBehaviour(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
@@ -2070,7 +2080,7 @@ public class MainGUI extends JFrame
         Appliance appliance = installation.findAppliance(selection);
 
         BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection);
+          installation.getPerson().findBehaviour(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
@@ -2125,33 +2135,44 @@ public class MainGUI extends JFrame
         }
         else if (behaviour != null) {
 
-          Appliance behaviourAppliance =
-            installation.findAppliance(behaviour.getAppliancesOf()[0]);
-          String applianceTemp = "";
-
+          String[] applianceTemp =
+            new String[behaviour.getAppliancesOf().length];
           Person person = installation.getPerson();
           String personTemp = "";
           String behaviourTemp = "";
           String durationTemp = "";
           String dailyTemp = "";
           String startTemp = "";
-          // String startBinnedTemp = "";
+
+          for (int i = 0; i < behaviour.getAppliancesOf().length; i++) {
+
+            Appliance behaviourAppliance =
+              installation.findAppliance(behaviour.getAppliancesOf()[i]);
+
+            // String startBinnedTemp = "";
+
+            try {
+              // In case appliance is not in the database, we send the object
+              // there
+              if (behaviourAppliance.getApplianceID().equalsIgnoreCase("")) {
+
+                behaviourAppliance.setApplianceID(APIUtilities
+                        .sendEntity(behaviourAppliance
+                                            .toJSON(APIUtilities.getUserID())
+                                            .toString(), "/app"));
+
+                APIUtilities.sendEntity(behaviourAppliance
+                        .powerConsumptionModelToJSON().toString(), "/consmod");
+              }
+              applianceTemp[i] = behaviourAppliance.getApplianceID();
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+          }
 
           try {
-            // In case appliance is not in the database, we send the object
-            // there
-            if (behaviourAppliance.getApplianceID().equalsIgnoreCase("")) {
-
-              behaviourAppliance.setApplianceID(APIUtilities
-                      .sendEntity(behaviourAppliance
-                                          .toJSON(APIUtilities.getUserID())
-                                          .toString(), "/app"));
-
-              APIUtilities.sendEntity(behaviourAppliance
-                      .powerConsumptionModelToJSON().toString(), "/consmod");
-            }
-            applianceTemp = behaviourAppliance.getApplianceID();
-
             // In case person is not in the database, we send the object
             // there
             if (person.getPersonID().equalsIgnoreCase("")) {
@@ -2161,16 +2182,18 @@ public class MainGUI extends JFrame
                               .toString(), "/pers"));
 
             }
+
             personTemp = installation.getPerson().getPersonID();
 
             behaviour.setActivityID(APIUtilities.sendEntity(behaviour
                     .activityToJSON(personTemp).toString(), "/act"));
 
-            String[] appliancesID = { applianceTemp };
+            String[] appliancesID = applianceTemp;
 
             behaviour.setBehaviourID(APIUtilities
                     .sendEntity(behaviour.toJSON(appliancesID).toString(),
                                 "/actmod"));
+
             behaviourTemp = behaviour.getBehaviourID();
 
             behaviour
@@ -2181,6 +2204,7 @@ public class MainGUI extends JFrame
                                                                    .toJSON(behaviourTemp)
                                                                    .toString(),
                                                            "/distr"));
+
             behaviour.setDailyID(behaviour.getDailyTimes().getDistributionID());
             dailyTemp = behaviour.getDailyID();
 
@@ -2209,54 +2233,58 @@ public class MainGUI extends JFrame
             behaviour.setStartID(behaviour.getStartTime().getDistributionID());
             startTemp = behaviour.getStartID();
 
-            // id =
-            // APIUtilities
-            // .sendEntity(behaviour.getStartTimeBinned()
-            // .toJSON(behaviourTemp).toString(),
-            // "/distr");
-            // System.out.println("Start Time Binned Distribution Id:" + id);
-            // behaviour.getStartTimeBinned().setDistributionID(id);
-            // startBinnedTemp = id;
-
             APIUtilities
                     .updateEntity(behaviour.toJSON(appliancesID).toString(),
                                   "/actmod", behaviourTemp);
 
           }
-          catch (IOException | AuthenticationException
-                 | NoSuchAlgorithmException e1) {
+          catch (AuthenticationException | NoSuchAlgorithmException
+                 | IOException e1) {
+
             e1.printStackTrace();
           }
 
         }
-        else if (response != null) {
-          Appliance responseAppliance =
-            installation.findAppliance(response.getAppliancesOf()[0]);
-          String applianceTemp = "";
 
+        else if (response != null) {
+          String[] applianceTemp =
+            new String[response.getAppliancesOf().length];
           Person person = installation.getPerson();
           String personTemp = "";
           String responseTemp = "";
           String durationTemp = "";
           String dailyTemp = "";
           String startTemp = "";
-          // String startBinnedTemp = "";
+
+          for (int i = 0; i < response.getAppliancesOf().length; i++) {
+
+            Appliance responseAppliance =
+              installation.findAppliance(response.getAppliancesOf()[i]);
+
+            // String startBinnedTemp = "";
+
+            try {
+              // In case appliance is not in the database, we send the object
+              // there
+              if (responseAppliance.getApplianceID().equalsIgnoreCase("")) {
+
+                responseAppliance.setApplianceID(APIUtilities
+                        .sendEntity(responseAppliance
+                                            .toJSON(APIUtilities.getUserID())
+                                            .toString(), "/app"));
+
+                APIUtilities.sendEntity(responseAppliance
+                        .powerConsumptionModelToJSON().toString(), "/consmod");
+              }
+              applianceTemp[i] = responseAppliance.getApplianceID();
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+          }
 
           try {
-            // In case appliance is not in the database, we send the object
-            // there
-            if (responseAppliance.getApplianceID().equalsIgnoreCase("")) {
-
-              responseAppliance.setApplianceID(APIUtilities
-                      .sendEntity(responseAppliance
-                                          .toJSON(APIUtilities.getUserID())
-                                          .toString(), "/app"));
-
-              APIUtilities.sendEntity(responseAppliance
-                      .powerConsumptionModelToJSON().toString(), "/consmod");
-            }
-            applianceTemp = responseAppliance.getApplianceID();
-
             // In case person is not in the database, we send the object
             // there
             if (person.getPersonID().equalsIgnoreCase("")) {
@@ -2266,16 +2294,18 @@ public class MainGUI extends JFrame
                               .toString(), "/pers"));
 
             }
+
             personTemp = installation.getPerson().getPersonID();
 
             response.setActivityID(APIUtilities.sendEntity(response
                     .activityToJSON(personTemp).toString(), "/act"));
 
-            String[] appliancesID = { applianceTemp };
+            String[] appliancesID = applianceTemp;
 
             response.setBehaviourID(APIUtilities
                     .sendEntity(response.toJSON(appliancesID).toString(),
                                 "/actmod"));
+
             responseTemp = response.getBehaviourID();
 
             response.getDailyTimes()
@@ -2284,6 +2314,7 @@ public class MainGUI extends JFrame
                                                                    .toJSON(responseTemp)
                                                                    .toString(),
                                                            "/distr"));
+
             response.setDailyID(response.getDailyTimes().getDistributionID());
             dailyTemp = response.getDailyID();
 
@@ -2307,21 +2338,13 @@ public class MainGUI extends JFrame
             response.setStartID(response.getStartTime().getDistributionID());
             startTemp = response.getStartID();
 
-            // id =
-            // APIUtilities
-            // .sendEntity(behaviour.getStartTimeBinned()
-            // .toJSON(behaviourTemp).toString(),
-            // "/distr");
-            // System.out.println("Start Time Binned Distribution Id:" + id);
-            // behaviour.getStartTimeBinned().setDistributionID(id);
-            // startBinnedTemp = id;
-
             APIUtilities.updateEntity(response.toJSON(appliancesID).toString(),
                                       "/actmod", responseTemp);
 
           }
-          catch (IOException | AuthenticationException
-                 | NoSuchAlgorithmException e1) {
+          catch (AuthenticationException | NoSuchAlgorithmException
+                 | IOException e1) {
+
             e1.printStackTrace();
           }
         }
@@ -2339,7 +2362,7 @@ public class MainGUI extends JFrame
           Appliance appliance = installation.findAppliance(selection);
 
           BehaviourModel behaviour =
-            installation.getPerson().findBehaviour(selection);
+            installation.getPerson().findBehaviour(selection, false);
 
           ResponseModel response =
             installation.getPerson().findResponse(selection);
@@ -2396,27 +2419,29 @@ public class MainGUI extends JFrame
           }
           else if (behaviour != null) {
 
-            Appliance behaviourAppliance =
-              installation.findAppliance(behaviour.getAppliancesOf()[0]);
-            String applianceTemp = "";
-
+            String[] applianceTemp =
+              new String[behaviour.getAppliancesOf().length];
+            Person person = installation.getPerson();
             String personTemp = "";
             String behaviourTemp = "";
             String durationTemp = "";
             String dailyTemp = "";
             String startTemp = "";
-            // String startBinnedTemp = "";
+
+            for (int j = 0; j < behaviour.getAppliancesOf().length; j++) {
+
+              Appliance behaviourAppliance =
+                installation.findAppliance(behaviour.getAppliancesOf()[j]);
+              applianceTemp[j] = behaviourAppliance.getApplianceID();
+            }
+            personTemp = installation.getPerson().getPersonID();
 
             try {
-
-              applianceTemp = behaviourAppliance.getApplianceID();
-
-              personTemp = installation.getPerson().getPersonID();
 
               behaviour.setActivityID(APIUtilities.sendEntity(behaviour
                       .activityToJSON(personTemp).toString(), "/act"));
 
-              String[] appliancesID = { applianceTemp };
+              String[] appliancesID = applianceTemp;
 
               behaviour.setBehaviourID(APIUtilities.sendEntity(behaviour
                       .toJSON(appliancesID).toString(), "/actmod"));
@@ -2469,27 +2494,30 @@ public class MainGUI extends JFrame
 
           }
           else if (response != null) {
-            Appliance responseAppliance =
-              installation.findAppliance(response.getAppliancesOf()[0]);
-            String applianceTemp = "";
-
+            String[] applianceTemp =
+              new String[response.getAppliancesOf().length];
+            Person person = installation.getPerson();
             String personTemp = "";
             String responseTemp = "";
             String durationTemp = "";
             String dailyTemp = "";
             String startTemp = "";
-            // String startBinnedTemp = "";
+
+            for (int j = 0; j < response.getAppliancesOf().length; j++) {
+
+              Appliance responseAppliance =
+                installation.findAppliance(response.getAppliancesOf()[j]);
+
+              applianceTemp[j] = responseAppliance.getApplianceID();
+            }
+            personTemp = installation.getPerson().getPersonID();
 
             try {
-
-              applianceTemp = responseAppliance.getApplianceID();
-
-              personTemp = installation.getPerson().getPersonID();
 
               response.setActivityID(APIUtilities.sendEntity(response
                       .activityToJSON(personTemp).toString(), "/act"));
 
-              String[] appliancesID = { applianceTemp };
+              String[] appliancesID = applianceTemp;
 
               response.setBehaviourID(APIUtilities
                       .sendEntity(response.toJSON(appliancesID).toString(),
@@ -2588,14 +2616,7 @@ public class MainGUI extends JFrame
     // System.out.println("Activity:" + activity.getName());
     for (Appliance appliance: installation.getAppliances()) {
 
-      String nameTemp = appliance.getName();
-
-      if (appliance.getName().split(" ").length != 2) {
-        nameTemp = nameTemp.replaceAll("[0-9]", "");
-        nameTemp = nameTemp.trim();
-      }
-
-      if (activity.getName().equalsIgnoreCase(nameTemp)) {
+      if (activity.getName().equalsIgnoreCase(appliance.getActivity())) {
         // System.out.println(appliance.getName());
         appliances.add(appliance);
       }

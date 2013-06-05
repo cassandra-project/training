@@ -42,10 +42,19 @@ public class ResponseModel extends BehaviourModel
   public ResponseModel (BehaviourModel behaviour, String person,
                         int responseType) throws IOException
   {
-    applianceOf = new String[0];
     applianceOf = behaviour.getAppliancesOf();
-    nameActivity = person + " " + applianceOf[0] + " Response Activity";
-    name = person + " " + applianceOf[0] + " Response Model";
+    if (behaviour.getActivity()) {
+
+      String temp = behaviour.getNameActivity().replace(" Activity", "");
+
+      nameActivity = temp + " Response Activity";
+      name = temp + " Response Model";
+    }
+    else {
+      nameActivity = person + " " + applianceOf[0] + " Response Activity";
+      name = person + " " + applianceOf[0] + " Response Model";
+    }
+
     this.person = person;
     switch (responseType) {
 
@@ -78,17 +87,10 @@ public class ResponseModel extends BehaviourModel
                                                  double[] basicScheme,
                                                  double[] newScheme)
   {
-    // PeakFinder pf =
-    // new
-    // PeakFinder(behaviour.getStartTimeBinnedDistribution().getHistogram());
-    //
-    // int peakIndex = pf.findGlobalMaximum().getIndexMinute();
 
     double[] before =
       Arrays.copyOf(behaviour.getStartTimeBinned().getHistogram(), behaviour
               .getStartTimeBinned().getHistogram().length);
-
-    // System.out.println(peakIndex);
 
     double[] after =
       behaviour.getStartTime().shiftingPreview(responseType, basicScheme,
