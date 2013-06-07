@@ -2017,18 +2017,6 @@ public class MainGUI extends JFrame
       public void actionPerformed (ActionEvent e)
       {
         boolean result = false;
-        System.out.println("Username: " + usernameTextField.getText()
-                           + " Password: "
-                           + String.valueOf(passwordField.getPassword())
-                           + " URL: " + urlTextField.getText());
-
-        // File directory =
-        // new File(System.getProperty("java.home") + "/jre/lib/security");
-        //
-        // File files[] = directory.listFiles();
-        // for (int index = 0; index < files.length; index++) {
-        // System.out.println(files[index].toString());
-        // }
 
         try {
           APIUtilities.setUrl(urlTextField.getText());
@@ -2137,8 +2125,6 @@ public class MainGUI extends JFrame
 
           String[] applianceTemp =
             new String[behaviour.getAppliancesOf().length];
-          Person person = installation.getPerson();
-          String personTemp = "";
           String behaviourTemp = "";
           String durationTemp = "";
           String dailyTemp = "";
@@ -2173,26 +2159,30 @@ public class MainGUI extends JFrame
           }
 
           try {
-            // In case person is not in the database, we send the object
-            // there
-            if (person.getPersonID().equalsIgnoreCase("")) {
-
-              person.setPersonID(APIUtilities
-                      .sendEntity(person.toJSON(APIUtilities.getUserID())
-                              .toString(), "/pers"));
-
-            }
-
-            personTemp = installation.getPerson().getPersonID();
-
-            behaviour.setActivityID(APIUtilities.sendEntity(behaviour
-                    .activityToJSON(personTemp).toString(), "/act"));
+            // // In case person is not in the database, we send the object
+            // // there
+            // if (person.getPersonID().equalsIgnoreCase("")) {
+            //
+            // person.setPersonID(APIUtilities
+            // .sendEntity(person.toJSON(APIUtilities.getUserID())
+            // .toString(), "/pers"));
+            //
+            // }
+            //
+            // personTemp = installation.getPerson().getPersonID();
+            //
+            // behaviour.setActivityID(APIUtilities.sendEntity(behaviour
+            // .activityToJSON(APIUtilities
+            // .getUserID())
+            // .toString(),
+            // "/act"));
 
             String[] appliancesID = applianceTemp;
 
             behaviour.setBehaviourID(APIUtilities
-                    .sendEntity(behaviour.toJSON(appliancesID).toString(),
-                                "/actmod"));
+                    .sendEntity(behaviour.toJSON(appliancesID,
+                                                 APIUtilities.getUserID())
+                                        .toString(), "/actmod"));
 
             behaviourTemp = behaviour.getBehaviourID();
 
@@ -2233,9 +2223,11 @@ public class MainGUI extends JFrame
             behaviour.setStartID(behaviour.getStartTime().getDistributionID());
             startTemp = behaviour.getStartID();
 
-            APIUtilities
-                    .updateEntity(behaviour.toJSON(appliancesID).toString(),
-                                  "/actmod", behaviourTemp);
+            APIUtilities.updateEntity(behaviour
+                                              .toJSON(appliancesID,
+                                                      APIUtilities.getUserID())
+                                              .toString(), "/actmod",
+                                      behaviourTemp);
 
           }
           catch (AuthenticationException | NoSuchAlgorithmException

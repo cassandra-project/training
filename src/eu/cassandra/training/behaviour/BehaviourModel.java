@@ -532,6 +532,26 @@ public class BehaviourModel
 
   }
 
+  public DBObject toJSON (String[] appliancesID, String activityID)
+  {
+
+    DBObject temp = new BasicDBObject();
+
+    temp.put("name", name);
+    temp.put("type", type);
+    temp.put("description", name + " " + type);
+    temp.put("shiftable", shiftable);
+    temp.put("day_type", dayType);
+    temp.put("containsAppliances", appliancesID);
+    temp.put("act_id", activityID);
+    temp.put("duration", durationID);
+    temp.put("startTime", startID);
+    temp.put("repeatsNrOfTime", dailyID);
+
+    return temp;
+
+  }
+
   public void status ()
   {
     System.out.println("Name: " + name);
