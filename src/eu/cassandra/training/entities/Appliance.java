@@ -106,8 +106,7 @@ public class Appliance
 
     this.name = name;
     this.installation = installation.getName();
-    parsePowerConsumptionModel(powerModelFile);
-    parseReactiveConsumptionModel(reactiveModelFile);
+    parseConsumptionModel(powerModelFile);
     this.eventsFile = eventFile;
     activePower = installation.getActivePower();
     if (!power)
@@ -294,7 +293,7 @@ public class Appliance
     return reactivePower[index];
   }
 
-  public void parsePowerConsumptionModel (String filename) throws IOException
+  public void parseConsumptionModel (String filename) throws IOException
   {
 
     File file = new File(filename);
@@ -324,39 +323,15 @@ public class Appliance
     powerConsumptionModelString = model;
     DBObject dbo = (DBObject) JSON.parse(powerConsumptionModelString);
     powerConsumptionModel.init(dbo);
-  }
 
-  public void parseReactiveConsumptionModel (String filename)
-    throws IOException
-  {
-
-    File file = new File(filename);
-
-    String model = "";
-
-    String extension =
-      filename.substring(filename.length() - 3, filename.length());
-
-    Scanner scanner = new Scanner(file);
-    switch (extension) {
-
-    case "son":
-
-      while (scanner.hasNext())
-        model = model + scanner.nextLine();
-      break;
-    default:
-
-      while (scanner.hasNext())
-        model = model + scanner.nextLine();
-
-      model.replace(" ", "");
-    }
-    scanner.close();
-
-    reactiveConsumptionModelString = model;
-    DBObject dbo = (DBObject) JSON.parse(reactiveConsumptionModelString);
+    reactiveConsumptionModelString =
+      powerConsumptionModelString.replace("p", "q");
+    reactiveConsumptionModelString =
+      reactiveConsumptionModelString.replace("qara", "para");
+    System.out.println(reactiveConsumptionModelString);
+    dbo = (DBObject) JSON.parse(reactiveConsumptionModelString);
     reactiveConsumptionModel.init(dbo);
+
   }
 
   public String toString ()

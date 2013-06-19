@@ -1034,6 +1034,7 @@ public class MainGUI extends JFrame
           else if (singleApplianceRadioButton.isSelected()) {
             consumptionPathField.setEnabled(true);
             consumptionBrowseButton.setEnabled(true);
+
           }
 
           exportModels.addElement(installation.toString());
@@ -1276,11 +1277,14 @@ public class MainGUI extends JFrame
 
         Appliance appliance = null;
         try {
+
+          int rand = (int) (Math.random() * 5);
+
           appliance =
             new Appliance(name, consumptionPathField.getText(),
-                          consumptionPathField.getText().replace("p", "q"),
-                          "Demo/eventsAll11.csv", installation,
-                          activePowerRadioButton.isSelected());
+                          consumptionPathField.getText(), "Demo/eventsAll"
+                                                          + rand + ".csv",
+                          installation, activePowerRadioButton.isSelected());
         }
         catch (IOException e1) {
           e1.printStackTrace();
@@ -1319,7 +1323,7 @@ public class MainGUI extends JFrame
         consumptionModelPanel.removeAll();
         consumptionModelPanel.updateUI();
 
-        if (detectedAppliances.size() > 1) {
+        if (detectedAppliances.size() >= 1) {
 
           String selection = detectedApplianceList.getSelectedValue();
 
@@ -1581,7 +1585,7 @@ public class MainGUI extends JFrame
         distributionPreviewPanel.removeAll();
         distributionPreviewPanel.updateUI();
 
-        if (selectedAppliances.size() > 1) {
+        if (selectedAppliances.size() >= 1) {
           String selection = selectedApplianceList.getSelectedValue();
 
           Appliance currentAppliance = installation.findAppliance(selection);
@@ -2159,23 +2163,6 @@ public class MainGUI extends JFrame
           }
 
           try {
-            // // In case person is not in the database, we send the object
-            // // there
-            // if (person.getPersonID().equalsIgnoreCase("")) {
-            //
-            // person.setPersonID(APIUtilities
-            // .sendEntity(person.toJSON(APIUtilities.getUserID())
-            // .toString(), "/pers"));
-            //
-            // }
-            //
-            // personTemp = installation.getPerson().getPersonID();
-            //
-            // behaviour.setActivityID(APIUtilities.sendEntity(behaviour
-            // .activityToJSON(APIUtilities
-            // .getUserID())
-            // .toString(),
-            // "/act"));
 
             String[] appliancesID = applianceTemp;
 
@@ -2413,7 +2400,7 @@ public class MainGUI extends JFrame
 
             String[] applianceTemp =
               new String[behaviour.getAppliancesOf().length];
-            Person person = installation.getPerson();
+
             String personTemp = "";
             String behaviourTemp = "";
             String durationTemp = "";
@@ -2488,7 +2475,7 @@ public class MainGUI extends JFrame
           else if (response != null) {
             String[] applianceTemp =
               new String[response.getAppliancesOf().length];
-            Person person = installation.getPerson();
+
             String personTemp = "";
             String responseTemp = "";
             String durationTemp = "";
