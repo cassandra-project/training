@@ -13,86 +13,203 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-
-package eu.cassandra.training.behaviour;
+package eu.cassandra.training.activity;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Scanner;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import eu.cassandra.training.response.Incentive;
 import eu.cassandra.training.response.IncentiveVector;
-import eu.cassandra.training.response.PeakFinder;
 import eu.cassandra.training.response.PricingVector;
 import eu.cassandra.training.utils.Constants;
-import eu.cassandra.training.utils.RNG;
 import eu.cassandra.training.utils.Utils;
 
 /**
- * @author Antonios Chrysopoulos
- * @version prelim
- * @since 2012-26-06
+ * This class is used for implementing a Normal (Gaussian) distribution to use
+ * in the activity models that are created in the Training Module of
+ * Cassandra Project. The same class has been used, with small alterations in
+ * the main Cassandra Platform.
+ * 
+ * @author Christos Diou, Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
  */
-public class GaussianMixtureModels implements ProbabilityDistribution
+
+public class Gaussian implements ProbabilityDistribution
 {
 
+  /**
+   * The name of the Normal distribution.
+   */
   private String name = "";
-  private String type = "";
-  private String distributionID = "";
-  protected double[] pi;
-  protected Gaussian[] gaussians;
 
-  // For precomputation
+  /**
+   * The type of the Normal distribution.
+   */
+  private String type = "";
+
+  /**
+   * The mean value of the Normal distribution.
+   */
+  protected double mean;
+
+  /**
+   * The standard deviation value of the Normal distribution.
+   */
+  protected double sigma;
+
+  /**
+   * A boolean variable that shows if the values of the Normal distribution
+   * histogram
+   * has been precomputed or not.
+   */
   protected boolean precomputed;
+
+  /**
+   * A variable presenting the number of bins that are created for the histogram
+   * containing the values of the Normal distribution.
+   */
   protected int numberOfBins;
+
+  /**
+   * The starting point of the bins for the precomputed values.
+   */
   protected double precomputeFrom;
+
+  /**
+   * The ending point of the bins for the precomputed values.
+   */
   protected double precomputeTo;
+
+  /**
+   * An array containing the probabilities of each bin precomputed for the
+   * Normal distribution.
+   */
   protected double[] histogram;
+
+  /** The id of the distribution as given by the Cassandra server. */
+  private String distributionID = "";
+
+  /**
+   * Function that computes the phi of a value.
+   * 
+   * @param x
+   *          The selected value.
+   * 
+   * @return the phi value of the input value.
+   */
+  private static double phi (double x)
+  {
+    return Math.exp(-(x * x) / 2) / Math.sqrt(2 * Math.PI);
+  }
+
+  /**
+   * Function that computes the phi of a value.
+   * 
+   * @param x
+   *          The selected value.
+   * @param mu
+   *          The mean value parameter of the Normal Distribution.
+   * @param s
+   *          The standard deviation value parameter of the Normal Distribution.
+   * 
+   * @return the phi value of the input value.
+   */
+  private static double phi (int x, double mu, double s)
+  {
+    return phi((x - mu) / s) / s;
+  }
+
+  /**
+   * Function that computes the standard Gaussian cdf using Taylor
+   * approximation.
+   * 
+   * @param z
+   *          The selected value.
+   * 
+   * @return the phi value of the input value.
+   */
+  private static double bigPhi (double z)
+  {
+    if (z < -8.0) {
+      return 0.0;
+    }
+    if (z > 8.0) {
+      return 1.0;
+    }
+
+    double sum = 0.0;
+    double term = z;
+    for (int i = 3; Math.abs(term) > 1e-5; i += 2) {
+      sum += term;
+      term *= (z * z) / i;
+    }
+    return 0.5 + sum * phi(z);
+  }
+
+  /**
+   * Function that computes the standard Gaussian cdf using Taylor
+   * approximation.
+   * 
+   * @param z
+   *          The selected value.
+   * @param mu
+   *          The mean value parameter of the Normal Distribution.
+   * @param s
+   *          The standard deviation value parameter of the Normal Distribution.
+   * 
+   * @return the phi value of the input value.
+   */
+  protected static double bigPhi (double z, double mu, double s)
+  {
+    return bigPhi((z - mu) / s);
+  }
 
   /**
    * Constructor. Sets the parameters of the standard normal distribution,
    * with mean 0 and standard deviation 1.
    */
-  public GaussianMixtureModels (int n)
+  public Gaussian ()
   {
-    name = "Generic Mixture";
-    type = "Gaussian Mixture Models";
-    pi = new double[n];
-    for (int i = 0; i < n; i++) {
-      pi[i] = (1.0 / n);
-      gaussians[i] = new Gaussian();
-    }
+    name = "Generic Normal";
+    type = "Normal Distribution";
+    mean = 0.0;
+    sigma = 1.0;
     precomputed = false;
   }
 
   /**
+   * Constructor of a Normal distribution with given parameters.
+   * 
    * @param mu
    *          Mean value of the Gaussian distribution.
    * @param s
    *          Standard deviation of the Gaussian distribution.
    */
-  public GaussianMixtureModels (int n, double[] pi, double[] mu, double[] s)
+  public Gaussian (double mu, double s)
   {
-    name = "Generic Mixture";
-    type = "Gaussian Mixture Models";
-    gaussians = new Gaussian[n];
-    for (int i = 0; i < n; i++) {
-      this.pi = pi;
-      gaussians[i] = new Gaussian(mu[i], s[i]);
-    }
+    name = "Generic";
+    type = "Normal Distribution";
+    mean = mu;
+    sigma = s;
     precomputed = false;
   }
 
-  public GaussianMixtureModels (String filename) throws FileNotFoundException
+  /**
+   * Constructor of a Normal distribution with parameters parsed from a file.
+   * 
+   * @param filename
+   *          The file name of the input file.
+   */
+  public Gaussian (String filename) throws FileNotFoundException
   {
     name = filename;
-    type = "Gaussian Mixture Models";
+    type = "Normal Distribution";
     File file = new File(filename);
     Scanner input = new Scanner(file);
     String nextLine = input.nextLine();
@@ -100,161 +217,108 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     String[] temp = nextLine.split(":");
     int maxValue = Integer.parseInt(temp[1]);
 
-    // Read the number of mixtures
     nextLine = input.nextLine();
-    int n = Integer.parseInt(nextLine);
-    String[] line = new String[n];
 
-    // Read the percentage of presence
+    mean = Double.parseDouble(nextLine.replace(",", "."));
+
     nextLine = input.nextLine();
-    line = nextLine.split("-");
-    pi = new double[n];
-    for (int i = 0; i < n; i++) {
 
-      pi[i] = Double.parseDouble(line[i].replace(",", "."));
-
-    }
-
-    // Read the means
-    nextLine = input.nextLine();
-    line = nextLine.split("-");
-    double[] mu = new double[n];
-    for (int i = 0; i < n; i++) {
-
-      mu[i] = Double.parseDouble(line[i].replace(",", "."));
-
-    }
-
-    // Read the sigmas
-    nextLine = input.nextLine();
-    line = nextLine.split("-");
-    double[] s = new double[n];
-    for (int i = 0; i < n; i++) {
-
-      s[i] = Double.parseDouble(line[i].replace(",", "."));
-
-    }
-
-    gaussians = new Gaussian[n];
-    for (int i = 0; i < n; i++) {
-      gaussians[i] = new Gaussian(mu[i], s[i]);
-    }
+    sigma = Double.parseDouble(nextLine.replace(",", "."));
 
     precompute(0, maxValue, maxValue);
-
-    // status();
 
     input.close();
 
   }
 
-  public String getName ()
-  {
-    return name;
-  }
-
-  public String getType ()
-  {
-    return type;
-  }
-
+  @Override
   public String getDistributionID ()
   {
     return distributionID;
   }
 
+  @Override
   public void setDistributionID (String id)
   {
     distributionID = id;
   }
 
+  @Override
   public String getDescription ()
   {
-    String description = "Gaussian Mixture Models probability density function";
+    String description = "Gaussian probability density function";
     return description;
   }
 
+  @Override
   public int getNumberOfParameters ()
   {
-    return 3 * pi.length;
+    return 2;
   }
 
-  public double[] getParameters (int index)
+  @Override
+  public double getParameter (int index)
   {
-    double[] temp = new double[3];
+    switch (index) {
+    case 0:
+      return mean;
+    case 1:
+      return sigma;
+    default:
+      return 0.0;
+    }
 
-    temp[0] = gaussians[index].getParameter(0);
-    temp[1] = gaussians[index].getParameter(1);
-    temp[2] = pi[index];
-
-    return temp;
   }
 
-  public void setParameters (int index, double[] values)
+  @Override
+  public void setParameter (int index, double value)
   {
-
-    gaussians[index].setParameter(0, values[0]);
-    gaussians[index].setParameter(1, values[1]);
-    pi[index] = values[2];
-
+    switch (index) {
+    case 0:
+      mean = value;
+      break;
+    case 1:
+      sigma = value;
+      break;
+    default:
+      return;
+    }
   }
 
+  @Override
   public void precompute (int startValue, int endValue, int nBins)
   {
-    if (startValue >= endValue) {
-      System.out.println("The end point is before the start point.");
+    if ((startValue >= endValue) || (nBins == 0)) {
+      System.out.println("Start Value > End Value or Number of Bins = 0");
       return;
     }
     precomputeFrom = startValue;
     precomputeTo = endValue;
     numberOfBins = nBins;
+
+    double div = (endValue - startValue) / (double) nBins;
     histogram = new double[nBins];
 
-    for (int i = 0; i < gaussians.length; i++) {
-      gaussians[i].precompute(startValue, endValue, nBins);
-    }
-
+    double residual =
+      bigPhi(startValue, mean, sigma) + 1 - bigPhi(endValue, mean, sigma);
+    residual /= nBins;
     for (int i = 0; i < nBins; i++) {
-
-      for (int j = 0; j < gaussians.length; j++) {
-        histogram[i] += pi[j] * gaussians[j].getPrecomputedProbability(i);
-      }
-
+      // double x = startValue + i * div - small_number;
+      double x = startValue + i * div;
+      histogram[i] =
+        bigPhi(x + div / 2.0, mean, sigma) - bigPhi(x - div / 2.0, mean, sigma);
+      histogram[i] += residual;
     }
-
     precomputed = true;
   }
 
+  @Override
   public double getProbability (int x)
   {
-    double sum = 0;
-    for (int j = 0; j < pi.length; j++) {
-      sum += pi[j] * gaussians[j].getProbability(x);
-    }
-    return sum;
+    return phi(x, mean, sigma);
   }
 
-  public double getCumulativeProbability (int z)
-  {
-    double sum = 0;
-    for (int j = 0; j < pi.length; j++) {
-      sum +=
-        pi[j]
-                * Gaussian.bigPhi(z, gaussians[j].getParameter(0),
-                                  gaussians[j].getParameter(1));
-    }
-    return sum;
-  }
-
-  public double getParameter (int index)
-  {
-    return 0;
-  }
-
-  public void setParameter (int index, double value)
-  {
-  }
-
+  @Override
   public double getPrecomputedProbability (int x)
   {
     if (!precomputed) {
@@ -268,13 +332,15 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     return histogram[bin];
   }
 
+  @Override
   public int getPrecomputedBin ()
   {
     if (!precomputed) {
       return -1;
     }
+    Random random = new Random();
     // double div = (precomputeTo - precomputeFrom) / (double) numberOfBins;
-    double dice = RNG.nextDouble();
+    double dice = random.nextDouble();
     double sum = 0;
     for (int i = 0; i < numberOfBins; i++) {
       sum += histogram[i];
@@ -285,77 +351,29 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     return -1;
   }
 
-  public double[] getHistogram ()
-  {
-
-    return histogram;
-
-  }
-
+  @Override
   public void status ()
   {
-
-    System.out.print("Gaussian Mixture with");
-    System.out.println(" Number of Mixtures:" + pi.length);
-    for (int i = 0; i < pi.length; i++) {
-      System.out.print("Mixture " + i);
-      System.out.print(" Mean: " + gaussians[i].getParameter(0));
-      System.out.print(" Sigma: " + gaussians[i].getParameter(1));
-      System.out.print(" Weight: " + pi[i]);
-      System.out.println();
-    }
+    System.out.print("Normal Distribution with");
+    System.out.print(" Mean: " + getParameter(0));
+    System.out.println(" Sigma: " + getParameter(1));
     System.out.println("Precomputed: " + precomputed);
     if (precomputed) {
-      System.out.print("Number of Beans: " + numberOfBins);
+      System.out.print("Number of Bins: " + numberOfBins);
       System.out.print(" Starting Point: " + precomputeFrom);
       System.out.println(" Ending Point: " + precomputeTo);
     }
     System.out.println(Arrays.toString(histogram));
+
   }
 
-  public static void main (String[] args) throws IOException
+  @Override
+  public double[] getHistogram ()
   {
-    System.out.println("Testing Mixture Creation.");
-
-    GaussianMixtureModels g;
-    RNG.init();
-    /*
-     * double[] pi = { 0.3, 0.5, 0.2 };
-     * 
-     * double[] mean = { 100, 200, 300 };
-     * 
-     * double[] std = { 10, 20, 30 };
-     * 
-     * g = new GaussianMixtureModels(3, pi, mean, std);
-     */
-    g = new GaussianMixtureModels("Files/newGMM.csv");
-
-    double[] temp = g.getHistogram();
-    double sum = 0;
-
-    for (int i = 0; i < Constants.MINUTES_PER_DAY; i++)
-      sum += temp[i];
-
-    System.out.println("Summary:" + sum);
-    PeakFinder pf = new PeakFinder(temp);
-
-    pf.findLocalIntervalMaxima();
-    pf.showListInterval();
-    System.out.println(pf.findGlobalIntervalMaximum().toString());
-    System.out.println();
-
-    // int peakIndex = pf.findGlobalIntervalMaximum().getIndexMinute();
-
-    // g.movePeak(peakIndex * Constants.MINUTES_PER_BIN, 30);
-
-    g.precompute(0, 1440, 1440);
-
-    double[] temp2 = g.getHistogram();
-
-    System.out.println(temp.length + " " + temp2.length);
-
+    return histogram;
   }
 
+  @Override
   public double getProbabilityGreaterEqual (int x)
   {
     double prob = 0;
@@ -368,55 +386,10 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     return prob;
   }
 
+  @Override
   public double getProbabilityLess (int x)
   {
     return 1 - getProbabilityGreaterEqual(x);
-  }
-
-  public double[] movingAverage (int index, int window)
-  {
-    int side = 0;
-    if (window % 2 == 1)
-      side = (int) (window / 2);
-    else {
-      window++;
-      side = (int) (window / 2) + 1;
-    }
-
-    double[] histogram = Arrays.copyOf(this.histogram, this.histogram.length);
-
-    int startIndex = Math.max(index - side, 0);
-    int endIndex = Math.min(index + side, Constants.MINUTES_PER_DAY);
-
-    for (int i = startIndex; i < endIndex; i++) {
-      double temp = 0;
-      // System.out.print("Index:" + i + " Old Value: " + values[i]);
-
-      for (int j = -side; j < side; j++)
-        temp += histogram[i + j];
-
-      histogram[i] = temp / window;
-      // System.out.println("New Value: " + values[i]);
-    }
-
-    double sum = 0;
-
-    for (int i = 0; i < histogram.length; i++)
-      sum += histogram[i];
-
-    double diff = 1 - sum;
-    double diffPortion = diff / window;
-
-    System.out.println("Summary: " + sum + " Difference: " + diff
-                       + " Portion: " + diffPortion);
-
-    for (int i = 0; i < window; i++)
-      histogram[endIndex + i] += diffPortion;
-
-    for (int i = 0; i < window; i++)
-      histogram[startIndex - i] += diffPortion;
-
-    return histogram;
   }
 
   @Override
@@ -426,7 +399,8 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
     if (shiftingCase == 0) {
 
-      histogram = shiftingBest(newScheme);
+      histogram = shiftingOptimal(newScheme);
+
     }
     else if (shiftingCase == 1) {
 
@@ -434,7 +408,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     }
     else if (shiftingCase == 2) {
 
-      histogram = shiftingWorst(basicScheme, newScheme);
+      histogram = shiftingDiscrete(basicScheme, newScheme);
     }
     else {
       System.out.println("ERROR in shifting function");
@@ -451,7 +425,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
     if (shiftingCase == 0) {
 
-      result = shiftingBest(newScheme);
+      result = shiftingOptimal(newScheme);
     }
     else if (shiftingCase == 1) {
 
@@ -459,7 +433,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     }
     else if (shiftingCase == 2) {
 
-      result = shiftingWorst(basicScheme, newScheme);
+      result = shiftingDiscrete(basicScheme, newScheme);
     }
     else {
       System.out.println("ERROR in shifting function");
@@ -472,7 +446,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   }
 
   @Override
-  public double[] shiftingBest (double[] newScheme)
+  public double[] shiftingOptimal (double[] newScheme)
   {
     double[] result = new double[Constants.MINUTES_PER_DAY];
 
@@ -500,36 +474,42 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     IncentiveVector inc = new IncentiveVector(basicScheme, newScheme);
 
     if (pricingVector.getPrices().size() > 1)
-      for (Incentive incentive: inc.getIncentives())
+      for (Incentive incentive: inc.getIncentives()) {
         result = movingAverage(result, incentive);
+      }
 
     return result;
 
   }
 
   @Override
-  public double[] shiftingWorst (double[] basicScheme, double[] newScheme)
+  public double[] shiftingDiscrete (double[] basicScheme, double[] newScheme)
   {
     double[] result = Arrays.copyOf(histogram, histogram.length);
 
     PricingVector pricingVector = new PricingVector(basicScheme, newScheme);
 
     if (pricingVector.getPrices().size() > 1)
-      result = worstAverage(result, pricingVector);
+      result = discreteAverage(result, pricingVector);
 
     return result;
   }
 
-  private double[] movingAverage (double[] values, Incentive incentive)
+  @Override
+  public double[] movingAverage (double[] values, Incentive incentive)
   {
+    // Initialize the auxiliary variables.
     int side = -1;
     int startIndex = incentive.getStartMinute();
     int endIndex = incentive.getEndMinute();
     double overDiff = 0;
     double temp = 0;
     String type = "";
-    double sum = 0;
+    // double sum = 0;
 
+    // First, the incentive type is checked (penalty or reward) and then the
+    // before and after values are checked to see how the residual percentage
+    // will be distributed.
     if (incentive.isPenalty()) {
 
       if (incentive.getBeforeDifference() > 0
@@ -568,10 +548,12 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
     }
 
-    System.out.println("Penalty: " + incentive.isPenalty() + " Type: " + type);
+    // System.out.println("Penalty: " + incentive.isPenalty() + " Type: " +
+    // type);
 
     if (!type.equalsIgnoreCase("None")) {
-
+      // In case of penalty the residual percentage is moved out of the window
+      // to close distance, either on one or both sides accordingly
       if (incentive.isPenalty()) {
 
         for (int i = startIndex; i < endIndex; i++) {
@@ -632,6 +614,8 @@ public class GaussianMixtureModels implements ProbabilityDistribution
           }
         }
       }
+      // In case of reward a percentage of the close distances are moved in the
+      // window, either from one or both sides accordingly.
       else {
         side = Constants.SHIFTING_WINDOW_IN_MINUTES * 2;
         switch (type) {
@@ -703,20 +687,25 @@ public class GaussianMixtureModels implements ProbabilityDistribution
       }
 
     }
-    for (int i = 0; i < values.length; i++)
-      sum += values[i];
-    System.out.println("Summary: " + sum);
+    // for (int i = 0; i < values.length; i++)
+    // sum += values[i];
+    // System.out.println("Summary: " + sum);
 
     return values;
   }
 
-  private double[] worstAverage (double[] values, PricingVector pricing)
+  @Override
+  public double[] discreteAverage (double[] values, PricingVector pricing)
   {
+
+    // Initialize the auxiliary variables.
     double temp = 0;
-    double sum = 0;
+    // double sum = 0;
     double overDiff = 0;
     int start, end;
     double newPrice;
+
+    // Finding the cheapest window in the day.
     int cheapest = pricing.getCheapest();
     int startCheapest =
       pricing.getPrices(pricing.getCheapest()).getStartMinute();
@@ -724,10 +713,12 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     int durationCheapest = endCheapest - startCheapest;
     double cheapestPrice = pricing.getPrices(pricing.getCheapest()).getPrice();
 
+    // Moving from all the available vectors residual percentages to the
+    // cheapest one.
     for (int i = 0; i < pricing.getPrices().size(); i++) {
 
       if (i != cheapest) {
-        sum = 0;
+        // sum = 0;
         overDiff = 0;
         start = pricing.getPrices(i).getStartMinute();
         end = pricing.getPrices(i).getEndMinute();
@@ -744,9 +735,9 @@ public class GaussianMixtureModels implements ProbabilityDistribution
         for (int j = startCheapest; j <= endCheapest; j++)
           values[j] += additive;
 
-        for (int j = 0; j < values.length; j++)
-          sum += values[j];
-        System.out.println("Summary after index " + i + ": " + sum);
+        // for (int j = 0; j < values.length; j++)
+        // sum += values[j];
+        // System.out.println("Summary after index " + i + ": " + sum);
 
       }
 
@@ -755,27 +746,18 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     return values;
   }
 
+  @Override
   public DBObject toJSON (String activityModelID)
   {
+
     double[] values = new double[1];
     DBObject temp = new BasicDBObject();
-    BasicDBList param = new BasicDBList();
+    DBObject[] param = new BasicDBObject[1];
 
-    for (int i = 0; i < gaussians.length; i++) {
-      DBObject paramItem = new BasicDBObject();
+    param[0] = new BasicDBObject();
 
-      double[] means = new double[gaussians.length];
-      double[] sigmas = new double[gaussians.length];
-
-      means[i] = gaussians[i].mean;
-      sigmas[i] = gaussians[i].sigma;
-
-      paramItem.put("w", pi[i]);
-      paramItem.put("mean", means[i]);
-      paramItem.put("std", sigmas[i]);
-
-      param.add(paramItem);
-    }
+    param[0].put("mean", mean);
+    param[0].put("std", sigma);
 
     temp.put("name", name);
     temp.put("type", type);
@@ -784,7 +766,9 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     temp.put("actmod_id", activityModelID);
     temp.put("parameters", param);
     temp.put("values", values);
+
     return temp;
 
   }
+
 }

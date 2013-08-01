@@ -14,13 +14,14 @@
    limitations under the License.
  */
 
-package eu.cassandra.training.behaviour;
+package eu.cassandra.training.activity;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Scanner;
 
 import com.mongodb.BasicDBList;
@@ -31,19 +32,53 @@ import eu.cassandra.training.response.Incentive;
 import eu.cassandra.training.response.IncentiveVector;
 import eu.cassandra.training.response.PricingVector;
 import eu.cassandra.training.utils.Constants;
-import eu.cassandra.training.utils.RNG;
 import eu.cassandra.training.utils.Utils;
 
+/**
+ * This class is used for implementing a Histogram distribution to use
+ * in the activity models that are created in the Training Module of
+ * Cassandra Project. The same class has been used, with small alterations in
+ * the main Cassandra Platform.
+ * 
+ * @author Christos Diou, Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
 public class Histogram implements ProbabilityDistribution
 {
 
+  /**
+   * The name of the Histogram distribution.
+   */
   private String name = "";
-  private String type = "";
-  private String distributionID = "";
 
+  /**
+   * The type of the Normal distribution.
+   */
+  private String type = "";
+  /**
+   * A variable presenting the number of bins that are created for the histogram
+   * containing the values of the Normal distribution.
+   */
   protected int numberOfBins;
+
+  /**
+   * An array containing the probabilities of each bin precomputed for the
+   * Normal distribution.
+   */
   protected double[] values;
 
+  /** The id of the distribution as given by the Cassandra server. */
+  private String distributionID = "";
+
+  /**
+   * 
+   * Constructor of a Histogram distribution with given parameters.
+   * 
+   * @param name
+   *          The name of the distribution
+   * @param values
+   *          The values for the array of values
+   */
   public Histogram (String name, double[] values)
   {
     this.name = name;
@@ -52,6 +87,12 @@ public class Histogram implements ProbabilityDistribution
     this.values = values;
   }
 
+  /**
+   * Constructor of a Histogram distribution with parameters parsed from a file.
+   * 
+   * @param filename
+   *          The file name of the input file.
+   */
   public Histogram (String filename) throws FileNotFoundException
   {
     name = filename;
@@ -86,32 +127,17 @@ public class Histogram implements ProbabilityDistribution
         values[i] = 0;
     }
 
-    /*
-     * double sum = 0;
-     * 
-     * for (int i = 0; i < numberOfBins; i++) sum += values[i];
-     * 
-     * System.out.println(sum);
-     */
     input.close();
     file.deleteOnExit();
   }
 
-  public String getName ()
-  {
-    return name;
-  }
-
-  public String getType ()
-  {
-    return type;
-  }
-
+  @Override
   public String getDistributionID ()
   {
     return distributionID;
   }
 
+  @Override
   public void setDistributionID (String id)
   {
     distributionID = id;
@@ -140,12 +166,14 @@ public class Histogram implements ProbabilityDistribution
   {
   }
 
+  @Override
   public String getDescription ()
   {
     String description = "Histogram probability Frequency function";
     return description;
   }
 
+  @Override
   public double getProbability (int x)
   {
     if (x < 0)
@@ -154,6 +182,7 @@ public class Histogram implements ProbabilityDistribution
       return values[x];
   }
 
+  @Override
   public double getPrecomputedProbability (int x)
   {
     if (x < 0)
@@ -162,10 +191,11 @@ public class Histogram implements ProbabilityDistribution
       return values[x];
   }
 
+  @Override
   public int getPrecomputedBin ()
   {
-
-    double dice = RNG.nextDouble();
+    Random random = new Random();
+    double dice = random.nextDouble();
     double sum = 0;
     for (int i = 0; i < numberOfBins; i++) {
       sum += values[i];
@@ -176,6 +206,7 @@ public class Histogram implements ProbabilityDistribution
     return -1;
   }
 
+  @Override
   public void status ()
   {
     System.out.println("Histogram Distribution");
@@ -188,13 +219,13 @@ public class Histogram implements ProbabilityDistribution
 
   }
 
+  @Override
   public double[] getHistogram ()
   {
-
     return values;
-
   }
 
+  @Override
   public double getProbabilityGreaterEqual (int x)
   {
     double prob = 0;
@@ -207,66 +238,27 @@ public class Histogram implements ProbabilityDistribution
     return prob;
   }
 
+  @Override
   public double getProbabilityLess (int x)
   {
     return 1 - getProbabilityGreaterEqual(x);
   }
 
-  private double[] worstAverage (double[] values, PricingVector pricing)
+  @Override
+  public double[] movingAverage (double[] values, Incentive incentive)
   {
-    double temp = 0;
-    double sum = 0;
-    double overDiff = 0;
-    int start, end;
-    double newPrice;
-    int cheapest = pricing.getCheapest();
-    int startCheapest =
-      pricing.getPrices(pricing.getCheapest()).getStartMinute();
-    int endCheapest = pricing.getPrices(pricing.getCheapest()).getEndMinute();
-    int durationCheapest = endCheapest - startCheapest;
-    double cheapestPrice = pricing.getPrices(pricing.getCheapest()).getPrice();
-
-    for (int i = 0; i < pricing.getPrices().size(); i++) {
-
-      if (i != cheapest) {
-        sum = 0;
-        overDiff = 0;
-        start = pricing.getPrices(i).getStartMinute();
-        end = pricing.getPrices(i).getEndMinute();
-        newPrice = pricing.getPrices(i).getPrice();
-
-        for (int j = start; j <= end; j++) {
-          temp = cheapestPrice * values[j] / newPrice;
-          overDiff += values[j] - temp;
-          values[j] = temp;
-        }
-
-        double additive = overDiff / durationCheapest;
-
-        for (int j = startCheapest; j <= endCheapest; j++)
-          values[j] += additive;
-
-        for (int j = 0; j < values.length; j++)
-          sum += values[j];
-        System.out.println("Summary after index " + i + ": " + sum);
-
-      }
-
-    }
-
-    return values;
-  }
-
-  private double[] movingAverage (double[] values, Incentive incentive)
-  {
+    // Initialize the auxiliary variables.
     int side = -1;
     int startIndex = incentive.getStartMinute();
     int endIndex = incentive.getEndMinute();
     double overDiff = 0;
     double temp = 0;
     String type = "";
-    double sum = 0;
+    // double sum = 0;
 
+    // First, the incentive type is checked (penalty or reward) and then the
+    // before and after values are checked to see how the residual percentage
+    // will be distributed.
     if (incentive.isPenalty()) {
 
       if (incentive.getBeforeDifference() > 0
@@ -305,10 +297,12 @@ public class Histogram implements ProbabilityDistribution
 
     }
 
-    System.out.println("Penalty: " + incentive.isPenalty() + " Type: " + type);
+    // System.out.println("Penalty: " + incentive.isPenalty() + " Type: " +
+    // type);
 
     if (!type.equalsIgnoreCase("None")) {
-
+      // In case of penalty the residual percentage is moved out of the window
+      // to close distance, either on one or both sides accordingly
       if (incentive.isPenalty()) {
 
         for (int i = startIndex; i < endIndex; i++) {
@@ -369,6 +363,8 @@ public class Histogram implements ProbabilityDistribution
           }
         }
       }
+      // In case of reward a percentage of the close distances are moved in the
+      // window, either from one or both sides accordingly.
       else {
         side = Constants.SHIFTING_WINDOW_IN_MINUTES * 2;
         switch (type) {
@@ -440,9 +436,61 @@ public class Histogram implements ProbabilityDistribution
       }
 
     }
-    for (int i = 0; i < values.length; i++)
-      sum += values[i];
-    System.out.println("Summary: " + sum);
+    // for (int i = 0; i < values.length; i++)
+    // sum += values[i];
+    // System.out.println("Summary: " + sum);
+
+    return values;
+  }
+
+  @Override
+  public double[] discreteAverage (double[] values, PricingVector pricing)
+  {
+
+    // Initialize the auxiliary variables.
+    double temp = 0;
+    // double sum = 0;
+    double overDiff = 0;
+    int start, end;
+    double newPrice;
+
+    // Finding the cheapest window in the day.
+    int cheapest = pricing.getCheapest();
+    int startCheapest =
+      pricing.getPrices(pricing.getCheapest()).getStartMinute();
+    int endCheapest = pricing.getPrices(pricing.getCheapest()).getEndMinute();
+    int durationCheapest = endCheapest - startCheapest;
+    double cheapestPrice = pricing.getPrices(pricing.getCheapest()).getPrice();
+
+    // Moving from all the available vectors residual percentages to the
+    // cheapest one.
+    for (int i = 0; i < pricing.getPrices().size(); i++) {
+
+      if (i != cheapest) {
+        // sum = 0;
+        overDiff = 0;
+        start = pricing.getPrices(i).getStartMinute();
+        end = pricing.getPrices(i).getEndMinute();
+        newPrice = pricing.getPrices(i).getPrice();
+
+        for (int j = start; j <= end; j++) {
+          temp = cheapestPrice * values[j] / newPrice;
+          overDiff += values[j] - temp;
+          values[j] = temp;
+        }
+
+        double additive = overDiff / durationCheapest;
+
+        for (int j = startCheapest; j <= endCheapest; j++)
+          values[j] += additive;
+
+        // for (int j = 0; j < values.length; j++)
+        // sum += values[j];
+        // System.out.println("Summary after index " + i + ": " + sum);
+
+      }
+
+    }
 
     return values;
   }
@@ -454,7 +502,7 @@ public class Histogram implements ProbabilityDistribution
 
     if (shiftingCase == 0) {
 
-      values = shiftingBest(newScheme);
+      values = shiftingOptimal(newScheme);
     }
     else if (shiftingCase == 1) {
 
@@ -462,7 +510,7 @@ public class Histogram implements ProbabilityDistribution
     }
     else if (shiftingCase == 2) {
 
-      values = shiftingWorst(basicScheme, newScheme);
+      values = shiftingDiscrete(basicScheme, newScheme);
     }
     else {
       System.out.println("ERROR in shifting function");
@@ -479,7 +527,7 @@ public class Histogram implements ProbabilityDistribution
 
     if (shiftingCase == 0) {
 
-      result = shiftingBest(newScheme);
+      result = shiftingOptimal(newScheme);
     }
     else if (shiftingCase == 1) {
 
@@ -487,7 +535,7 @@ public class Histogram implements ProbabilityDistribution
     }
     else if (shiftingCase == 2) {
 
-      result = shiftingWorst(basicScheme, newScheme);
+      result = shiftingDiscrete(basicScheme, newScheme);
     }
     else {
       System.out.println("ERROR in shifting function");
@@ -500,7 +548,7 @@ public class Histogram implements ProbabilityDistribution
   }
 
   @Override
-  public double[] shiftingBest (double[] newScheme)
+  public double[] shiftingOptimal (double[] newScheme)
   {
     double[] result = new double[Constants.MINUTES_PER_DAY];
 
@@ -536,18 +584,19 @@ public class Histogram implements ProbabilityDistribution
   }
 
   @Override
-  public double[] shiftingWorst (double[] basicScheme, double[] newScheme)
+  public double[] shiftingDiscrete (double[] basicScheme, double[] newScheme)
   {
     double[] result = Arrays.copyOf(this.values, this.values.length);
 
     PricingVector pricingVector = new PricingVector(basicScheme, newScheme);
 
     if (pricingVector.getPrices().size() > 1)
-      result = worstAverage(result, pricingVector);
+      result = discreteAverage(result, pricingVector);
 
     return result;
   }
 
+  @Override
   public DBObject toJSON (String activityModelID)
   {
     BasicDBList param = new BasicDBList();

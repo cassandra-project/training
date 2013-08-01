@@ -17,12 +17,26 @@ limitations under the License.
 
 package eu.cassandra.training.consumption;
 
+/**
+ * This class is used for the definition of a reactive activeOnly consumption
+ * triplet.
+ * 
+ * @author Kyriakos Chatzidimitriou
+ * 
+ */
 public class TripletReactive
 {
 
-  public double q, s;
+  /** The reactive activeOnly of the triplet in VAR. */
+  public double q;
+
+  /** The slope of the triplet. */
+  public double s;
+
+  /** The duration of the triplet. */
   public int d;
 
+  /** A simple constructor of a triplet */
   public TripletReactive ()
   {
     q = s = 0;

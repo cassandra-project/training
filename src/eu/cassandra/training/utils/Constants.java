@@ -16,8 +16,20 @@ limitations under the License.
 */
 package eu.cassandra.training.utils;
 
+/**
+ * This class contains static constants that are used throughout the Training
+ * Module GUI.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
 public class Constants
 {
+
+  public static final int DAILY_TIMES = 0;
+  public static final int DURATION = 1;
+  public static final int START_TIME = 2;
+  public static final int START_TIME_BINNED = 3;
 
   public static final int MINUTES_PER_DAY = 1440;
   public static final int NUMBER_OF_BINS = 144;
@@ -30,5 +42,7 @@ public class Constants
   public static final String DURATION_FILE = "Files/duration";
   public static final String DAILY_TIMES_FILE = "Files/dailyTimes";
   public static final String START_TIME_BINNED_FILE = "Files/startTimeBinned";
+
+  public static double SMALL_NUMBER = 1.0E7;
 
 }

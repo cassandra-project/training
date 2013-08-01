@@ -20,18 +20,33 @@ import java.io.File;
 
 import javax.swing.filechooser.FileFilter;
 
-/* ImageFilter.java is used by FileChooser.java. */
+/**
+ * This class is used as a filter for the acceptable file types of the browsing
+ * capabilities of the Training Module.In this case it accepts only .json and
+ * .txt files since it is a filter for the consumption models imported from the
+ * user.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
 public class MyFilter extends FileFilter
 {
 
-  // Accept all directories and all json, txt files.
-  public boolean accept (File f)
+  /**
+   * This function is the acceptance filter for the file types selected.
+   * 
+   * @param file
+   *          the selected file from the user under investigation for
+   *          acceptance.
+   * @return the acceptance or not of the file.
+   */
+  public boolean accept (File file)
   {
-    if (f.isDirectory()) {
+    if (file.isDirectory()) {
       return true;
     }
 
-    String extension = getExtension(f);
+    String extension = getExtension(file);
     if (extension != null) {
       if (extension.equals("txt") || extension.equals("json")) {
         return true;
@@ -44,16 +59,29 @@ public class MyFilter extends FileFilter
     return false;
   }
 
-  // The description of this filter
+  /**
+   * This function what will be written as the filter's description on the
+   * browsing window.
+   * 
+   * @return a string with the description.
+   */
   public String getDescription ()
   {
     return "*.txt,*.json";
   }
 
-  public static String getExtension (File f)
+  /**
+   * This function is used in order to extract the extension of the file
+   * selected from the user.
+   * 
+   * @param file
+   *          the selected file from the user.
+   * @return the extension of the file.
+   */
+  public static String getExtension (File file)
   {
     String ext = null;
-    String s = f.getName();
+    String s = file.getName();
 
     s = s.replace(".", ",");
 

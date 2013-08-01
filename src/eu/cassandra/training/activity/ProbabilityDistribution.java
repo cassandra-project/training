@@ -14,14 +14,21 @@
    limitations under the License.
 */
 
-package eu.cassandra.training.behaviour;
+package eu.cassandra.training.activity;
 
 import com.mongodb.DBObject;
 
+import eu.cassandra.training.response.Incentive;
+import eu.cassandra.training.response.PricingVector;
+
 /**
- * @author Christos Diou <diou remove this at iti dot gr>
- * @version prelim
- * @since 2012-22-01
+ * This is the Probability Distribution interface, used for implementing the
+ * distribution types supported in the Training Module of Cassandra Project. The
+ * same class has been used, with small alterations in the main Cassandra
+ * Platform.
+ * 
+ * @author Christos Diou, Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
  */
 public interface ProbabilityDistribution
 {
@@ -143,6 +150,13 @@ public interface ProbabilityDistribution
   /**
    * Shifting function for the probability distribution
    * 
+   * @param shiftingCase
+   *          The selected response type by the user.
+   * @param basicScheme
+   *          The basic pricing scheme as imported by the user.
+   * @param newScheme
+   *          The new pricing scheme as imported by the user.
+   * 
    */
   public void shifting (int shiftingCase, double[] basicScheme,
                         double[] newScheme);
@@ -150,43 +164,73 @@ public interface ProbabilityDistribution
   /**
    * Makes a preview of the shifting function
    * 
+   * @param shiftingCase
+   *          The selected response type by the user.
+   * @param basicScheme
+   *          The basic pricing scheme as imported by the user.
+   * @param newScheme
+   *          The new pricing scheme as imported by the user.
+   * 
+   * @return the new Start Time distribution as a result of the shifting.
    */
   public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
                                    double[] newScheme);
 
   /**
-   * The Best Case Scenario shifting function
+   * The Optimal Case Scenario shifting function
    * 
+   * @param newScheme
+   *          The new pricing scheme as imported by the user.
+   * 
+   * @return the new Start Time distribution as a result of the optimal case
+   *         scenario shifting.
    */
-  public double[] shiftingBest (double[] newScheme);
+  public double[] shiftingOptimal (double[] newScheme);
 
   /**
    * The Normal Case Scenario shifting function
    * 
+   * @param newScheme
+   *          The new pricing scheme as imported by the user.
+   * 
+   * @return the new Start Time distribution as a result of the normal case
+   *         scenario shifting.
    */
   public double[] shiftingNormal (double[] basicScheme, double[] newScheme);
 
   /**
-   * The Worst Case Scenario shifting function
+   * The Discrete Case Scenario shifting function
    * 
+   * @param newScheme
+   *          The new pricing scheme as imported by the user.
+   * 
+   * @return the new Start Time distribution as a result of the discrete case
+   *         scenario shifting.
    */
-  public double[] shiftingWorst (double[] basicScheme, double[] newScheme);
+  public double[] shiftingDiscrete (double[] basicScheme, double[] newScheme);
 
   /**
    * Returning the distribution ID
    * 
+   * @return
    */
   public String getDistributionID ();
 
   /**
-   * Setting the distribution ID
+   * Setter of the distribution ID
    * 
+   * @param id
+   *          The id of the distribution as given from the Cassandra server.
    */
   public void setDistributionID (String id);
 
   /**
    * Creating a JSON object out of the distribution
    * 
+   * @param activityModelID
+   *          The id of the activity model the distribution belongs to.
+   * 
+   * @return the JSON object created from the distribution.
    */
   public DBObject toJSON (String activityModelID);
 
@@ -194,8 +238,33 @@ public interface ProbabilityDistribution
    * Return the distribution probability histogram.
    * 
    * @param
-   * @return The parameter value.
+   * @return The values of the distribution histogram.
    */
   public double[] getHistogram ();
 
+  /**
+   * This function is used to estimate the new start time distribution after the
+   * discrete case scenario shifting is applied.
+   * 
+   * @param values
+   *          the start time distribution before shifting
+   * @param pricing
+   *          the pricing vector as it has been estimated from the basic and new
+   *          pricing schemas.
+   * @return the new start time distribution.
+   */
+  public double[] discreteAverage (double[] values, PricingVector pricing);
+
+  /**
+   * This function is used to estimate the new start time distribution after the
+   * normal case scenario shifting is applied.
+   * 
+   * @param values
+   *          the start time distribution before shifting
+   * @param incentive
+   *          an incentives as it has been estimated from the basic and
+   *          new pricing schemas.
+   * @return the new start time distribution.
+   */
+  public double[] movingAverage (double[] values, Incentive incentive);
 }

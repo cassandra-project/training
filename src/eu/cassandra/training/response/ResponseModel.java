@@ -22,30 +22,55 @@ import java.util.Arrays;
 
 import org.jfree.chart.ChartPanel;
 
-import eu.cassandra.training.behaviour.BehaviourModel;
-import eu.cassandra.training.behaviour.Histogram;
+import eu.cassandra.training.activity.ActivityModel;
+import eu.cassandra.training.activity.Histogram;
 import eu.cassandra.training.utils.ChartUtils;
 import eu.cassandra.training.utils.Utils;
 
-public class ResponseModel extends BehaviourModel
+/**
+ * This class is used for implementing the Response models created in the
+ * Training Module of Cassandra Project. The models created here are compatible
+ * with the response models in the platform and can be exported as such.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
+public class ResponseModel extends ActivityModel
 {
-
-  PeakFinder pf = null;
-  ValleyFinder vf = null;
+  /**
+   * This variable shows the type of response scenario this response model
+   * represents.
+   */
   String responseType = "";
 
+  /**
+   * Simple constructor of an Response model.
+   */
   public ResponseModel ()
   {
     super();
   }
 
-  public ResponseModel (BehaviourModel behaviour, String person,
-                        int responseType) throws IOException
+  /**
+   * A constructor of an Response model used in case we know some of the input
+   * variables.
+   * 
+   * @param activity
+   *          The base Activity model selected from the user
+   * @param person
+   *          The Person model this Response model is corresponding to.
+   * @param responseType
+   *          The selected response type from the user (Optimal, Normal,
+   *          Discrete Case)
+   * @throws IOException
+   */
+  public ResponseModel (ActivityModel activity, String person, int responseType)
+    throws IOException
   {
-    applianceOf = behaviour.getAppliancesOf();
-    if (behaviour.getActivity()) {
+    applianceOf = activity.getAppliancesOf();
+    if (activity.getActivity()) {
 
-      String temp = behaviour.getNameActivity().replace(" Activity", "");
+      String temp = activity.getNameActivity().replace(" Activity", "");
 
       nameActivity = temp + " Response Activity";
       name = temp + " Response Model";
@@ -59,19 +84,19 @@ public class ResponseModel extends BehaviourModel
     switch (responseType) {
 
     case 0:
-      this.responseType = "Best";
+      this.responseType = "Optimal";
       break;
     case 1:
       this.responseType = "Normal";
       break;
     case 2:
-      this.responseType = "Worst";
+      this.responseType = "Discrete";
     }
 
     name = name + " (" + this.responseType + ")";
-    fileMap = behaviour.getFileMap();
-    distributionTypes = behaviour.getDistributionTypes();
-    consumptionEventRepo = behaviour.getConsumptionEventRepo();
+    fileMap = activity.getFileMap();
+    distributionTypes = activity.getDistributionTypes();
+    consumptionEventRepo = activity.getConsumptionEventRepo();
 
     String[] types =
       { "DailyTimes", "Duration", "StartTime", "StartTimeBinned" };
@@ -82,19 +107,34 @@ public class ResponseModel extends BehaviourModel
 
   }
 
-  public static ChartPanel previewResponseModel (BehaviourModel behaviour,
+  /**
+   * It enables the creation of a graphical representation of a response model
+   * based on the user's preferences.
+   * 
+   * @param activity
+   *          The selected base Activity Model.
+   * @param responseType
+   *          The selected response type.
+   * @param basicScheme
+   *          The imported basic pricing scheme.
+   * @param newScheme
+   *          The imported new pricing scheme.
+   * @return a chart panel with the resulting Response model graphical
+   *         representation.
+   */
+  public static ChartPanel previewResponseModel (ActivityModel activity,
                                                  int responseType,
                                                  double[] basicScheme,
                                                  double[] newScheme)
   {
 
     double[] before =
-      Arrays.copyOf(behaviour.getStartTimeBinned().getHistogram(), behaviour
+      Arrays.copyOf(activity.getStartTimeBinned().getHistogram(), activity
               .getStartTimeBinned().getHistogram().length);
 
     double[] after =
-      behaviour.getStartTime().shiftingPreview(responseType, basicScheme,
-                                               newScheme);
+      activity.getStartTime().shiftingPreview(responseType, basicScheme,
+                                              newScheme);
 
     return ChartUtils.createResponseHistogram("Response",
                                               "10 Minute Intervals",
@@ -102,6 +142,17 @@ public class ResponseModel extends BehaviourModel
 
   }
 
+  /**
+   * It enables the creation of a response model based on the user's
+   * preferences.
+   * 
+   * @param responseType
+   *          The selected response type.
+   * @param basicScheme
+   *          The imported basic pricing scheme.
+   * @param newScheme
+   *          The imported new pricing scheme.
+   */
   public void respond (int responseType, double[] basicScheme,
                        double[] newScheme)
   {
@@ -115,11 +166,13 @@ public class ResponseModel extends BehaviourModel
 
   }
 
+  @Override
   public String toString ()
   {
     return name;
   }
 
+  @Override
   public void status ()
   {
     super.status();

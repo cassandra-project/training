@@ -22,31 +22,80 @@ import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+/**
+ * This class is used for implementing the notion of the consumption event. As
+ * Consumption Event is considered a time period in the consumption data set
+ * that the active and reactive activeOnly measurements are high enough to imply the
+ * end use of an electrical appliance.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
 public class ConsumptionEvent
 {
+  /**
+   * This variable represents the consumption event id number, unique for each
+   * event.
+   */
   private int id = 0;
-  private DateTime startDateTime, endDateTime;
-  private DateTime startDate, endDate;
+
+  /**
+   * This variable represents the start date and time of the consumption event.
+   */
+  private DateTime startDateTime;
+
+  /**
+   * This variable represents the end date and time of the consumption event.
+   */
+  private DateTime endDateTime;
+
+  /**
+   * This variable represents the start date of the consumption event (time
+   * 00:00).
+   */
+  private DateTime startDate;
+
+  /**
+   * This variable represents the end date of the consumption event (time
+   * 00:00).
+   */
+  private DateTime endDate;
+
+  /**
+   * This variable notes the duration of the consumption event in minutes.
+   */
   private Duration duration;
+
+  /**
+   * This variable presents the type of day the event has been detected
+   * (weekday, weekend).
+   */
   private boolean weekday;
+
+  /**
+   * This variable shows the minute of the day that the event started.
+   */
   private int startMinuteOfDay;
+
+  /**
+   * This variable shows the minute of the day that the event ended.
+   */
   private int endMinuteOfDay;
 
-  public ConsumptionEvent ()
-  {
-    startDateTime = new DateTime();
-    endDateTime = new DateTime();
-    startDate = new DateTime();
-    endDate = new DateTime();
-    duration = new Duration(0);
-  }
-
-  public ConsumptionEvent (int id)
-  {
-    this();
-    this.id = id;
-  }
-
+  /**
+   * This is a constructor of a consumption event.
+   * 
+   * @param id
+   *          The id number of the event
+   * @param startDT
+   *          The start date and time of the event
+   * @param startD
+   *          The start date of the event
+   * @param endDT
+   *          The end date and time of the event
+   * @param endD
+   *          The end date of the event
+   */
   public ConsumptionEvent (int id, DateTime startDT, DateTime startD,
                            DateTime endDT, DateTime endD)
   {
@@ -57,84 +106,109 @@ public class ConsumptionEvent
     endDate = endD;
 
     calculateParameters();
-
   }
 
-  public void setStartDateTime (DateTime startDateTime)
-  {
-    this.startDateTime = startDateTime;
-  }
-
-  public void setEndDateTime (DateTime endDateTime)
-  {
-    this.endDateTime = endDateTime;
-  }
-
-  public void setStartDate (DateTime startDate)
-  {
-    this.startDate = startDate;
-  }
-
-  public void setEndDate (DateTime endDate)
-  {
-    this.endDate = endDate;
-  }
-
-  public void setMinuteOfDay (int minute)
-  {
-    startMinuteOfDay = minute;
-  }
-
-  public void setWeekday (boolean weekday)
-  {
-    this.weekday = weekday;
-  }
-
+  /**
+   * 
+   * This function is used as a getter for the start date and time variable
+   * of the consumption event.
+   * 
+   * @return the start date and time of the consumption event.
+   */
   public DateTime getStartDateTime ()
   {
     return startDateTime;
   }
 
+  /**
+   * 
+   * This function is used as a getter for the end date and time variable
+   * of the consumption event.
+   * 
+   * @return the end date and time of the consumption event.
+   */
   public DateTime getEndDateTime ()
   {
     return endDateTime;
   }
 
+  /**
+   * 
+   * This function is used as a getter for the start date variable
+   * of the consumption event.
+   * 
+   * @return the start date of the consumption event.
+   */
   public DateTime getStartDate ()
   {
     return startDate;
   }
 
+  /**
+   * 
+   * This function is used as a getter for the end date variable
+   * of the consumption event.
+   * 
+   * @return the end date of the consumption event.
+   */
   public DateTime getEndDate ()
   {
     return endDate;
   }
 
+  /**
+   * 
+   * This function is used as a getter for the duration variable
+   * of the consumption event.
+   * 
+   * @return the duration of the consumption event.
+   */
   public Duration getDuration ()
   {
     return duration;
   }
 
+  /**
+   * 
+   * This function is used as a getter for the id variable
+   * of the consumption event.
+   * 
+   * @return the id number of the consumption event.
+   */
   public int getId ()
   {
     return id;
   }
 
+  /**
+   * 
+   * This function is used as a getter for the start minute variable
+   * of the consumption event.
+   * 
+   * @return the start minute of the day of the consumption event.
+   */
   public int getStartMinuteOfDay ()
   {
     return startMinuteOfDay;
   }
 
+  /**
+   * 
+   * This function is used as a getter for the end minute variable
+   * of the consumption event.
+   * 
+   * @return the end minute of the day of the consumption event.
+   */
   public int getEndMinuteOfDay ()
   {
     return endMinuteOfDay;
   }
 
-  public boolean getWeekday ()
-  {
-    return weekday;
-  }
-
+  /**
+   * This function is used to calculate the variables that are not directly
+   * given from the dataset as duration, weekday type and start/end minute of
+   * the day.
+   */
   public void calculateParameters ()
   {
     duration = new Interval(startDateTime, endDateTime).toDuration();
@@ -146,6 +220,9 @@ public class ConsumptionEvent
       weekday = true;
   }
 
+  /**
+   * This function is used to present the attributes of the consumption event.
+   */
   public void status ()
   {
 
@@ -163,11 +240,10 @@ public class ConsumptionEvent
 
   }
 
+  @Override
   public String toString ()
   {
-
     return ("Event " + Integer.toString(id));
-
   }
 
 }

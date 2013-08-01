@@ -70,49 +70,154 @@ import javax.swing.event.ListSelectionListener;
 import org.apache.http.auth.AuthenticationException;
 import org.jfree.chart.ChartPanel;
 
-import eu.cassandra.training.behaviour.BehaviourModel;
+import eu.cassandra.training.activity.ActivityModel;
 import eu.cassandra.training.entities.ActivityTemp;
 import eu.cassandra.training.entities.Appliance;
 import eu.cassandra.training.entities.ApplianceTemp;
 import eu.cassandra.training.entities.Installation;
-import eu.cassandra.training.entities.Person;
 import eu.cassandra.training.response.ResponseModel;
 import eu.cassandra.training.utils.APIUtilities;
 import eu.cassandra.training.utils.ChartUtils;
 import eu.cassandra.training.utils.Utils;
 
+/**
+ * This class, which extends the Java's JFrame class, implements the overall GUI
+ * of the Training Module of Cassandra Project. Through this, the user can
+ * upload his dataset, disaggregate itsconsumption, create entities, activity
+ * and response models and upload them to the main Cassandra Platform to his
+ * personal User Library.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
 public class MainGUI extends JFrame
 {
 
   /**
-   * 
+   * This variable is used for the correct serializing of the class' objects
    */
   private static final long serialVersionUID = 1L;
+
+  /**
+   * This variable is the main panel where all the graphical objects of the GUI
+   * are added.
+   */
   private JPanel contentPane;
+
+  /**
+   * This is the variable controlling over the radio buttons used for choosing
+   * the Data Measurement Type (Single Appliance or Installation) in the Data
+   * Import tab.
+   */
   private final ButtonGroup dataMeasurementsButtonGroup = new ButtonGroup();
-  private final ButtonGroup timesDailyButtonGroup = new ButtonGroup();
-  private final ButtonGroup startTimeButtonGroup = new ButtonGroup();
-  private final ButtonGroup durationButtonGroup = new ButtonGroup();
-  private final ButtonGroup responseModelButtonGroup = new ButtonGroup();
-  private Installation installation = new Installation();
+
+  /**
+   * This is the variable controlling over the radio buttons used for declaring
+   * the activeOnly consumption data contained within the data set provided from
+   * the
+   * user (Active Power only or Active and Reactive activeOnly) in the Data
+   * Import
+   * tab.
+   */
   private final ButtonGroup powerButtonGroup = new ButtonGroup();
+
+  /**
+   * This is the variable controlling over the radio buttons used for choosing
+   * the Daily Times distribution on the Training Activity Models tab
+   * (Histogram, Normal Distribution or Gaussian Mixture Models).
+   */
+  private final ButtonGroup timesDailyButtonGroup = new ButtonGroup();
+
+  /**
+   * This is the variable controlling over the radio buttons used for choosing
+   * the Start Time distribution on the Training Activity Models tab
+   * (Histogram, Normal Distribution or Gaussian Mixture Models).
+   */
+  private final ButtonGroup startTimeButtonGroup = new ButtonGroup();
+
+  /**
+   * This is the variable controlling over the radio buttons used for choosing
+   * the Duration distribution on the Training Activity Models tab (Histogram,
+   * Normal Distribution or Gaussian Mixture Models).
+   */
+  private final ButtonGroup durationButtonGroup = new ButtonGroup();
+
+  /**
+   * This is the variable controlling over the radio buttons used for choosing
+   * the Response Model type for the visualization or extraction of the new
+   * activity models (optimal, normal and discrete case scenario) in the Create
+   * Response Models tab.
+   */
+  private final ButtonGroup responseModelButtonGroup = new ButtonGroup();
+
+  /**
+   * This is the Installation Entity model as created when the consumption
+   * data set is imported by the user to the Training Module. The rest of the
+   * entities created thereafter are added under this higher level Entity in
+   * order to simulate an electrical installation.
+   */
+  private Installation installation = new Installation();
+
   // private static int threshold = 2;
 
+  /**
+   * This is an arraylist of the temporary Appliance Entity models that are
+   * extracted from the disaggregation procedure and are utilized for the
+   * creation of the actual Appliance Entity models of the training procedure
+   * after further analysis.
+   */
   private static ArrayList<ApplianceTemp> tempAppliances =
     new ArrayList<ApplianceTemp>();
+
+  /**
+   * This is an arraylist of the temporary Activity Entity model that are
+   * extracted from the disaggregation procedure and are utilized for the
+   * creation of the actual Activity Entity models of the training procedure
+   * after further analysis.
+   */
   private static ArrayList<ActivityTemp> tempActivities =
     new ArrayList<ActivityTemp>();
+
+  /**
+   * This is a list of the final detected Appliance Entity models as they are
+   * extracted after temporary Appliances' analysis or as given from the user.
+   * They appear as a list in the Detected Appliances panel on the Data Import
+   * tab.
+   */
   private DefaultListModel<String> detectedAppliances =
     new DefaultListModel<String>();
+
+  /**
+   * This is a list of the final selected Appliance Entity model (in case of a
+   * single appliance) or Activity Entity models (in case of disaggregated
+   * consumption data set) as they are extracted after temporary appliances /
+   * activity analysis. They appear as a list in the Appliances / Activities
+   * Selection panel on the Training Activity Models tab.
+   */
   private DefaultListModel<String> selectedAppliances =
     new DefaultListModel<String>();
-  private DefaultListModel<String> behaviorModels =
+
+  /**
+   * This is a list of the trained Activity models as they are created
+   * after user demand in the training after temporary appliances/activity
+   * analysis. They appear as a list in the Activity Model Selection panel on
+   * the Create Response Models tab.
+   */
+  private DefaultListModel<String> activityModels =
     new DefaultListModel<String>();
+
+  /**
+   * This is a list of the ready-to-export Entity models as they are extracted
+   * from the consumption data set analysis or created after user demand during
+   * training or response modelling procedure. They appear as a list in the
+   * Model Export Selection panel on the Export Models tab.
+   */
   private DefaultListModel<String> exportModels =
     new DefaultListModel<String>();
 
   /**
-   * Launch the application.
+   * This is the main function that launches the application. No arguments are
+   * needed to run.
    */
   public static void main (String[] args)
   {
@@ -131,18 +236,22 @@ public class MainGUI extends JFrame
   }
 
   /**
-   * Create the frame.
+   * Constructor of the Training Module GUI.
    * 
    * @throws UnsupportedLookAndFeelException
    * @throws IllegalAccessException
    * @throws InstantiationException
    * @throws ClassNotFoundException
+   * @throws FileNotFoundException
    */
   public MainGUI () throws ClassNotFoundException, InstantiationException,
     IllegalAccessException, UnsupportedLookAndFeelException,
     FileNotFoundException
   {
     setForeground(new Color(0, 204, 51));
+
+    // Enable the closing of the frame when pressing the x on the upper corner
+    // of the window
     addWindowListener(new WindowAdapter() {
       @Override
       public void windowClosing (WindowEvent e)
@@ -151,14 +260,21 @@ public class MainGUI extends JFrame
         System.exit(0);
       }
     });
-    // cleanFiles();
+
+    // Cleaning temporary files from the temp folder when starting the GUI.
+    cleanFiles();
+
+    // Change the platforms look and feel to Nimbus
     LookAndFeel lnf = new javax.swing.plaf.nimbus.NimbusLookAndFeel();
     UIManager.put("NimbusLookAndFeel", Color.GREEN);
     UIManager.setLookAndFeel(lnf);
+
+    // Setting the basic attributes of the Training Module GUI
     setTitle("Training Module (BETA)");
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setBounds(100, 100, 1228, 852);
 
+    // Creating the menu bar and adding the menu items
     JMenuBar menuBar = new JMenuBar();
     setJMenuBar(menuBar);
 
@@ -187,6 +303,7 @@ public class MainGUI extends JFrame
     contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
     setContentPane(contentPane);
 
+    // Adding the tabbed pane to the content pane
     final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
     GroupLayout gl_contentPane = new GroupLayout(contentPane);
     gl_contentPane.setHorizontalGroup(gl_contentPane
@@ -207,7 +324,7 @@ public class MainGUI extends JFrame
     importTab.setLayout(null);
 
     final JPanel trainingTab = new JPanel();
-    tabbedPane.addTab("Training Behavior Models", null, trainingTab, null);
+    tabbedPane.addTab("Train Activity Models", null, trainingTab, null);
     tabbedPane.setDisplayedMnemonicIndexAt(1, 1);
     tabbedPane.setEnabledAt(1, false);
     trainingTab.setLayout(null);
@@ -261,7 +378,7 @@ public class MainGUI extends JFrame
                                                      null));
     consumptionModelPanel.setLayout(new BorderLayout(0, 0));
 
-    // TRAINING BEHAVIOR TAB //
+    // TRAINING ACTIVITY TAB //
 
     final JPanel trainingParametersPanel = new JPanel();
     trainingParametersPanel.setLayout(null);
@@ -316,18 +433,20 @@ public class MainGUI extends JFrame
     responseParametersPanel.setBounds(6, 6, 391, 271);
     createResponseTab.add(responseParametersPanel);
 
-    final JPanel behaviorModelSelectionPanel = new JPanel();
-    behaviorModelSelectionPanel.setLayout(null);
-    behaviorModelSelectionPanel
-            .setBorder(new TitledBorder(null, "Behavior Model Selection",
+    final JPanel activityModelSelectionPanel = new JPanel();
+    activityModelSelectionPanel.setLayout(null);
+    activityModelSelectionPanel
+            .setBorder(new TitledBorder(UIManager
+                    .getBorder("TitledBorder.border"),
+                                        "Activity Model Selection",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    behaviorModelSelectionPanel.setBounds(6, 276, 391, 226);
-    createResponseTab.add(behaviorModelSelectionPanel);
+    activityModelSelectionPanel.setBounds(6, 276, 391, 226);
+    createResponseTab.add(activityModelSelectionPanel);
 
     final JPanel responsePanel = new JPanel();
     responsePanel.setBorder(new TitledBorder(UIManager
-            .getBorder("TitledBorder.border"), "Behavioral Change Preview",
+            .getBorder("TitledBorder.border"), "Activity Model Change Preview",
                                              TitledBorder.LEADING,
                                              TitledBorder.TOP, null, null));
     responsePanel.setBounds(401, 6, 786, 438);
@@ -374,7 +493,7 @@ public class MainGUI extends JFrame
                     .getBorder("TitledBorder.border"), "Export Model Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    exportPreviewPanel.setBounds(10, 285, 1177, 425);
+    exportPreviewPanel.setBounds(10, 285, 1177, 395);
     exportTab.add(exportPreviewPanel);
     exportPreviewPanel.setLayout(new BorderLayout(0, 0));
 
@@ -489,7 +608,7 @@ public class MainGUI extends JFrame
     // DISAGGREGATION //
     // /////////////////
 
-    final JLabel lblAppliancesDetected = new JLabel("Appliances Detected");
+    final JLabel lblAppliancesDetected = new JLabel("Detected Appliances ");
     lblAppliancesDetected.setBounds(18, 33, 130, 16);
     disaggregationPanel.add(lblAppliancesDetected);
 
@@ -664,11 +783,11 @@ public class MainGUI extends JFrame
     label_7.setBounds(10, 153, 103, 16);
     responseParametersPanel.add(label_7);
 
-    final JRadioButton bestCaseRadioButton =
-      new JRadioButton("Best Case Scenario");
-    responseModelButtonGroup.add(bestCaseRadioButton);
-    bestCaseRadioButton.setBounds(138, 131, 146, 18);
-    responseParametersPanel.add(bestCaseRadioButton);
+    final JRadioButton optimalCaseRadioButton =
+      new JRadioButton("Optimal Case Scenario");
+    responseModelButtonGroup.add(optimalCaseRadioButton);
+    optimalCaseRadioButton.setBounds(138, 131, 146, 18);
+    responseParametersPanel.add(optimalCaseRadioButton);
 
     final JRadioButton normalCaseRadioButton =
       new JRadioButton("Normal Case Scenario");
@@ -677,12 +796,12 @@ public class MainGUI extends JFrame
     normalCaseRadioButton.setBounds(138, 152, 157, 18);
     responseParametersPanel.add(normalCaseRadioButton);
 
-    final JRadioButton worstCaseRadioButton =
-      new JRadioButton("Worst Case Scenario");
-    worstCaseRadioButton.setSelected(true);
-    responseModelButtonGroup.add(worstCaseRadioButton);
-    worstCaseRadioButton.setBounds(138, 173, 157, 18);
-    responseParametersPanel.add(worstCaseRadioButton);
+    final JRadioButton discreteCaseRadioButton =
+      new JRadioButton("Discrete Case Scenario");
+    discreteCaseRadioButton.setSelected(true);
+    responseModelButtonGroup.add(discreteCaseRadioButton);
+    discreteCaseRadioButton.setBounds(138, 173, 157, 18);
+    responseParametersPanel.add(discreteCaseRadioButton);
 
     final JButton previewResponseButton = new JButton("Preview Response Model");
     previewResponseButton.setEnabled(false);
@@ -699,19 +818,19 @@ public class MainGUI extends JFrame
     createResponseAllButton.setBounds(111, 232, 157, 28);
     responseParametersPanel.add(createResponseAllButton);
 
-    // SELECT BEHAVIOR MODEL //
+    // SELECT ACTIVITY MODEL //
 
-    final JLabel label_8 = new JLabel("Selected Appliance");
-    label_8.setBounds(10, 21, 130, 16);
-    behaviorModelSelectionPanel.add(label_8);
+    final JLabel lblSelectedActivity = new JLabel("Selected Activity");
+    lblSelectedActivity.setBounds(10, 21, 130, 16);
+    activityModelSelectionPanel.add(lblSelectedActivity);
 
-    JScrollPane behaviourListScrollPane = new JScrollPane();
-    behaviourListScrollPane.setBounds(20, 39, 355, 176);
-    behaviorModelSelectionPanel.add(behaviourListScrollPane);
+    JScrollPane activityListScrollPane = new JScrollPane();
+    activityListScrollPane.setBounds(20, 39, 355, 176);
+    activityModelSelectionPanel.add(activityListScrollPane);
 
-    final JList<String> behaviorSelectList = new JList<String>();
-    behaviourListScrollPane.setViewportView(behaviorSelectList);
-    behaviorSelectList.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null,
+    final JList<String> activitySelectList = new JList<String>();
+    activityListScrollPane.setViewportView(activitySelectList);
+    activitySelectList.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null,
                                                   null));
 
     final JButton commitButton = new JButton("Commit");
@@ -752,7 +871,7 @@ public class MainGUI extends JFrame
     modelExportPanel.add(exportModelLabel);
 
     JScrollPane scrollPane = new JScrollPane();
-    scrollPane.setBounds(171, 32, 415, 212);
+    scrollPane.setBounds(83, 32, 503, 212);
     modelExportPanel.add(scrollPane);
 
     final JList<String> exportModelList = new JList<String>();
@@ -846,19 +965,27 @@ public class MainGUI extends JFrame
     // DATA IMPORT ////
 
     dataBrowseButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the browse button to
+       * input the data file on the Data File panel of the Import Data tab.
+       * 
+       */
       public void actionPerformed (ActionEvent e)
       {
-
+        // Opens the browse panel to find the data set file
         JFileChooser fc = new JFileChooser("./");
 
+        // Adds a filter to the type of files acceptable for selection
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setFileFilter(new MyFilter2());
 
         int returnVal = fc.showOpenDialog(contentPane);
 
+        // After choosing the file some of the options in the Data File panel
+        // are unlocked
         if (returnVal == JFileChooser.APPROVE_OPTION) {
           File file = fc.getSelectedFile();
-          // This is where a real application would open the file.
+
           pathField.setText(file.getAbsolutePath());
           importDataButton.setEnabled(true);
           activePowerRadioButton.setEnabled(true);
@@ -871,18 +998,28 @@ public class MainGUI extends JFrame
     });
 
     consumptionBrowseButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the browse button to
+       * input the consumption model file on the Data File panel of the Import
+       * Data tab.
+       * 
+       */
       public void actionPerformed (ActionEvent e)
       {
+        // Opens the browse panel to find the consumption model file
         JFileChooser fc = new JFileChooser("./");
 
+        // Adds a filter to the type of files acceptable for selection
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setFileFilter(new MyFilter());
 
         int returnVal = fc.showOpenDialog(contentPane);
 
+        // After choosing the file some of the options in the Data File panel
+        // are unlocked
         if (returnVal == JFileChooser.APPROVE_OPTION) {
           File file = fc.getSelectedFile();
-          // This is where a real application would open the file.
+
           consumptionPathField.setText(file.getAbsolutePath());
           createEventsButton.setEnabled(true);
         }
@@ -891,8 +1028,17 @@ public class MainGUI extends JFrame
     });
 
     resetButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the reset button
+       * on the Data File panel of the Import Data tab. All the imported and
+       * created entities are removed and the Training Module goes back to its
+       * initial state.
+       * 
+       */
       public void actionPerformed (ActionEvent e)
       {
+
+        // Cleaning the Import Data tab components
         pathField.setText("");
         consumptionPathField.setText("");
         importDataButton.setEnabled(false);
@@ -916,6 +1062,7 @@ public class MainGUI extends JFrame
         detectedApplianceList.setListData(new String[0]);
         detectedApplianceList.repaint();
 
+        // Cleaning the Training Activity Models tab components
         distributionPreviewPanel.removeAll();
         distributionPreviewPanel.updateUI();
         consumptionPreviewPanel.removeAll();
@@ -925,6 +1072,7 @@ public class MainGUI extends JFrame
         selectedApplianceList.setListData(new String[0]);
         selectedApplianceList.repaint();
 
+        // Cleaning the Create Response Models tab components
         monetarySlider.setValue(50);
         environmentalSlider.setValue(50);
         normalCaseRadioButton.setSelected(true);
@@ -935,14 +1083,15 @@ public class MainGUI extends JFrame
         pricingPreviewPanel.updateUI();
         responsePanel.removeAll();
         responsePanel.updateUI();
-        behaviorSelectList.setSelectedIndex(-1);
-        behaviorModels.clear();
-        behaviorSelectList.setListData(new String[0]);
-        behaviorSelectList.repaint();
+        activitySelectList.setSelectedIndex(-1);
+        activityModels.clear();
+        activitySelectList.setListData(new String[0]);
+        activitySelectList.repaint();
         basicPricingSchemePane.setText("00:00-23:59-0.05");
         newPricingSchemePane.setText("");
         commitButton.setEnabled(false);
 
+        // Cleaning the Export Models tab components
         exportModelList.setSelectedIndex(-1);
         exportModels.clear();
         exportModelList.setListData(new String[0]);
@@ -956,19 +1105,26 @@ public class MainGUI extends JFrame
         exportButton.setEnabled(false);
         exportAllButton.setEnabled(false);
 
+        // Disabling the necessary tabs
         tabbedPane.setEnabledAt(1, false);
         tabbedPane.setEnabledAt(2, false);
         tabbedPane.setEnabledAt(3, false);
 
-        tempAppliances = new ArrayList<ApplianceTemp>();
-        tempActivities = new ArrayList<ActivityTemp>();
+        // Clearing the arrayList in need
+        tempAppliances.clear();
+        tempActivities.clear();
 
+        // Removing temporary files
         cleanFiles();
 
       }
     });
 
     singleApplianceRadioButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Single Appliance
+       * radio button on the Data File panel of the Import Data tab.
+       */
       public void actionPerformed (ActionEvent e)
       {
         consumptionPathField.setEnabled(false);
@@ -978,6 +1134,10 @@ public class MainGUI extends JFrame
     });
 
     installationRadioButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Installation
+       * radio button on the Data File panel of the Import Data tab.
+       */
       public void actionPerformed (ActionEvent e)
       {
         consumptionPathField.setEnabled(false);
@@ -987,8 +1147,14 @@ public class MainGUI extends JFrame
     });
 
     importDataButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Import Data
+       * button on the Data File panel of the Import Data tab.
+       */
       public void actionPerformed (ActionEvent e)
       {
+
+        // Change the state of some components
         installationRadioButton.setEnabled(false);
         singleApplianceRadioButton.setEnabled(false);
         importDataButton.setEnabled(false);
@@ -996,9 +1162,11 @@ public class MainGUI extends JFrame
         activePowerRadioButton.setEnabled(false);
         activeAndReactivePowerRadioButton.setEnabled(false);
 
+        // Check if both active and reactive activeOnly data set are available
         boolean power = activePowerRadioButton.isSelected();
         int parse = -1;
 
+        // Parsing the measurements file
         try {
           parse = Utils.parseMeasurementsFile(pathField.getText(), power);
         }
@@ -1006,14 +1174,17 @@ public class MainGUI extends JFrame
           e2.printStackTrace();
         }
 
+        // If everything is OK
         if (parse == -1) {
           try {
+            // Creating new installation
             installation = new Installation(pathField.getText(), power);
           }
           catch (IOException e2) {
             e2.printStackTrace();
           }
 
+          // Show the measurements in the preview chart
           ChartPanel chartPanel = null;
           try {
             chartPanel = installation.measurementsChart();
@@ -1028,6 +1199,7 @@ public class MainGUI extends JFrame
           disaggregateButton.setEnabled(false);
           createEventsButton.setEnabled(false);
 
+          // Enable the appropriate buttons given source of measurements
           if (installationRadioButton.isSelected()) {
             disaggregateButton.setEnabled(true);
           }
@@ -1037,14 +1209,18 @@ public class MainGUI extends JFrame
 
           }
 
+          // Add installation to the export models list
           exportModels.addElement(installation.toString());
           exportModels.addElement(installation.getPerson().getName());
 
+          // Enable Export Models tab
           exportModelList.setEnabled(true);
           exportModelList.setModel(exportModels);
           tabbedPane.setEnabledAt(3, true);
 
         }
+        // In case of an error during the measurement parsing show the line of
+        // error and reset settings.
         else {
           JFrame error = new JFrame();
 
@@ -1061,19 +1237,28 @@ public class MainGUI extends JFrame
     });
 
     disaggregateButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Disaggregate
+       * button on the Data File panel of the Import Data tab in order to
+       * automatically analyse the data set and extract the appliances and
+       * activities within.
+       */
       public void actionPerformed (ActionEvent e)
       {
 
+        // Get auxiliary files containing appliances and activities which are
+        // the output of the disaggregation process.
         String filename =
           pathField.getText().substring(0, pathField.getText().length() - 4);
 
         File appliancesFile = new File(filename + "IdentificationList.csv");
         File activitiesFile = new File(filename + "IdentifiedAppliances.csv");
 
+        // If these exist, disaggregation was successful and the procedure can
+        // continue
         if (appliancesFile.exists() && activitiesFile.exists()) {
 
-          // Appliance Parsing
-
+          // Read appliance file and start appliance parsing
           Scanner input = null;
           try {
             input = new Scanner(appliancesFile);
@@ -1104,7 +1289,8 @@ public class MainGUI extends JFrame
             }
             double p = Double.parseDouble(line[0]);
             double q = Double.parseDouble(line[1]);
-
+            // For each appliance found in the file, an temporary Appliance
+            // Entity is created.
             tempAppliances.add(new ApplianceTemp(name, installation.getName(),
                                                  type, activity, p, q));
 
@@ -1114,7 +1300,7 @@ public class MainGUI extends JFrame
 
           input.close();
 
-          // Activity Parsing
+          // Read activity file and start activity parsing
 
           try {
             input = new Scanner(activitiesFile);
@@ -1132,8 +1318,10 @@ public class MainGUI extends JFrame
             int start = Integer.parseInt(line[0]);
             int end = Integer.parseInt(line[1]);
 
+            // Search for existing activity
             int activityIndex = findActivity(name);
 
+            // if not found, create a new one
             if (activityIndex == -1) {
 
               ActivityTemp newActivity = new ActivityTemp(name);
@@ -1141,16 +1329,21 @@ public class MainGUI extends JFrame
               tempActivities.add(newActivity);
 
             }
+            // else add data to the found activity
             else
               tempActivities.get(activityIndex).addEvent(start, end);
           }
 
-          // System.out.println(tempActivities.size());
+          // TODO Add these lines in case we want to remove activities with
+          // small sampling number
 
+          // System.out.println(tempActivities.size());
           // for (int i = tempActivities.size() - 1; i >= 0; i--)
           // if (tempActivities.get(i).getEvents().size() < threshold)
           // tempActivities.remove(i);
 
+          // Create an event file for each activity, in order to be able to use
+          // it for training the beahviour models if asked from the user
           for (int i = 0; i < tempActivities.size(); i++) {
             // tempActivities.get(i).status();
             try {
@@ -1163,6 +1356,9 @@ public class MainGUI extends JFrame
 
           input.close();
 
+          // Add each found appliance (after converting temporary appliance to
+          // normal appliance) in the installation Entity, to the detected
+          // appliance and export models list
           for (ApplianceTemp temp: tempAppliances) {
 
             Appliance tempAppliance = temp.toAppliance();
@@ -1173,6 +1369,9 @@ public class MainGUI extends JFrame
 
           }
 
+          // Add appliances corresponding to each activity, remove activities
+          // without appliances and add activities to the selected activities
+          // list.
           for (int i = tempActivities.size() - 1; i >= 0; i--) {
 
             tempActivities.get(i).setAppliances(findAppliances(tempActivities
@@ -1186,6 +1385,8 @@ public class MainGUI extends JFrame
           }
 
         }
+        // Demonstration of the disaggregation in case it was not successful.
+        // For presentation purposes only.
         else {
 
           int temp = 8 + ((int) (Math.random() * 2));
@@ -1229,18 +1430,10 @@ public class MainGUI extends JFrame
               break;
             }
 
-            double[] mesTemp = new double[100];
-            double[] mesTemp2 = new double[100];
-
-            for (int j = 0; j < mesTemp.length; j++) {
-              mesTemp[j] = Math.random() * 100;
-              mesTemp2[j] = Math.random() * 100;
-            }
-
             Appliance tempAppliance =
               new Appliance(name, installation.getName(), powerModel,
                             reactiveModel, "Demo/eventsAll" + tempIndex
-                                           + ".csv", mesTemp, mesTemp2);
+                                           + ".csv");
 
             installation.addAppliance(tempAppliance);
             detectedAppliances.addElement(tempAppliance.toString());
@@ -1248,6 +1441,8 @@ public class MainGUI extends JFrame
             exportModels.addElement(tempAppliance.toString());
           }
         }
+
+        // Enable all appliance/activity lists
         detectedApplianceList.setEnabled(true);
         detectedApplianceList.setModel(detectedAppliances);
         detectedApplianceList.setSelectedIndex(0);
@@ -1256,10 +1451,11 @@ public class MainGUI extends JFrame
         selectedApplianceList.setEnabled(true);
         selectedApplianceList.setModel(selectedAppliances);
 
-        exportModelList.setEnabled(true);
-        exportModelList.setModel(exportModels);
-        tabbedPane.setEnabledAt(3, true);
+        // exportModelList.setEnabled(true);
+        // exportModelList.setModel(exportModels);
+        // tabbedPane.setEnabledAt(3, true);
 
+        // Disable unnecessary buttons.
         disaggregateButton.setEnabled(false);
         createEventsButton.setEnabled(false);
 
@@ -1267,9 +1463,18 @@ public class MainGUI extends JFrame
     });
 
     createEventsButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Create Events
+       * button on the Data File panel of the Import Data tab. This button is
+       * used when there is a single appliance with an known consumption model
+       * so that the events can be extracted automatically from the data set.
+       * Used for presentation purposes only since is depricated by the
+       * disaggregation function.
+       */
       public void actionPerformed (ActionEvent e)
       {
 
+        // Parse the consumption model file
         File file = new File(consumptionPathField.getText());
         String temp = file.getName();
         temp = temp.replace(".", " ");
@@ -1289,9 +1494,10 @@ public class MainGUI extends JFrame
         catch (IOException e1) {
           e1.printStackTrace();
         }
-
+        // Add appliance to the installation entity
         installation.addAppliance(appliance);
 
+        // Enable all appliance/activity lists
         detectedAppliances.addElement(appliance.toString());
         selectedAppliances.addElement(appliance.toString());
         exportModels.addElement(appliance.toString());
@@ -1304,10 +1510,11 @@ public class MainGUI extends JFrame
         selectedApplianceList.setEnabled(true);
         selectedApplianceList.setModel(selectedAppliances);
 
-        exportModelList.setEnabled(true);
-        exportModelList.setModel(exportModels);
-        tabbedPane.setEnabledAt(3, true);
+        // exportModelList.setEnabled(true);
+        // exportModelList.setModel(exportModels);
+        // tabbedPane.setEnabledAt(3, true);
 
+        // Disable unnecessary buttons.
         disaggregateButton.setEnabled(false);
         createEventsButton.setEnabled(false);
 
@@ -1315,8 +1522,13 @@ public class MainGUI extends JFrame
     });
 
     // APPLIANCE DETECTION //
-
     detectedApplianceList.addListSelectionListener(new ListSelectionListener() {
+      /**
+       * This function is called when the user selects an appliance from the
+       * list of Detected Appliances on the Disaggregation panel of the Import
+       * Data tab. Then the corresponding consumption model is presented in the
+       * Consumption Model Preview panel.
+       */
       public void valueChanged (ListSelectionEvent e)
       {
 
@@ -1339,7 +1551,6 @@ public class MainGUI extends JFrame
     });
 
     // // TRAINING TAB //
-
     trainingTab.addComponentListener(new ComponentAdapter() {
       @Override
       public void componentShown (ComponentEvent arg0)
@@ -1349,10 +1560,15 @@ public class MainGUI extends JFrame
     });
 
     trainingButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Train button on
+       * the Training Parameters panel of the Train Activity Models tab. It
+       * contains the procedure needed to create an activity model based on the
+       * event set of the appliance or activity.
+       */
       public void actionPerformed (ActionEvent e)
       {
-        tabbedPane.setEnabledAt(2, true);
-
+        // Searching for existing activity or appliance.
         String selection = selectedApplianceList.getSelectedValue();
         ActivityTemp activity = null;
 
@@ -1363,6 +1579,7 @@ public class MainGUI extends JFrame
 
         String startTime, duration, dailyTimes;
 
+        // Check for the selected distribution methods for training.
         if (timesHistogramRadioButton.isSelected())
           dailyTimes = "Histogram";
         else if (timesNormalRadioButton.isSelected())
@@ -1387,6 +1604,8 @@ public class MainGUI extends JFrame
         String[] distributions =
           { dailyTimes, duration, startTime, "Histogram" };
 
+        // If the selected object from the list is an appliance the training
+        // procedure for the appliance begins.
         if (activity == null) {
 
           try {
@@ -1396,6 +1615,8 @@ public class MainGUI extends JFrame
             e1.printStackTrace();
           }
         }
+        // If the selected object from the list is an activity the training
+        // procedure for the activity begins.
         else {
 
           try {
@@ -1407,49 +1628,55 @@ public class MainGUI extends JFrame
 
         }
 
-        System.out.println("Training OK!");
+        // System.out.println("Training OK!");
 
         distributionPreviewPanel.removeAll();
         distributionPreviewPanel.updateUI();
 
-        BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(selection, true);
+        // Show the distribution created on the Distribution Preview Panel
+        ActivityModel activityModel =
+          installation.getPerson().findActivity(selection, true);
 
-        if (behaviourModel == null)
-          behaviourModel = installation.getPerson().findBehaviour(current);
+        if (activityModel == null)
+          activityModel = installation.getPerson().findActivity(current);
 
         ChartPanel chartPanel =
-          behaviourModel.createDailyTimesDistributionChart();
+          activityModel.createDailyTimesDistributionChart();
         distributionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
         distributionPreviewPanel.validate();
-        int size = behaviorSelectList.getModel().getSize();
+
+        // Add the Activity model to the list of trained Activity models of
+        // the Create Response Models tab
+        int size = activitySelectList.getModel().getSize();
 
         if (size > 0) {
-          behaviorModels =
-            (DefaultListModel<String>) behaviorSelectList.getModel();
-          if (behaviorModels.contains(behaviourModel.getName()) == false)
-            behaviorModels.addElement(behaviourModel.getName());
+          activityModels =
+            (DefaultListModel<String>) activitySelectList.getModel();
+          if (activityModels.contains(activityModel.getName()) == false)
+            activityModels.addElement(activityModel.getName());
         }
         else {
-          behaviorModels = new DefaultListModel<String>();
-          behaviorModels.addElement(behaviourModel.getName());
-          behaviorSelectList.setEnabled(true);
+          activityModels = new DefaultListModel<String>();
+          activityModels.addElement(activityModel.getName());
+          activitySelectList.setEnabled(true);
         }
 
-        behaviorSelectList.setModel(behaviorModels);
+        activitySelectList.setModel(activityModels);
 
+        // Add the trained model to the export list also.
         size = exportModelList.getModel().getSize();
         if (size > 0) {
           exportModels = (DefaultListModel<String>) exportModelList.getModel();
-          if (exportModels.contains(behaviourModel.getName()) == false)
-            exportModels.addElement(behaviourModel.getName());
+          if (exportModels.contains(activityModel.getName()) == false)
+            exportModels.addElement(activityModel.getName());
         }
         else {
           exportModels = new DefaultListModel<String>();
-          exportModels.addElement(behaviourModel.getName());
+          exportModels.addElement(activityModel.getName());
           exportModelList.setEnabled(true);
         }
 
+        // Enable some buttons necessary to show the results.
         dailyTimesButton.setEnabled(true);
         durationButton.setEnabled(true);
         startTimeButton.setEnabled(true);
@@ -1462,11 +1689,18 @@ public class MainGUI extends JFrame
         exportStartButton.setEnabled(true);
         exportStartBinnedButton.setEnabled(true);
 
+        tabbedPane.setEnabledAt(2, true);
       }
 
     });
 
     trainAllButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Train All button on
+       * the Training Parameters panel of the Train Activity Models tab. It
+       * is iterating the aforementioned training procedure to each of the
+       * objects on the list.
+       */
       public void actionPerformed (ActionEvent e)
       {
         for (int i = 0; i < selectedApplianceList.getModel().getSize(); i++) {
@@ -1477,6 +1711,12 @@ public class MainGUI extends JFrame
     });
 
     dailyTimesButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Daily Times button on
+       * the Distribution Preview panel of the Train Activity Models tab. It
+       * shows the Daily Times Distribution for the selected object from the
+       * list if available.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1487,14 +1727,14 @@ public class MainGUI extends JFrame
 
         Appliance current = installation.findAppliance(selection);
 
-        BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(selection, true);
+        ActivityModel activityModel =
+          installation.getPerson().findActivity(selection, true);
 
-        if (behaviourModel == null)
-          behaviourModel = installation.getPerson().findBehaviour(current);
+        if (activityModel == null)
+          activityModel = installation.getPerson().findActivity(current);
 
         ChartPanel chartPanel =
-          behaviourModel.createDailyTimesDistributionChart();
+          activityModel.createDailyTimesDistributionChart();
         distributionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
         distributionPreviewPanel.validate();
 
@@ -1502,6 +1742,12 @@ public class MainGUI extends JFrame
     });
 
     startTimeBinnedButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Start Time Binned
+       * button on the Distribution Preview panel of the Train Activity
+       * Models tab. It shows the Start Time Binned Distribution for the
+       * selected object from the list if available.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1512,14 +1758,14 @@ public class MainGUI extends JFrame
 
         Appliance current = installation.findAppliance(selection);
 
-        BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(selection, true);
+        ActivityModel activityModel =
+          installation.getPerson().findActivity(selection, true);
 
-        if (behaviourModel == null)
-          behaviourModel = installation.getPerson().findBehaviour(current);
+        if (activityModel == null)
+          activityModel = installation.getPerson().findActivity(current);
 
         ChartPanel chartPanel =
-          behaviourModel.createStartTimeBinnedDistributionChart();
+          activityModel.createStartTimeBinnedDistributionChart();
         distributionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
         distributionPreviewPanel.validate();
 
@@ -1527,6 +1773,12 @@ public class MainGUI extends JFrame
     });
 
     startTimeButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Start Time
+       * button on the Distribution Preview panel of the Train Activity
+       * Models tab. It shows the Start Time Distribution for the selected
+       * object from the list if available.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1537,14 +1789,14 @@ public class MainGUI extends JFrame
 
         Appliance current = installation.findAppliance(selection);
 
-        BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(selection, true);
+        ActivityModel activityModel =
+          installation.getPerson().findActivity(selection, true);
 
-        if (behaviourModel == null)
-          behaviourModel = installation.getPerson().findBehaviour(current);
+        if (activityModel == null)
+          activityModel = installation.getPerson().findActivity(current);
 
         ChartPanel chartPanel =
-          behaviourModel.createStartTimeDistributionChart();
+          activityModel.createStartTimeDistributionChart();
         distributionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
         distributionPreviewPanel.validate();
 
@@ -1552,6 +1804,12 @@ public class MainGUI extends JFrame
     });
 
     durationButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Duration
+       * button on the Distribution Preview panel of the Train Activity
+       * Models tab. It shows the Duration Distribution for the selected
+       * object from the list if available.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1562,14 +1820,13 @@ public class MainGUI extends JFrame
 
         Appliance current = installation.findAppliance(selection);
 
-        BehaviourModel behaviourModel =
-          installation.getPerson().findBehaviour(selection, true);
+        ActivityModel activityModel =
+          installation.getPerson().findActivity(selection, true);
 
-        if (behaviourModel == null)
-          behaviourModel = installation.getPerson().findBehaviour(current);
+        if (activityModel == null)
+          activityModel = installation.getPerson().findActivity(current);
 
-        ChartPanel chartPanel =
-          behaviourModel.createDurationDistributionChart();
+        ChartPanel chartPanel = activityModel.createDurationDistributionChart();
         distributionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
         distributionPreviewPanel.validate();
 
@@ -1577,6 +1834,13 @@ public class MainGUI extends JFrame
     });
 
     selectedApplianceList.addListSelectionListener(new ListSelectionListener() {
+      /**
+       * This function is called when the user selects an appliance or activity
+       * from the list of Selected Appliances on the Appliance / Activity
+       * Selection panel of the Train Activity Models tab. Then an example
+       * corresponding consumption model is presented in the Consumption Model
+       * Preview panel.
+       */
       public void valueChanged (ListSelectionEvent arg0)
       {
 
@@ -1585,7 +1849,11 @@ public class MainGUI extends JFrame
         distributionPreviewPanel.removeAll();
         distributionPreviewPanel.updateUI();
 
+        // If there are any appliances / activities on the list
         if (selectedAppliances.size() >= 1) {
+
+          // Find the corresponding appliance / activity and show its
+          // consumption model
           String selection = selectedApplianceList.getSelectedValue();
 
           Appliance currentAppliance = installation.findAppliance(selection);
@@ -1602,20 +1870,22 @@ public class MainGUI extends JFrame
           consumptionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
           consumptionPreviewPanel.validate();
 
-          BehaviourModel behaviourModel = null;
+          // If there is also an Activity model trained, show the corresponding
+          // distribution charts on the Distribution Preview panel
+          ActivityModel activityModel = null;
 
           if (currentAppliance != null)
-            behaviourModel =
-              installation.getPerson().findBehaviour(currentAppliance);
+            activityModel =
+              installation.getPerson().findActivity(currentAppliance);
 
-          if (behaviourModel == null)
-            behaviourModel =
-              installation.getPerson().findBehaviour(selection, true);
+          if (activityModel == null)
+            activityModel =
+              installation.getPerson().findActivity(selection, true);
 
-          if (behaviourModel != null) {
+          if (activityModel != null) {
 
             ChartPanel chartPanel2 =
-              behaviourModel.createDailyTimesDistributionChart();
+              activityModel.createDailyTimesDistributionChart();
             distributionPreviewPanel.add(chartPanel2, BorderLayout.CENTER);
             distributionPreviewPanel.validate();
             distributionPreviewPanel.updateUI();
@@ -1632,35 +1902,46 @@ public class MainGUI extends JFrame
       @Override
       public void componentShown (ComponentEvent arg0)
       {
-        behaviorSelectList.setSelectedIndex(0);
+        activitySelectList.setSelectedIndex(0);
       }
     });
 
     previewResponseButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Preview Response
+       * button on the Response Parameters panel of the Create Response Models
+       * tab. This button is enabled after selecting activity model, response
+       * type and pricing for testing and presents a preview of the response
+       * model that may be extracted.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
         responsePanel.removeAll();
 
-        BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(behaviorSelectList
-                                                         .getSelectedValue(),
-                                                 false);
+        // Find the selected activity
+        ActivityModel activity =
+          installation.getPerson().findActivity(activitySelectList
+                                                        .getSelectedValue(),
+                                                false);
 
         int response = -1;
 
-        if (bestCaseRadioButton.isSelected())
+        // Check for the selected response type
+        if (optimalCaseRadioButton.isSelected())
           response = 0;
         else if (normalCaseRadioButton.isSelected())
           response = 1;
         else
           response = 2;
 
+        // Parse the pricing schemes
         double[] basicScheme =
           Utils.parseScheme(basicPricingSchemePane.getText());
         double[] newScheme = Utils.parseScheme(newPricingSchemePane.getText());
 
+        // Create a preview chart of the response model
         ChartPanel chartPanel =
-          installation.getPerson().previewResponse(behaviour, response,
+          installation.getPerson().previewResponse(activity, response,
                                                    basicScheme, newScheme);
         responsePanel.add(chartPanel, BorderLayout.CENTER);
         responsePanel.validate();
@@ -1671,35 +1952,43 @@ public class MainGUI extends JFrame
     });
 
     createResponseButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Create Response Model
+       * button on the Response Parameters panel of the Create Response Models
+       * tab. This button is enabled after preview results of the selected
+       * activity model, response type and pricing for testing and creates the
+       * response model for the user.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
         exportPreviewPanel.removeAll();
         exportPreviewPanel.updateUI();
 
         int responseType = -1;
-
-        if (bestCaseRadioButton.isSelected())
+        // Check for the selected response type
+        if (optimalCaseRadioButton.isSelected())
           responseType = 0;
         else if (normalCaseRadioButton.isSelected())
           responseType = 1;
-
-        else if (worstCaseRadioButton.isSelected())
+        else if (discreteCaseRadioButton.isSelected())
           responseType = 2;
 
+        // Parse the pricing schemes
         double[] basicScheme =
           Utils.parseScheme(basicPricingSchemePane.getText());
         double[] newScheme = Utils.parseScheme(newPricingSchemePane.getText());
 
-        BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(behaviorSelectList
-                                                         .getSelectedValue(),
-                                                 false);
+        // Create the response model
+        ActivityModel activity =
+          installation.getPerson().findActivity(activitySelectList
+                                                        .getSelectedValue(),
+                                                false);
 
         String response = "";
 
         try {
           response =
-            installation.getPerson().createResponse(behaviour, responseType,
+            installation.getPerson().createResponse(activity, responseType,
                                                     basicScheme, newScheme);
         }
         catch (IOException e) {
@@ -1707,6 +1996,7 @@ public class MainGUI extends JFrame
           e.printStackTrace();
         }
 
+        // Add the response model extracted to the export model list.
         int size = exportModelList.getModel().getSize();
         // System.out.println(size);
 
@@ -1726,10 +2016,16 @@ public class MainGUI extends JFrame
     });
 
     createResponseAllButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Create Response All
+       * button on the Response Parameters panel of the Create Response Models
+       * tab. This is achieved by iterating the procedure above for all the
+       * available activity models in the list.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
-        for (int i = 0; i < behaviorSelectList.getModel().getSize(); i++) {
-          behaviorSelectList.setSelectedIndex(i);
+        for (int i = 0; i < activitySelectList.getModel().getSize(); i++) {
+          activitySelectList.setSelectedIndex(i);
           createResponseButton.doClick();
         }
       }
@@ -1751,6 +2047,12 @@ public class MainGUI extends JFrame
     });
 
     commitButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Commit button on the
+       * Pricing Scheme panel of the Create Response Models tab. This button is
+       * enabled after adding the two pricing schemes that are prerequisites for
+       * the creation of a response model.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1761,12 +2063,14 @@ public class MainGUI extends JFrame
 
         pricingPreviewPanel.removeAll();
 
+        // Check if both pricing schemes are entered
         if (basicPricingSchemePane.getText().equalsIgnoreCase("") == false)
           basicScheme = true;
 
         if (newPricingSchemePane.getText().equalsIgnoreCase("") == false)
           newScheme = true;
 
+        // Parse the pricing schemes for errors
         if (basicScheme)
           parseBasic =
             Utils.parsePricingScheme(basicPricingSchemePane.getText());
@@ -1774,6 +2078,7 @@ public class MainGUI extends JFrame
         if (newScheme)
           parseNew = Utils.parsePricingScheme(newPricingSchemePane.getText());
 
+        // If errors are found then present the line the error may be at
         if (parseBasic != -1) {
           JFrame error = new JFrame();
 
@@ -1792,6 +2097,8 @@ public class MainGUI extends JFrame
                                         "Inane error",
                                         JOptionPane.ERROR_MESSAGE);
         }
+        // If no errors are found make a preview chart of the two pricing
+        // schemes
         else {
           if (basicScheme && newScheme) {
             ChartPanel chartPanel =
@@ -1828,23 +2135,34 @@ public class MainGUI extends JFrame
     });
 
     exportModelList.addListSelectionListener(new ListSelectionListener() {
+      /**
+       * This function is called when the user selects an entity from the
+       * list of models on the Model Export Selection panel of the Export Models
+       * tab. Then the corresponding preview of the entity model is presented in
+       * the
+       * Export Model Preview panel.
+       */
       public void valueChanged (ListSelectionEvent arg0)
       {
         if (tabbedPane.getSelectedIndex() == 3) {
           exportPreviewPanel.removeAll();
           exportPreviewPanel.updateUI();
 
+          // Checking if the list has any object
           if (exportModels.size() > 1) {
             String selection = exportModelList.getSelectedValue();
 
+            // Check to see what type of entity is selected (Installation,
+            // Person, Appliance, Activity, Response)
             Appliance appliance = installation.findAppliance(selection);
 
-            BehaviourModel behaviour =
-              installation.getPerson().findBehaviour(selection, false);
+            ActivityModel activity =
+              installation.getPerson().findActivity(selection, false);
 
             ResponseModel response =
               installation.getPerson().findResponse(selection);
 
+            // Create the appropriate chart for the selected entity and show it.
             ChartPanel chartPanel = null;
 
             if (selection.equalsIgnoreCase(installation.getName())) {
@@ -1878,9 +2196,9 @@ public class MainGUI extends JFrame
               exportStartBinnedButton.setEnabled(false);
 
             }
-            else if (behaviour != null) {
+            else if (activity != null) {
 
-              chartPanel = behaviour.createDailyTimesDistributionChart();
+              chartPanel = activity.createDailyTimesDistributionChart();
 
               exportDailyButton.setEnabled(true);
               exportDurationButton.setEnabled(true);
@@ -1905,6 +2223,11 @@ public class MainGUI extends JFrame
     });
 
     exportDailyButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Daily Times
+       * button on the Entity Preview panel of the Export Models tab. It shows
+       * the Daily Times Distribution for the selected object from the list.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1913,16 +2236,16 @@ public class MainGUI extends JFrame
 
         String selection = exportModelList.getSelectedValue();
 
-        BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection, false);
+        ActivityModel activity =
+          installation.getPerson().findActivity(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
 
         ChartPanel chartPanel = null;
 
-        if (behaviour != null)
-          chartPanel = behaviour.createDailyTimesDistributionChart();
+        if (activity != null)
+          chartPanel = activity.createDailyTimesDistributionChart();
 
         else
           chartPanel = response.createDailyTimesDistributionChart();
@@ -1933,6 +2256,12 @@ public class MainGUI extends JFrame
     });
 
     exportStartBinnedButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Start Time Binned
+       * button on the Entity Preview panel of the Export Models tab. It shows
+       * the Start Time Binned Distribution for the selected object from the
+       * list.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1941,16 +2270,16 @@ public class MainGUI extends JFrame
 
         String selection = exportModelList.getSelectedValue();
 
-        BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection, false);
+        ActivityModel activity =
+          installation.getPerson().findActivity(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
 
         ChartPanel chartPanel = null;
 
-        if (behaviour != null)
-          chartPanel = behaviour.createStartTimeBinnedDistributionChart();
+        if (activity != null)
+          chartPanel = activity.createStartTimeBinnedDistributionChart();
 
         else
           chartPanel = response.createStartTimeBinnedDistributionChart();
@@ -1962,6 +2291,11 @@ public class MainGUI extends JFrame
     });
 
     exportStartButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Start Time
+       * button on the Entity Preview panel of the Export Models tab. It shows
+       * the Start Time Distribution for the selected object from the list.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1970,16 +2304,16 @@ public class MainGUI extends JFrame
 
         String selection = exportModelList.getSelectedValue();
 
-        BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection, false);
+        ActivityModel activity =
+          installation.getPerson().findActivity(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
 
         ChartPanel chartPanel = null;
 
-        if (behaviour != null)
-          chartPanel = behaviour.createStartTimeDistributionChart();
+        if (activity != null)
+          chartPanel = activity.createStartTimeDistributionChart();
         else
           chartPanel = response.createStartTimeDistributionChart();
 
@@ -1990,6 +2324,11 @@ public class MainGUI extends JFrame
     });
 
     exportDurationButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Duration
+       * button on the Entity Preview panel of the Export Models tab. It shows
+       * the Duration Distribution for the selected object from the list.
+       */
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1998,16 +2337,16 @@ public class MainGUI extends JFrame
 
         String selection = exportModelList.getSelectedValue();
 
-        BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection, false);
+        ActivityModel activity =
+          installation.getPerson().findActivity(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
 
         ChartPanel chartPanel = null;
 
-        if (behaviour != null)
-          chartPanel = behaviour.createDurationDistributionChart();
+        if (activity != null)
+          chartPanel = activity.createDurationDistributionChart();
         else
           chartPanel = response.createDurationDistributionChart();
 
@@ -2018,26 +2357,35 @@ public class MainGUI extends JFrame
     });
 
     connectButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Connect button on the
+       * Connection Properties panel of the Export Models tab. It helps the user
+       * to connect to his Cassandra Library and export the models he created
+       * there.
+       */
       public void actionPerformed (ActionEvent e)
       {
         boolean result = false;
 
+        // Reads the user credentials and the server to connect to.
         try {
           APIUtilities.setUrl(urlTextField.getText());
 
           result =
-            APIUtilities.getUserID(usernameTextField.getText(),
-                                   passwordField.getPassword());
+            APIUtilities.sendUserCredentials(usernameTextField.getText(),
+                                             passwordField.getPassword());
         }
         catch (Exception e1) {
           e1.printStackTrace();
         }
 
+        // If the use credentials are correct
         if (result) {
 
           exportButton.setEnabled(true);
           exportAllButton.setEnabled(true);
         }
+        // Else a error message appears.
         else {
           JFrame error = new JFrame();
 
@@ -2065,18 +2413,26 @@ public class MainGUI extends JFrame
     });
 
     exportButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Export button on the
+       * Connection Properties panel of the Export Models tab. The entity model
+       * selected from the list is then exported to the User Library in
+       * Cassandra Platform.
+       */
       public void actionPerformed (ActionEvent e)
       {
+        // Parsing the selected entity and find out what type of entity it is.
         String selection = exportModelList.getSelectedValue();
 
         Appliance appliance = installation.findAppliance(selection);
 
-        BehaviourModel behaviour =
-          installation.getPerson().findBehaviour(selection, false);
+        ActivityModel activity =
+          installation.getPerson().findActivity(selection, false);
 
         ResponseModel response =
           installation.getPerson().findResponse(selection);
 
+        // If it is installation
         if (selection.equalsIgnoreCase(installation.getName())) {
 
           try {
@@ -2090,6 +2446,7 @@ public class MainGUI extends JFrame
           }
 
         }
+        // If it is person
         else if (selection.equalsIgnoreCase(installation.getPerson().getName())) {
 
           try {
@@ -2108,6 +2465,7 @@ public class MainGUI extends JFrame
           }
 
         }
+        // If it is appliance
         else if (appliance != null) {
 
           try {
@@ -2125,36 +2483,37 @@ public class MainGUI extends JFrame
           }
 
         }
-        else if (behaviour != null) {
+        // If it is activity
+        else if (activity != null) {
 
           String[] applianceTemp =
-            new String[behaviour.getAppliancesOf().length];
-          String behaviourTemp = "";
+            new String[activity.getAppliancesOf().length];
+          String activityTemp = "";
           String durationTemp = "";
           String dailyTemp = "";
           String startTemp = "";
 
-          for (int i = 0; i < behaviour.getAppliancesOf().length; i++) {
+          // For each appliance that participates in the activity
+          for (int i = 0; i < activity.getAppliancesOf().length; i++) {
 
-            Appliance behaviourAppliance =
-              installation.findAppliance(behaviour.getAppliancesOf()[i]);
-
-            // String startBinnedTemp = "";
+            Appliance activityAppliance =
+              installation.findAppliance(activity.getAppliancesOf()[i]);
 
             try {
-              // In case appliance is not in the database, we send the object
-              // there
-              if (behaviourAppliance.getApplianceID().equalsIgnoreCase("")) {
+              // In case the appliances contained in the Activity model are not
+              // in the database, we create the object there before sending the
+              // activity model
+              if (activityAppliance.getApplianceID().equalsIgnoreCase("")) {
 
-                behaviourAppliance.setApplianceID(APIUtilities
-                        .sendEntity(behaviourAppliance
+                activityAppliance.setApplianceID(APIUtilities
+                        .sendEntity(activityAppliance
                                             .toJSON(APIUtilities.getUserID())
                                             .toString(), "/app"));
 
-                APIUtilities.sendEntity(behaviourAppliance
+                APIUtilities.sendEntity(activityAppliance
                         .powerConsumptionModelToJSON().toString(), "/consmod");
               }
-              applianceTemp[i] = behaviourAppliance.getApplianceID();
+              applianceTemp[i] = activityAppliance.getApplianceID();
             }
             catch (IOException | AuthenticationException
                    | NoSuchAlgorithmException e1) {
@@ -2166,55 +2525,51 @@ public class MainGUI extends JFrame
 
             String[] appliancesID = applianceTemp;
 
-            behaviour.setBehaviourID(APIUtilities
-                    .sendEntity(behaviour.toJSON(appliancesID,
-                                                 APIUtilities.getUserID())
-                                        .toString(), "/actmod"));
+            // Creating the JSON of the activity model
+            activity.setActivityModelID(APIUtilities.sendEntity(activity.toJSON(appliancesID,
+                                                                                APIUtilities
+                                                                                        .getUserID())
+                                                                        .toString(),
+                                                                "/actmod"));
 
-            behaviourTemp = behaviour.getBehaviourID();
+            activityTemp = activity.getActivityModelID();
 
-            behaviour
-                    .getDailyTimes()
+            // Creating the JSON of the distributions
+            activity.getDailyTimes()
                     .setDistributionID(APIUtilities
-                                               .sendEntity(behaviour
-                                                                   .getDailyTimes()
-                                                                   .toJSON(behaviourTemp)
+                                               .sendEntity(activity.getDailyTimes()
+                                                                   .toJSON(activityTemp)
                                                                    .toString(),
                                                            "/distr"));
 
-            behaviour.setDailyID(behaviour.getDailyTimes().getDistributionID());
-            dailyTemp = behaviour.getDailyID();
+            activity.setDailyID(activity.getDailyTimes().getDistributionID());
+            dailyTemp = activity.getDailyID();
 
-            behaviour
-                    .getDuration()
+            activity.getDuration()
                     .setDistributionID(APIUtilities
-                                               .sendEntity(behaviour
-                                                                   .getDuration()
-                                                                   .toJSON(behaviourTemp)
+                                               .sendEntity(activity.getDuration()
+                                                                   .toJSON(activityTemp)
                                                                    .toString(),
                                                            "/distr"));
 
-            behaviour
-                    .setDurationID(behaviour.getDuration().getDistributionID());
-            durationTemp = behaviour.getDurationID();
+            activity.setDurationID(activity.getDuration().getDistributionID());
+            durationTemp = activity.getDurationID();
 
-            behaviour
-                    .getStartTime()
+            activity.getStartTime()
                     .setDistributionID(APIUtilities
-                                               .sendEntity(behaviour
-                                                                   .getStartTime()
-                                                                   .toJSON(behaviourTemp)
+                                               .sendEntity(activity.getStartTime()
+                                                                   .toJSON(activityTemp)
                                                                    .toString(),
                                                            "/distr"));
 
-            behaviour.setStartID(behaviour.getStartTime().getDistributionID());
-            startTemp = behaviour.getStartID();
+            activity.setStartID(activity.getStartTime().getDistributionID());
+            startTemp = activity.getStartID();
 
-            APIUtilities.updateEntity(behaviour
-                                              .toJSON(appliancesID,
+            // Adding the JSON of the distributions to the activity model
+            APIUtilities.updateEntity(activity.toJSON(appliancesID,
                                                       APIUtilities.getUserID())
                                               .toString(), "/actmod",
-                                      behaviourTemp);
+                                      activityTemp);
 
           }
           catch (AuthenticationException | NoSuchAlgorithmException
@@ -2224,27 +2579,26 @@ public class MainGUI extends JFrame
           }
 
         }
-
+        // If it is response
         else if (response != null) {
           String[] applianceTemp =
             new String[response.getAppliancesOf().length];
-          Person person = installation.getPerson();
-          String personTemp = "";
+
           String responseTemp = "";
           String durationTemp = "";
           String dailyTemp = "";
           String startTemp = "";
 
+          // For each appliance that participates in the activity
           for (int i = 0; i < response.getAppliancesOf().length; i++) {
 
             Appliance responseAppliance =
               installation.findAppliance(response.getAppliancesOf()[i]);
 
-            // String startBinnedTemp = "";
-
             try {
-              // In case appliance is not in the database, we send the object
-              // there
+              // In case the appliances contained in the Activity model are not
+              // in the database, we create the object there before sending the
+              // activity model
               if (responseAppliance.getApplianceID().equalsIgnoreCase("")) {
 
                 responseAppliance.setApplianceID(APIUtilities
@@ -2264,29 +2618,19 @@ public class MainGUI extends JFrame
           }
 
           try {
-            // In case person is not in the database, we send the object
-            // there
-            if (person.getPersonID().equalsIgnoreCase("")) {
-
-              person.setPersonID(APIUtilities
-                      .sendEntity(person.toJSON(APIUtilities.getUserID())
-                              .toString(), "/pers"));
-
-            }
-
-            personTemp = installation.getPerson().getPersonID();
-
-            response.setActivityID(APIUtilities.sendEntity(response
-                    .activityToJSON(personTemp).toString(), "/act"));
 
             String[] appliancesID = applianceTemp;
 
-            response.setBehaviourID(APIUtilities
-                    .sendEntity(response.toJSON(appliancesID).toString(),
-                                "/actmod"));
+            // Creating the JSON of the response
+            response.setActivityModelID(APIUtilities.sendEntity(response.toJSON(appliancesID,
+                                                                                APIUtilities
+                                                                                        .getUserID())
+                                                                        .toString(),
+                                                                "/actmod"));
 
-            responseTemp = response.getBehaviourID();
+            responseTemp = response.getActivityModelID();
 
+            // Creating the JSON of the distributions
             response.getDailyTimes()
                     .setDistributionID(APIUtilities
                                                .sendEntity(response.getDailyTimes()
@@ -2317,8 +2661,11 @@ public class MainGUI extends JFrame
             response.setStartID(response.getStartTime().getDistributionID());
             startTemp = response.getStartID();
 
-            APIUtilities.updateEntity(response.toJSON(appliancesID).toString(),
-                                      "/actmod", responseTemp);
+            // Adding the JSON of the distributions to the activity model
+            APIUtilities.updateEntity(response.toJSON(appliancesID,
+                                                      APIUtilities.getUserID())
+                                              .toString(), "/actmod",
+                                      responseTemp);
 
           }
           catch (AuthenticationException | NoSuchAlgorithmException
@@ -2331,6 +2678,12 @@ public class MainGUI extends JFrame
     });
 
     exportAllButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Export All button on
+       * the Connection Properties panel of the Export Models tab. The export
+       * procedure above is iterated through all the entities available on the
+       * list.
+       */
       public void actionPerformed (ActionEvent e)
       {
         for (int i = 0; i < exportModelList.getModel().getSize(); i++) {
@@ -2340,8 +2693,8 @@ public class MainGUI extends JFrame
 
           Appliance appliance = installation.findAppliance(selection);
 
-          BehaviourModel behaviour =
-            installation.getPerson().findBehaviour(selection, false);
+          ActivityModel activity =
+            installation.getPerson().findActivity(selection, false);
 
           ResponseModel response =
             installation.getPerson().findResponse(selection);
@@ -2396,74 +2749,69 @@ public class MainGUI extends JFrame
             }
 
           }
-          else if (behaviour != null) {
+          else if (activity != null) {
 
             String[] applianceTemp =
-              new String[behaviour.getAppliancesOf().length];
+              new String[activity.getAppliancesOf().length];
 
             String personTemp = "";
-            String behaviourTemp = "";
+            String activityTemp = "";
             String durationTemp = "";
             String dailyTemp = "";
             String startTemp = "";
 
-            for (int j = 0; j < behaviour.getAppliancesOf().length; j++) {
+            // For each appliance that participates in the activity
+            for (int j = 0; j < activity.getAppliancesOf().length; j++) {
 
-              Appliance behaviourAppliance =
-                installation.findAppliance(behaviour.getAppliancesOf()[j]);
-              applianceTemp[j] = behaviourAppliance.getApplianceID();
+              Appliance activityAppliance =
+                installation.findAppliance(activity.getAppliancesOf()[j]);
+              applianceTemp[j] = activityAppliance.getApplianceID();
             }
+
             personTemp = installation.getPerson().getPersonID();
 
             try {
 
-              behaviour.setActivityID(APIUtilities.sendEntity(behaviour
+              activity.setActivityID(APIUtilities.sendEntity(activity
                       .activityToJSON(personTemp).toString(), "/act"));
 
               String[] appliancesID = applianceTemp;
 
-              behaviour.setBehaviourID(APIUtilities.sendEntity(behaviour
+              activity.setActivityModelID(APIUtilities.sendEntity(activity
                       .toJSON(appliancesID).toString(), "/actmod"));
-              behaviourTemp = behaviour.getBehaviourID();
+              activityTemp = activity.getActivityModelID();
 
-              behaviour
-                      .getDailyTimes()
+              activity.getDailyTimes()
                       .setDistributionID(APIUtilities
-                                                 .sendEntity(behaviour
+                                                 .sendEntity(activity
                                                          .getDailyTimes()
-                                                         .toJSON(behaviourTemp)
+                                                         .toJSON(activityTemp)
                                                          .toString(), "/distr"));
-              behaviour.setDailyID(behaviour.getDailyTimes()
-                      .getDistributionID());
-              dailyTemp = behaviour.getDailyID();
+              activity.setDailyID(activity.getDailyTimes().getDistributionID());
+              dailyTemp = activity.getDailyID();
 
-              behaviour
-                      .getDuration()
+              activity.getDuration()
                       .setDistributionID(APIUtilities
-                                                 .sendEntity(behaviour
-                                                                     .getDuration()
-                                                                     .toJSON(behaviourTemp)
+                                                 .sendEntity(activity.getDuration()
+                                                                     .toJSON(activityTemp)
                                                                      .toString(),
                                                              "/distr"));
 
-              behaviour.setDurationID(behaviour.getDuration()
-                      .getDistributionID());
-              durationTemp = behaviour.getDurationID();
+              activity.setDurationID(activity.getDuration().getDistributionID());
+              durationTemp = activity.getDurationID();
 
-              behaviour
-                      .getStartTime()
+              activity.getStartTime()
                       .setDistributionID(APIUtilities
-                                                 .sendEntity(behaviour
+                                                 .sendEntity(activity
                                                          .getStartTime()
-                                                         .toJSON(behaviourTemp)
+                                                         .toJSON(activityTemp)
                                                          .toString(), "/distr"));
 
-              behaviour
-                      .setStartID(behaviour.getStartTime().getDistributionID());
-              startTemp = behaviour.getStartID();
+              activity.setStartID(activity.getStartTime().getDistributionID());
+              startTemp = activity.getStartID();
 
-              APIUtilities.updateEntity(behaviour.toJSON(appliancesID)
-                      .toString(), "/actmod", behaviourTemp);
+              APIUtilities.updateEntity(activity.toJSON(appliancesID)
+                      .toString(), "/actmod", activityTemp);
 
             }
             catch (IOException | AuthenticationException
@@ -2482,6 +2830,7 @@ public class MainGUI extends JFrame
             String dailyTemp = "";
             String startTemp = "";
 
+            // For each appliance that participates in the activity
             for (int j = 0; j < response.getAppliancesOf().length; j++) {
 
               Appliance responseAppliance =
@@ -2498,10 +2847,9 @@ public class MainGUI extends JFrame
 
               String[] appliancesID = applianceTemp;
 
-              response.setBehaviourID(APIUtilities
-                      .sendEntity(response.toJSON(appliancesID).toString(),
-                                  "/actmod"));
-              responseTemp = response.getBehaviourID();
+              response.setActivityModelID(APIUtilities.sendEntity(response
+                      .toJSON(appliancesID).toString(), "/actmod"));
+              responseTemp = response.getActivityModelID();
 
               response.getDailyTimes()
                       .setDistributionID(APIUtilities
@@ -2547,6 +2895,13 @@ public class MainGUI extends JFrame
     });
   }
 
+  /**
+   * This function is called when the temporary files must be removed from the
+   * temporary folder used to store the csv and xls used to create the entity
+   * models during the procedure of training and disaggregation. It is done when
+   * the program starts, when the program ends and when the reset button is
+   * pressed by the user.
+   */
   private void cleanFiles ()
   {
     File directory = new File("Files");
@@ -2571,6 +2926,15 @@ public class MainGUI extends JFrame
     }
   }
 
+  /**
+   * This function is used when the program needs to search through the list of
+   * available activities to find the selected one.
+   * 
+   * @param name
+   *          name of the activity as it can be found on the list of detected /
+   *          selected activities
+   * @return the index of the activity in the list of the tempActivities.
+   */
   private static int findActivity (String name)
   {
 
@@ -2588,6 +2952,15 @@ public class MainGUI extends JFrame
     return result;
   }
 
+  /**
+   * This function is used when the program needs to find the list of appliances
+   * that participate in a certain activity.
+   * 
+   * @param activity
+   *          the activity model for which we search the appliance that are
+   *          participating.
+   * @return list of the appliances.
+   */
   private ArrayList<Appliance> findAppliances (ActivityTemp activity)
   {
 

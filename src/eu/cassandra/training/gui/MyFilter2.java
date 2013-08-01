@@ -20,11 +20,26 @@ import java.io.File;
 
 import javax.swing.filechooser.FileFilter;
 
-/* ImageFilter.java is used by FileChooser.java. */
+/**
+ * This class is used as a filter for the acceptable file types of the browsing
+ * capabilities of the Training Module.In this case it accepts only .xls and
+ * .csv files since it is a filter for the consumption measurement data sets
+ * imported from the user.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
 public class MyFilter2 extends FileFilter
 {
 
-  // Accept all directories and all arff , csv , xls files.
+  /**
+   * This function is the acceptance filter for the file types selected.
+   * 
+   * @param file
+   *          the selected file from the user under investigation for
+   *          acceptance.
+   * @return the acceptance or not of the file.
+   */
   public boolean accept (File f)
   {
     if (f.isDirectory()) {
@@ -44,12 +59,25 @@ public class MyFilter2 extends FileFilter
     return false;
   }
 
-  // The description of this filter
+  /**
+   * This function what will be written as the filter's description on the
+   * browsing window.
+   * 
+   * @return a string with the description.
+   */
   public String getDescription ()
   {
     return "*.xls,*.csv";
   }
 
+  /**
+   * This function is used in order to extract the extension of the file
+   * selected from the user.
+   * 
+   * @param file
+   *          the selected file from the user.
+   * @return the extension of the file.
+   */
   public static String getExtension (File f)
   {
     String ext = null;

@@ -24,8 +24,9 @@ import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
 /**
- * This class stores the variables of a consumption model. It has no
- * functionality except parsing a JSON string and return the values on demand.
+ * This class stores the variables of an active activeOnly consumption model. It has
+ * no functionality except parsing a JSON string and return the values on
+ * demand.
  * 
  * @author kyrcha
  * 
@@ -51,12 +52,23 @@ public class PowerConsumptionModel
   /** An array storing the consumption patterns */
   private ArrayList<TripletPower>[] patterns;
 
+  /** The string representation of the active activeOnly consumption model */
   private String model;
 
+  /**
+   * This is the simple constructor of the active activeOnly consumption model.
+   */
   public PowerConsumptionModel ()
   {
   }
 
+  /**
+   * This is the constructor of the active activeOnly consumption model.
+   * 
+   * @param amodel
+   *          The string of the JSON schema that fully defines the active activeOnly
+   *          consumption model to implement.
+   */
   public PowerConsumptionModel (String amodel)
   {
     model = amodel;
@@ -64,6 +76,13 @@ public class PowerConsumptionModel
     init(modelObj);
   }
 
+  /**
+   * This is the main function that create the triplets of the pattern
+   * 
+   * @param modelObjactive
+   *          The active activeOnly consumption model JSON schema as DBObject.
+   * 
+   */
   public void init (DBObject modelObj)
   {
 
@@ -104,44 +123,59 @@ public class PowerConsumptionModel
 
   }
 
-  public int getTotalDuration ()
-  {
-    return totalDuration;
-  }
-
+  /**
+   * This is a getter function for the number of times the outer pattern is
+   * repeated.
+   * 
+   * @return the outer pattern number of times.
+   */
   public int getOuterN ()
   {
     return outerN;
   }
 
+  /**
+   * This is a getter function for the number of patterns of the active activeOnly
+   * consumption model.
+   * 
+   * @return the number of patterns.
+   */
   public int getPatternN ()
   {
     return patternN;
   }
 
+  /**
+   * This is a getter function for the number of times a certain pattern is
+   * repeated.
+   * 
+   * @param i
+   *          The pattern's index in the consumption model.
+   * 
+   * @return the ith pattern number of times.
+   */
   public int getN (int i)
   {
     return n[i];
   }
 
-  public int getPatternDuration (int i)
-  {
-    return patternDuration[i];
-  }
-
+  /**
+   * This is a getter function for a certain pattern of the active activeOnly
+   * consumption model.
+   * 
+   * @param i
+   *          The index of the pattern in demand.
+   * @return the ith pattern
+   */
   public ArrayList<TripletPower> getPattern (int i)
   {
     return patterns[i];
   }
 
-  public static void main (String[] args)
-  {
-    String s =
-      "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 117.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 0.0, \"d\" : 73, \"s\": 0.0}]},{ \"n\" : 1, \"values\" : [ {\"p\" : 14.0, \"d\" : 20, \"s\": 0.0}, {\"p\" : 11.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 5.0, \"d\" : 73, \"s\": 0.0}]}]}";
-    PowerConsumptionModel cm = new PowerConsumptionModel(s);
-    System.out.println(cm.toString());
-  }
-
+  /**
+   * This function presents the main attributes of the active activeOnly consumption
+   * model.
+   */
   public void status ()
   {
 

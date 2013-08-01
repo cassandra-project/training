@@ -20,7 +20,6 @@ package eu.cassandra.training.entities;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 import org.jfree.chart.ChartPanel;
@@ -35,37 +34,120 @@ import eu.cassandra.training.consumption.TripletPower;
 import eu.cassandra.training.consumption.TripletReactive;
 import eu.cassandra.training.utils.ChartUtils;
 
+/**
+ * This class is used for implementing the Appliance Models in the Training
+ * Module of Cassandra Project. The models created here are compatible with the
+ * Appliance Models used in the main Cassandra Platform and can be easily
+ * exported to the User's Library.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
 public class Appliance
 {
-
+  /**
+   * This variable provides the name of the Appliance model.
+   */
   private String name = "";
+
+  /**
+   * This variable provides the name of the installation the Appliance model is
+   * contained into.
+   */
   private String installation = "";
+
+  /**
+   * This variable provides the name of the activity the Appliance model is part
+   * of.
+   */
   private String activity = "";
+
+  /**
+   * This variable provides the type of the Appliance model.
+   */
   private String type = "Generic";
-  private String applianceID = "";
+
+  /**
+   * This variable provides the energy class of the Appliance model.
+   */
   private String energyClass = "";
+
+  /**
+   * This boolean variable states if this is a base load or not.
+   */
   private boolean base = false;
+
+  /**
+   * This boolean variable states if this is appliance is controllable or not.
+   */
   private boolean controllable = false;
+
+  /**
+   * This boolean variable states if this is appliance is shiftable or not.
+   */
   private boolean shiftable = false;
+
+  /**
+   * This is the value of the standby consumption of the appliance.
+   */
   private double standbyConsumption = 0.0;
+
+  /**
+   * This variable presents this appliance's active active consumption model
+   * in
+   * form of a string.
+   */
   private String powerConsumptionModelString = "";
+
+  /**
+   * This variable presents this appliance's reactive active consumption
+   * model in
+   * form of a string.
+   */
   private String reactiveConsumptionModelString = "";
+
+  /**
+   * This variable presents this appliance's active active consumption
+   * model.
+   */
   private PowerConsumptionModel powerConsumptionModel =
     new PowerConsumptionModel();
+
+  /**
+   * This variable presents this appliance's active active consumption
+   * model.
+   */
   private ReactiveConsumptionModel reactiveConsumptionModel =
     new ReactiveConsumptionModel();
+
+  /**
+   * This variable contains the file name of the events file corresponding to
+   * this appliance.
+   */
   private String eventsFile = "";
-  private double[] activePower;
-  private double[] reactivePower;
 
-  public Appliance ()
-  {
-    activePower = new double[0];
-    reactivePower = new double[0];
-  }
+  /**
+   * This variable provides the id of the Appliance model as sent by the
+   * Cassandra Platform.
+   */
+  private String applianceID = "";
 
+  /**
+   * The constructor of an Appliance Model.
+   * 
+   * @param name
+   *          The name of the Appliance Model
+   * @param installation
+   *          The name of the installation that the Appliance Model is installed
+   * @param powerModel
+   *          The active active consumption of the Appliance Model
+   * @param reactiveModel
+   *          The reactive active consumption of the Appliance Model
+   * @param eventFile
+   *          The event file of the Appliance Model
+   */
   public Appliance (String name, String installation, String powerModel,
-                    String reactiveModel, String eventFile, double[] active)
+                    String reactiveModel, String eventFile)
   {
     this.name = name;
     this.installation = installation;
@@ -76,124 +158,113 @@ public class Appliance
     dbo = (DBObject) JSON.parse(reactiveConsumptionModelString);
     powerConsumptionModel.init(dbo);
 
-    activePower = active;
   }
 
-  public Appliance (String name, String installation, String powerModel,
-                    String reactiveModel, String eventFile, double[] active,
-                    double[] reactive)
-  {
-
-    this.name = name;
-    this.installation = installation;
-    this.eventsFile = eventFile;
-    powerConsumptionModelString = powerModel;
-    reactiveConsumptionModelString = reactiveModel;
-    DBObject dbo = (DBObject) JSON.parse(powerConsumptionModelString);
-    powerConsumptionModel.init(dbo);
-    dbo = (DBObject) JSON.parse(reactiveConsumptionModelString);
-    reactiveConsumptionModel.init(dbo);
-    activePower = active;
-    reactivePower = reactive;
-
-  }
-
+  // TODO Remove after disaggregation encapsulation
   public Appliance (String name, String powerModelFile,
                     String reactiveModelFile, String eventFile,
                     Installation installation, boolean power)
     throws IOException
   {
-
     this.name = name;
     this.installation = installation.getName();
     parseConsumptionModel(powerModelFile);
     this.eventsFile = eventFile;
-    activePower = installation.getActivePower();
-    if (!power)
-      reactivePower = installation.getReactivePower();
 
   }
 
+  /**
+   * This is a getter function of the Appliance model name.
+   * 
+   * @return the name of the appliance model.
+   */
   public String getName ()
   {
     return name;
   }
 
-  public String getType ()
-  {
-    return type;
-  }
-
+  /**
+   * This is a getter function of the activity the Appliance model corresponds
+   * to.
+   * 
+   * @return the activity that the Appliance model corresponds to.
+   */
   public String getActivity ()
   {
     return activity;
   }
 
-  public void setActivity (String activity)
-  {
-    this.activity = activity;
-  }
-
-  public void setType (String type)
-  {
-    this.type = type;
-  }
-
-  public double getStandbyConsumption ()
-  {
-    return standbyConsumption;
-  }
-
-  public boolean getControllable ()
-  {
-    return controllable;
-  }
-
-  public boolean getShiftable ()
-  {
-    return shiftable;
-  }
-
+  /**
+   * This is a getter function of the id of the Appliance model.
+   * 
+   * @return the id of the Appliance model.
+   */
   public String getApplianceID ()
   {
     return applianceID;
   }
 
-  public String getEnergyClass ()
-  {
-    return energyClass;
-  }
-
+  /**
+   * This is a getter function of the name of the installation of the Appliance
+   * model.
+   * 
+   * @return the name of the installation.
+   */
   public String getInstallation ()
   {
     return installation;
   }
 
-  public void setEventsFile (String eventsFile)
-  {
-    this.eventsFile = eventsFile;
-  }
-
+  /**
+   * This is a getter function of the events file of the Appliance model.
+   * 
+   * @return the events file of the Appliance model.
+   */
   public String getEventsFile ()
   {
     return eventsFile;
   }
 
-  public String getPowerConsumptionModelString ()
+  /**
+   * This is a setter function of the activity the Appliance model belongs to.
+   * 
+   * @param the
+   *          activity of the Appliance model.
+   */
+  public void setActivity (String activity)
   {
-    return powerConsumptionModelString;
+    this.activity = activity;
   }
 
-  public String getReactiveConsumptionModelString ()
+  /**
+   * This is a setter function of the type of the Appliance model.
+   * 
+   * @param the
+   *          type of the Appliance model.
+   */
+  public void setType (String type)
   {
-    return reactiveConsumptionModelString;
+    this.type = type;
   }
 
+  /**
+   * This is a setter function of the id of the Appliance model.
+   * 
+   * @param the
+   *          id give from Cassandra server to the Appliance model.
+   */
   public void setApplianceID (String id)
   {
     applianceID = id;
   }
 
+  /**
+   * This function is used to create an array of example active active
+   * consumption in order to create the chart for the preview.
+   * 
+   * @return an array with the active active consumption for limited time
+   *         interval.
+   */
   public Double[] getPowerConsumptionModel ()
   {
 
@@ -229,6 +300,13 @@ public class Appliance
 
   }
 
+  /**
+   * This function is used to create an array of example reactiver
+   * powerconsumption in order to create the chart for the preview.
+   * 
+   * @return an array with the active active consumption for limited time
+   *         interval.
+   */
   public Double[] getReactiveConsumptionModel ()
   {
 
@@ -264,35 +342,13 @@ public class Appliance
 
   }
 
-  public double[] getActivePower ()
-  {
-    return activePower;
-  }
-
-  public double getActivePower (int index)
-  {
-    return activePower[index];
-  }
-
-  public double[] getReactivePower ()
-  {
-    if (reactivePower.length == 0)
-      System.out
-              .println("No Reactive Power measurements available for this appliance");
-
-    return reactivePower;
-  }
-
-  public double getReactivePower (int index)
-  {
-    if (reactivePower.length == 0) {
-      System.out
-              .println("No Reactive Power measurements available for this appliance");
-      return 0;
-    }
-    return reactivePower[index];
-  }
-
+  /**
+   * This function is the parser of the consumption model provided by the user.
+   * 
+   * @param filename
+   *          The file name of the consumption model
+   * @throws IOException
+   */
   public void parseConsumptionModel (String filename) throws IOException
   {
 
@@ -334,11 +390,20 @@ public class Appliance
 
   }
 
+  @Override
   public String toString ()
   {
     return name;
   }
 
+  /**
+   * Creating a JSON object out of the appliance model
+   * 
+   * @param installationID
+   *          The id of the installation model the appliance belongs to.
+   * 
+   * @return the JSON object created from the appliance.
+   */
   public DBObject toJSON (String installationID)
   {
 
@@ -358,9 +423,15 @@ public class Appliance
 
   }
 
+  /**
+   * Creating a JSON object out of the appliance's active and reactive active
+   * consumption models.
+   * 
+   * @return the JSON object created from the active and reactive active
+   *         consumption models.
+   */
   public DBObject powerConsumptionModelToJSON ()
   {
-
     DBObject temp = new BasicDBObject();
 
     temp.put("name", name + " Consumption Model");
@@ -375,6 +446,13 @@ public class Appliance
 
   }
 
+  /**
+   * This function is utilized to create the sample active consumption model
+   * to
+   * be graphically represented in the Training Module.
+   * 
+   * @return a chart panel with the consumption model graph.
+   */
   public ChartPanel consumptionGraph ()
   {
 
@@ -383,22 +461,24 @@ public class Appliance
                                  getReactiveConsumptionModel());
   }
 
+  /**
+   * This function is used to present the basic information of the Appliance
+   * Model on the console.
+   */
   public void status ()
   {
     System.out.println("Name: " + name);
     System.out.println("Type: " + type);
+    System.out.println("Appliance Of Installation: " + installation);
     System.out.println("Base: " + base);
     System.out.println("Controllable: " + controllable);
     System.out.println("Shiftable: " + shiftable);
     System.out.println("Energy Class: " + energyClass);
     System.out.println("StandBy Consumption: " + standbyConsumption);
-    System.out.println("Appliance Of Installation: " + installation);
     System.out.println("Events File: " + eventsFile);
     System.out.println("Power Consumption Model:"
                        + powerConsumptionModel.toString());
     System.out.println("Reactive Power Consumption Model:"
                        + reactiveConsumptionModel.toString());
-    System.out.println("Active Power:" + Arrays.toString(activePower));
-    System.out.println("Reactive Power:" + Arrays.toString(reactivePower));
   }
 }

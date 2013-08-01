@@ -41,9 +41,32 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import eu.cassandra.training.entities.Person;
 
+/**
+ * This class contains static functions that are used for the creation of
+ * visualization charts that are appearing in the Training Module GUI.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
 public class ChartUtils
 {
 
+  /**
+   * This function is used for the visualization of a Comparative Response Model
+   * Histogram.
+   * 
+   * @param title
+   *          The title of the chart.
+   * @param x
+   *          The unit on the X axis of the chart.
+   * @param y
+   *          The unit on the Y axis of the chart.
+   * @param dataBefore
+   *          The array of values before the response.
+   * @param dataAfter
+   *          The array of values after the response.
+   * @return a chart panel with the graphical representation.
+   */
   public static ChartPanel createResponseHistogram (String title, String x,
                                                     String y,
                                                     double[] dataBefore,
@@ -81,6 +104,19 @@ public class ChartUtils
     return new ChartPanel(chart);
   }
 
+  /**
+   * This function is used for the visualization of a Line Diagram.
+   * 
+   * @param title
+   *          The title of the chart.
+   * @param x
+   *          The unit on the X axis of the chart.
+   * @param y
+   *          The unit on the Y axis of the chart.
+   * @param data
+   *          The array of values.
+   * @return a chart panel with the graphical representation.
+   */
   public static ChartPanel createLineDiagram (String title, String x, String y,
                                               double[] data)
   {
@@ -135,6 +171,19 @@ public class ChartUtils
     return new ChartPanel(chart);
   }
 
+  /**
+   * This function is used for the visualization of a Histogram.
+   * 
+   * @param title
+   *          The title of the chart.
+   * @param x
+   *          The unit on the X axis of the chart.
+   * @param y
+   *          The unit on the Y axis of the chart.
+   * @param data
+   *          The array of values.
+   * @return a chart panel with the graphical representation.
+   */
   public static ChartPanel createHistogram (String title, String x, String y,
                                             Double[] data)
   {
@@ -157,6 +206,19 @@ public class ChartUtils
     return new ChartPanel(chart);
   }
 
+  /**
+   * This function is used for the visualization of a Histogram.
+   * 
+   * @param title
+   *          The title of the chart.
+   * @param x
+   *          The unit on the X axis of the chart.
+   * @param y
+   *          The unit on the Y axis of the chart.
+   * @param data
+   *          The array of values.
+   * @return a chart panel with the graphical representation.
+   */
   public static ChartPanel createHistogram (String title, String x, String y,
                                             double[] data)
   {
@@ -178,6 +240,21 @@ public class ChartUtils
     return new ChartPanel(chart);
   }
 
+  /**
+   * This function is used for the visualization of two Area Diagrams.
+   * 
+   * @param title
+   *          The title of the chart.
+   * @param x
+   *          The unit on the X axis of the chart.
+   * @param y
+   *          The unit on the Y axis of the chart.
+   * @param doubles
+   *          The array of values of the first array.
+   * @param doubles2
+   *          The array of values of the second array.
+   * @return a chart panel with the graphical representation.
+   */
   public static ChartPanel createArea (String title, String x, String y,
                                        Double[] doubles, Double[] doubles2)
   {
@@ -211,6 +288,23 @@ public class ChartUtils
     return new ChartPanel(chart);
   }
 
+  /**
+   * This function is used for the visualization of a Gaussian (Normal)
+   * Distribution.
+   * 
+   * @param title
+   *          The title of the chart.
+   * @param x
+   *          The unit on the X axis of the chart.
+   * @param y
+   *          The unit on the Y axis of the chart.
+   * @param mean
+   *          The mean parameter of the distribution.
+   * 
+   * @param mean
+   *          The standard deviation parameter of the distribution.
+   * @return a chart panel with the graphical representation.
+   */
   public static ChartPanel createNormalDistribution (String title, String x,
                                                      String y, double mean,
                                                      double sigma)
@@ -235,6 +329,20 @@ public class ChartUtils
 
   }
 
+  /**
+   * This function is used for the visualization of a Gaussian Mixture
+   * Distribution.
+   * 
+   * @param title
+   *          The title of the chart.
+   * @param x
+   *          The unit on the X axis of the chart.
+   * @param y
+   *          The unit on the Y axis of the chart.
+   * @param data
+   *          The array of values.
+   * @return a chart panel with the graphical representation.
+   */
   public static ChartPanel createMixtureDistribution (String title, String x,
                                                       String y, double[] data)
   {
@@ -260,6 +368,14 @@ public class ChartUtils
 
   }
 
+  /**
+   * This function is used for parsing and presenting the basic pricing schema.
+   * 
+   * @param basic
+   *          The basic pricing schema
+   * @return a chart panel with the
+   *         graphical representation.
+   */
   public static ChartPanel parsePricingScheme (String basic)
   {
 
@@ -316,6 +432,18 @@ public class ChartUtils
     return new ChartPanel(chart);
   }
 
+  /**
+   * This function is used for parsing and presenting the basic and the new
+   * pricing schema.
+   * 
+   * @param basic
+   *          The basic pricing schema
+   * @param after
+   *          The new pricing schema
+   * 
+   * @return a chart panel with the
+   *         graphical representation.
+   */
   public static ChartPanel parsePricingScheme (String basic, String after)
   {
 
@@ -350,12 +478,23 @@ public class ChartUtils
     return new ChartPanel(chart);
   }
 
+  /**
+   * This function is used for creating a pie chart of a Person Model's
+   * statistical attributes.
+   * 
+   * @param title
+   *          The chart's title
+   * @param person
+   *          The person under consideration
+   * 
+   * @return a chart panel with the statistical graphical representation.
+   */
   public static ChartPanel createPieChart (String title, Person person)
   {
 
     DefaultPieDataset dataset = new DefaultPieDataset();
-    dataset.setValue("Behavior Models", person.getBehaviourModels().size());
-    dataset.setValue("Response Models", person.getResponseModels().size());
+    dataset.setValue("Activity Models", person.getActivityModelsSize());
+    dataset.setValue("Response Models", person.getResponseModelsSize());
 
     JFreeChart chart =
       ChartFactory.createPieChart(title, dataset, true, true, true);

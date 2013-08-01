@@ -30,59 +30,118 @@ import java.util.TreeMap;
 
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import eu.cassandra.training.utils.Constants;
 
+/**
+ * This class is used for implementing the notion of a consumption event
+ * repository. The consumption events are collected from the imported data set
+ * and then an overall analysis can be done in this repository, in order to
+ * create the necessary files and histograms for the training procedure at hand.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
 public class ConsumptionEventRepo
 {
+  /**
+   * This variable represents the appliance that the consumption events belong
+   * to.
+   */
   String appliance;
 
+  /**
+   * This is a list of the consumption events collected for a single appliance
+   * from the measurements data set.
+   */
   ArrayList<ConsumptionEvent> events = new ArrayList<ConsumptionEvent>();
 
-  Map<DateTime, Integer> numberEventsPerDate = new TreeMap<DateTime, Integer>();
-
+  /**
+   * This variable is a map of the of the consumption events that are collected
+   * for each date available in the data set.
+   */
   Map<DateTime, ArrayList<ConsumptionEvent>> eventsPerDate =
     new HashMap<DateTime, ArrayList<ConsumptionEvent>>();
 
+  /**
+   * This is a map of the number of consumption events that are collected for
+   * each date available in the data set.
+   */
+  Map<DateTime, Integer> numberEventsPerDate = new TreeMap<DateTime, Integer>();
+
+  /**
+   * This variable presents a map histogram of the different values found as
+   * duration (in minutes) in the consumption events to their frequency
+   * probability in the data set..
+   */
   Map<Integer, Double> eventsDurationHistogram = new TreeMap<Integer, Double>();
+
+  /**
+   * This variable presents a map histogram of the different values found as
+   * daily times an event was present for each available date to their frequency
+   * probability in the data set.
+   */
   Map<Integer, Double> eventsDailyTimesHistogram =
     new TreeMap<Integer, Double>();
+
+  /**
+   * This variable presents a map histogram of the different values found as
+   * start minute of the day for an event to their frequency
+   * probability in the data set.
+   */
   Map<Integer, Double> eventsStartTimeHistogram =
     new TreeMap<Integer, Double>();
+
+  /**
+   * This variable presents a map histogram of the different values found as
+   * start minute of the day in binned intervals (e.g. 10-minute, quarter
+   * intervals) for an event to their frequency probability in the data set.
+   */
   Map<Integer, Double> eventsStartTimeBinnedHistogram =
     new TreeMap<Integer, Double>();
 
   // =================CREATION FUNCTIONS==============================//
 
+  /**
+   * This is the constructor of an appliance's consumption event repo.
+   * 
+   * @param appliance
+   *          The appliance the consumption events under investigation belong
+   *          to.
+   */
   public ConsumptionEventRepo (String appliance)
   {
-
     this.appliance = appliance;
-
   }
 
-  public void addEvent (ConsumptionEvent e, int upperThreshold,
-                        int lowerThreshold)
+  /**
+   * This function adds an consumption event to the repository.
+   * 
+   * @param e
+   *          The detected consumption event.
+   */
+  public void addEvent (ConsumptionEvent e)
   {
-
-    long temp = e.getDuration().getStandardMinutes();
-
-    if (temp < upperThreshold && temp > lowerThreshold)
-      events.add(e);
+    events.add(e);
   }
 
+  /**
+   * This function is used to fill the event per date map of the repository.
+   * Each available consumption event is parsed and added to the appropriate
+   * date.
+   */
   public void createEventPerDateHashmap ()
   {
-
+    // Initialize the auxiliary variables
     Map<DateTime, ArrayList<ConsumptionEvent>> tempMap =
       new HashMap<DateTime, ArrayList<ConsumptionEvent>>();
     ArrayList<ConsumptionEvent> events = getEvents();
 
+    // Find the starting dates of all the events.
     DateTime temp = events.get(0).getStartDate();
     DateTime temp2 = events.get(events.size() - 1).getStartDate();
 
+    // Fill the map with all the dates
     while (!temp.isAfter(temp2)) {
 
       tempMap.put(temp, new ArrayList<ConsumptionEvent>());
@@ -90,6 +149,7 @@ public class ConsumptionEventRepo
 
     }
 
+    // Add each and every event to the appropriate date.
     for (int i = 0; i < events.size(); i++) {
       DateTime loop = events.get(i).getStartDate();
       ArrayList<ConsumptionEvent> tempList = tempMap.get(loop);
@@ -97,8 +157,10 @@ public class ConsumptionEventRepo
       tempMap.put(loop, tempList);
     }
 
+    // Sort the map based on dates
     eventsPerDate = new TreeMap<DateTime, ArrayList<ConsumptionEvent>>(tempMap);
 
+    // Fill the number of events per date map also.
     for (DateTime date: eventsPerDate.keySet())
       numberEventsPerDate.put(date, eventsPerDate.get(date).size());
     //
@@ -106,30 +168,39 @@ public class ConsumptionEventRepo
     // System.out.println(numberEventsPerDate.toString());
   }
 
-  public void clean ()
+  /**
+   * This function clears the maps of the repository in order to refill them
+   * with new analysis data.
+   */
+  public void clear ()
   {
-
     numberEventsPerDate.clear();
     eventsPerDate.clear();
-
     eventsDurationHistogram.clear();
     eventsDailyTimesHistogram.clear();
     eventsStartTimeHistogram.clear();
     eventsStartTimeBinnedHistogram.clear();
-
   }
 
+  /**
+   * This function clears the event list of the repository in order to refill it
+   * with new consumption events.
+   */
   public void cleanEvents ()
   {
-
     events.clear();
-
   }
 
+  /**
+   * This function analyses the collected consumption events and create the
+   * resulting frequency histograms.
+   * 
+   * @throws FileNotFoundException
+   */
   public void analyze () throws FileNotFoundException
   {
 
-    clean();
+    clear();
 
     createEventPerDateHashmap();
 
@@ -144,12 +215,10 @@ public class ConsumptionEventRepo
     // ChartUtils.createHistogram("Duration", "Minutes", "Possibility",
     // eventsDurationHistogram);
     // DurationHistogramToFile();
-
     // ChartUtils.createHistogram("DailyTimes", "Daily Times",
     // "Possibility",
     // eventsDailyTimesHistogram);
     // DailyTimesHistogramToFile();
-
     // ChartUtils.createHistogram("StartTime", "Minute Of Day",
     // "Possibility",
     // eventsStartTimeHistogram);
@@ -157,99 +226,83 @@ public class ConsumptionEventRepo
     // ChartUtils.createHistogram("StartTimeBinned", "Ten-Minute Of Day",
     // "Possibility", eventsStartTimeHistogram);
     // StartTimeBinnedHistogramToFile();
-    /*
-     * typeToFile(Constants.EVENTS_FILE + temp + appliance + ".csv", temp);
-     * 
-     * System.out.println("Events Per Date HashMap " +
-     * eventsPerDate.toString());
-     * System.out.println("Event Duration Histogram " +
-     * eventsDurationHistogram.get(i).toString());
-     * 
-     * System.out.println("Event Daily Times Histogram " +
-     * eventsDailyTimesHistogram.get(i).toString());
-     * 
-     * System.out.println("Event Start Time Histogram " +
-     * eventsStartTimeHistogram.get(i).toString());
-     * 
-     * System.out.println("Event Start Time Binned Histogram " +
-     * eventsStartTimeBinnedHistogram.get(i).toString());
-     */
+
   }
 
-  // =========================GETTER
-  // FUNCTIONS================================//
-
+  /**
+   * This is a getter function for the available consumption events.
+   * 
+   * @return the list of consumption events of the repository
+   */
   public ArrayList<ConsumptionEvent> getEvents ()
   {
     return events;
   }
 
+  /**
+   * This is a getter function for the map of number of events per date.
+   * 
+   * @return the map of number of events per date.
+   */
   public Map<DateTime, Integer> getNumberEventsPerDate ()
   {
-
     return numberEventsPerDate;
-
   }
 
+  /**
+   * This is a getter function for the map of events per date.
+   * 
+   * @return the map of events per date.
+   */
   public Map<DateTime, ArrayList<ConsumptionEvent>> getEventsPerDate ()
   {
-
     return eventsPerDate;
-
   }
 
+  /**
+   * This is a getter function for the duration histogram.
+   * 
+   * @return the duration histogram.
+   */
   public Map<Integer, Double> getDurationHistogram ()
   {
     return eventsDurationHistogram;
   }
 
+  /**
+   * This is a getter function for the daily times histogram.
+   * 
+   * @return the daily times histogram.
+   */
   public Map<Integer, Double> getDailyTimesHistogram ()
   {
-
     return eventsDailyTimesHistogram;
   }
 
+  /**
+   * This is a getter function for the start time histogram.
+   * 
+   * @return the start time histogram.
+   */
   public Map<Integer, Double> getStartTimeHistogram ()
   {
     return eventsStartTimeHistogram;
   }
 
+  /**
+   * This is a getter function for the start time binned histogram.
+   * 
+   * @return the start time binned histogram.
+   */
   public Map<Integer, Double> getStartTimeBinnedHistogram ()
   {
-
     return eventsStartTimeBinnedHistogram;
   }
 
-  // =========================PRINTING
-  // FUNCTIONS==============================//
-
-  public void showEvents ()
-  {
-
-    for (int i = 0; i < events.size(); i++) {
-      events.get(i).status();
-    }
-
-  }
-
-  public String showStartDate ()
-  {
-
-    DateTimeFormatter fmt2 = DateTimeFormat.forPattern("yyyy-MM-dd");
-
-    return events.get(0).getStartDate().toString(fmt2);
-  }
-
-  public String showEndDate ()
-  {
-
-    DateTimeFormatter fmt2 = DateTimeFormat.forPattern("yyyy-MM-dd");
-
-    return events.get(events.size() - 1).getStartDate().toString(fmt2);
-  }
-
-  // =========================HISTOGRAM FUNCTIONS===========================//
-
+  /**
+   * This is the function that creates the duration histogram by parsing through
+   * all the available consumption events and checking on their duration.
+   */
   public void createDurationHistogram ()
   {
 
@@ -288,6 +341,11 @@ public class ConsumptionEventRepo
 
   }
 
+  /**
+   * This is the function that creates the daily histogram by parsing through
+   * all the available dates and checking on the number of consumption events
+   * present for each date.
+   */
   public void createDailyTimesHistogram ()
   {
     Map<Integer, Double> tempDailyTimesHistogram =
@@ -338,6 +396,11 @@ public class ConsumptionEventRepo
 
   }
 
+  /**
+   * This is the function that creates the start time histogram by parsing
+   * through all the available consumption events and checking on their
+   * start minute of the day.
+   */
   public void createStartTimeHistogram ()
   {
 
@@ -379,6 +442,16 @@ public class ConsumptionEventRepo
 
   }
 
+  /**
+   * This is the function that creates the start time binned histogram by
+   * aggregating the data available from the start time histogram to certain
+   * time intervals.
+   * 
+   * @param minuteInterval
+   *          The number of minutes per bin.
+   * @param intervals
+   *          The number of bins
+   */
   public void
     createStartTimeBinnedHistogram (int minuteInterval, int intervals)
   {
@@ -421,9 +494,13 @@ public class ConsumptionEventRepo
 
   }
 
-  // =========================FILE CREATING
-  // FUNCTIONS========================//
-
+  /**
+   * Function for exporting the consumption event start and end times
+   * to a file for the training procedure.
+   * 
+   * @param filename
+   *          The name of the file that will be exported.
+   */
   public void eventsToFile (String filename)
   {
     try {
@@ -464,29 +541,16 @@ public class ConsumptionEventRepo
     }
   }
 
-  public void daysToFile (String filename, int[] daysArray)
-  {
-    try {
-
-      PrintStream realSystemOut = System.out;
-      OutputStream output = new FileOutputStream(filename + ".csv");
-      PrintStream printOut = new PrintStream(output);
-      System.setOut(printOut);
-
-      System.out.println("Overall Days:" + eventsPerDate.keySet().size());
-
-      for (int i = 0; i < daysArray.length; i++)
-        System.out.println(daysArray[i]);
-
-      System.setOut(realSystemOut);
-      output.close();
-
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
+  /**
+   * Function for exporting the values that are found in the consumption events
+   * for a certain attribute to a file for the training procedure.
+   * 
+   * @param filename
+   *          The name of the file that will be exported.
+   * @param atribute
+   *          The name of the attribute ((Daily Times, Duration, Start Time,
+   *          Start Time Binned)
+   */
   public void attributeToFile (String filename, String attribute)
   {
     try {
@@ -546,7 +610,14 @@ public class ConsumptionEventRepo
     }
   }
 
-  public void DurationHistogramToFile (String file)
+  /**
+   * Function for exporting the Duration histogram of the consumption event
+   * repository to a file for the training procedure.
+   * 
+   * @param filename
+   *          The name of the file that will be exported.
+   */
+  public void DurationHistogramToFile (String filename)
   {
     try {
 
@@ -555,7 +626,7 @@ public class ConsumptionEventRepo
 
       PrintStream realSystemOut = System.out;
 
-      OutputStream output = new FileOutputStream(file);
+      OutputStream output = new FileOutputStream(filename);
       PrintStream printOut = new PrintStream(output);
       System.setOut(printOut);
       System.out.println("Histogram");
@@ -575,7 +646,14 @@ public class ConsumptionEventRepo
     }
   }
 
-  public void DailyTimesHistogramToFile (String file)
+  /**
+   * Function for exporting the Daily Times histogram of the consumption event
+   * repository to a file for the training procedure.
+   * 
+   * @param filename
+   *          The name of the file that will be exported.
+   */
+  public void DailyTimesHistogramToFile (String filename)
   {
     try {
 
@@ -584,7 +662,7 @@ public class ConsumptionEventRepo
 
       PrintStream realSystemOut = System.out;
 
-      OutputStream output = new FileOutputStream(file);
+      OutputStream output = new FileOutputStream(filename);
       PrintStream printOut = new PrintStream(output);
       System.setOut(printOut);
 
@@ -604,7 +682,14 @@ public class ConsumptionEventRepo
     }
   }
 
-  public void StartTimeHistogramToFile (String file)
+  /**
+   * Function for exporting the Start Time histogram of the consumption event
+   * repository to a file for the training procedure.
+   * 
+   * @param filename
+   *          The name of the file that will be exported.
+   */
+  public void StartTimeHistogramToFile (String filename)
   {
     try {
 
@@ -613,7 +698,7 @@ public class ConsumptionEventRepo
 
       PrintStream realSystemOut = System.out;
 
-      OutputStream output = new FileOutputStream(file);
+      OutputStream output = new FileOutputStream(filename);
       PrintStream printOut = new PrintStream(output);
       System.setOut(printOut);
 
@@ -636,7 +721,14 @@ public class ConsumptionEventRepo
     }
   }
 
-  public void StartTimeBinnedHistogramToFile (String file)
+  /**
+   * Function for exporting the Start Binned histogram of the consumption event
+   * repository to a file for the training procedure.
+   * 
+   * @param filename
+   *          The name of the file that will be exported.
+   */
+  public void StartTimeBinnedHistogramToFile (String filename)
   {
     try {
 
@@ -645,7 +737,7 @@ public class ConsumptionEventRepo
 
       PrintStream realSystemOut = System.out;
 
-      OutputStream output = new FileOutputStream(file);
+      OutputStream output = new FileOutputStream(filename);
       PrintStream printOut = new PrintStream(output);
       System.setOut(printOut);
 
@@ -666,6 +758,14 @@ public class ConsumptionEventRepo
     }
   }
 
+  /**
+   * 
+   * Function for importing consumption events from an file.
+   * 
+   * @param filename
+   *          The name of the file that will be exported.
+   * @throws FileNotFoundException
+   */
   public void readEventsFile (String filename) throws FileNotFoundException
   {
 
@@ -707,8 +807,6 @@ public class ConsumptionEventRepo
 
       events.add(new ConsumptionEvent(counter++, startDateTime, startDate,
                                       endDateTime, endDate));
-
-      // events.get(counter - 1).status();
 
     }
 

@@ -26,9 +26,30 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
+/**
+ * This class contains static functions that are used for general purposes
+ * throughout the Training Module.
+ * 
+ * @author Antonios Chrysopoulos
+ * @version 0.9, Date: 29.07.2013
+ */
+
 public class Utils
 {
 
+  /**
+   * This is the parser for the measurement file. It parses through the file and
+   * checks for errors. It can parse through .csv and .xls file and uses
+   * different libraries for each file type.
+   * 
+   * @param measurementsFile
+   *          The file name of the measurements file.
+   * @param power
+   *          The type of data sets contained within the file (only active or
+   *          active and reactive power)
+   * @return the line of error or -1 if no error is found.
+   * @throws IOException
+   */
   public static int parseMeasurementsFile (String measurementsFile,
                                            boolean power) throws IOException
   {
@@ -131,6 +152,14 @@ public class Utils
 
   }
 
+  /**
+   * This function is used for parsing through the basic pricing schema and
+   * returns the array of prices for the daily schedule.
+   * 
+   * @param scheme
+   *          The input pricing schema
+   * @return an array of the prices by minute of day.
+   */
   public static double[] parseScheme (String scheme)
   {
     double[] data = new double[Constants.MINUTES_PER_DAY];
@@ -168,6 +197,14 @@ public class Utils
     return data;
   }
 
+  /**
+   * This function is used for parsing through the basic pricing schema to check
+   * for errors.
+   * 
+   * @param scheme
+   *          The input pricing schema
+   * @return the line of error, or -1 if no error found.
+   */
   public static int parsePricingScheme (String scheme)
   {
     int result = -1;
@@ -258,6 +295,14 @@ public class Utils
     return result;
   }
 
+  /**
+   * This function is used for aggregating the start time distribution in
+   * 10-minute intervals to create the start time binned distribution.
+   * 
+   * @param values
+   *          The start time distribution values' array.
+   * @return the start time binned distribution values' array.
+   */
   public static double[] aggregateStartTimeDistribution (double[] values)
   {
     double[] result = new double[values.length / Constants.MINUTES_PER_BIN];

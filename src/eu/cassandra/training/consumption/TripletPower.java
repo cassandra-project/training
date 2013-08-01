@@ -17,12 +17,24 @@ limitations under the License.
 
 package eu.cassandra.training.consumption;
 
+/**
+ * This class is used for the definition of an active activeOnly consumption triplet.
+ * 
+ * @author Kyriakos Chatzidimitriou
+ * 
+ */
 public class TripletPower
 {
+  /** The active activeOnly of the triplet in watts. */
+  public double p;
 
-  public double p, s;
+  /** The slope of the triplet. */
+  public double s;
+
+  /** The duration of the triplet. */
   public int d;
 
+  /** A simple constructor of a triplet */
   public TripletPower ()
   {
     p = s = 0;

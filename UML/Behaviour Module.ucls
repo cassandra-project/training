@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <class-diagram version="1.1.2" icons="true" automaticImage="PNG" always-add-relationships="false" generalizations="true" 
   realizations="true" associations="true" dependencies="false" nesting-relationships="true">  
-  <class id="1" language="java" name="eu.cassandra.training.behaviour.BehaviourModel" project="Training Module" 
-    file="/Training Module/src/eu/cassandra/training/behaviour/BehaviourModel.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="1" language="java" name="eu.cassandra.training.activity.ActivityModel project="Training Module" 
+    file="/Training Module/src/eu/cassandra/training/behaviour/ActivityModel.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="181" y="256"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -10,12 +10,13 @@
       <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </class>  
-  <package id="2" language="java" name="eu.cassandra.training.behaviour" project="Training Module" 
+  <package id="2" language="java" name="eu.cassandra.training.activity" project="Training Module" 
     file="/Training Module/src/eu/cassandra/training/behaviour" binary="false" corner="BOTTOM_RIGHT">    
     <position height="50" width="207" x="369" y="-135"/>    
-    <display autosize="true" stereotype="true" accessors="true"/>  
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true"/>  
   </package>  
-  <interface id="3" language="java" name="eu.cassandra.training.behaviour.ProbabilityDistribution" 
+  <interface id="3" language="java" name="eu.cassandra.training.activity.ProbabilityDistribution" 
     project="Training Module" file="/Training Module/src/eu/cassandra/training/behaviour/ProbabilityDistribution.java" 
     binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="847" y="289"/>    
@@ -25,7 +26,7 @@
       <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </interface>  
-  <class id="4" language="java" name="eu.cassandra.training.behaviour.Gaussian" project="Training Module" 
+  <class id="4" language="java" name="eu.cassandra.training.activity.Gaussian" project="Training Module" 
     file="/Training Module/src/eu/cassandra/training/behaviour/Gaussian.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1145" y="148"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
@@ -34,7 +35,7 @@
       <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </class>  
-  <class id="5" language="java" name="eu.cassandra.training.behaviour.Histogram" project="Training Module" 
+  <class id="5" language="java" name="eu.cassandra.training.activity.Histogram" project="Training Module" 
     file="/Training Module/src/eu/cassandra/training/behaviour/Histogram.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="671" y="738"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
@@ -43,7 +44,7 @@
       <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </class>  
-  <class id="6" language="java" name="eu.cassandra.training.behaviour.GaussianMixtureModels" project="Training Module" 
+  <class id="6" language="java" name="eu.cassandra.training.activity.GaussianMixtureModels" project="Training Module" 
     file="/Training Module/src/eu/cassandra/training/behaviour/GaussianMixtureModels.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1095" y="849"/>    

@@ -34,15 +34,57 @@ import eu.cassandra.training.utils.ChartUtils;
 
 public class Installation
 {
+  /**
+   * This variable provides the name of the Installation model.
+   */
   String name = "";
+
+  /**
+   * This variable provides the type of the installation Model.
+   */
   String type = "";
-  String installationID = "";
+
+  /**
+   * This variable is a list of the appliances that are installed within the
+   * Installation.
+   */
   ArrayList<Appliance> appliances;
+
+  /**
+   * This variable presents the equivalent Person Model that is occupying the
+   * installation.
+   */
   Person person;
+
+  /**
+   * This variable contains the file name of the measurements file corresponding
+   * to this installation as imported by the user.
+   */
   String measurementsFile = "";
-  boolean power = true;
+
+  /**
+   * This variable states if the installation measurements contain both active
+   * and reactive activeOnly or not.
+   */
+  boolean activeOnly = true;
+
+  /**
+   * This is an array of the active power measurements of the installation as
+   * provided by the user.
+   */
   double[] activePower = null;
+
+  /**
+   * This is an array of the reactive power measurements of the installation as
+   * provided by the user.
+   */
   double[] reactivePower = null;
+
+  /**
+   * This variable provides the id of the Appliance model as sent by the
+   * Cassandra Platform.
+   */
+  String installationID = "";
 
   public Installation ()
   {
@@ -50,6 +92,16 @@ public class Installation
     person = null;
   }
 
+  /**
+   * The constructor of an Installation Model.
+   * 
+   * @param filename
+   *          The name of the file containing the power measurements of the
+   *          installation.
+   * @param power
+   *          The flag of the type of power measurements available.
+   * @throws IOException
+   */
   public Installation (String filename, boolean power) throws IOException
   {
     File file = new File(filename);
@@ -58,19 +110,30 @@ public class Installation
     measurementsFile = filename;
     appliances = new ArrayList<Appliance>();
     person = new Person("Person", name);
-    this.power = power;
+    this.activeOnly = power;
     parseMeasurementsFile();
-
   }
 
+  /**
+   * This function is used for adding a new appliance in the installation.
+   * 
+   * @param appliance
+   *          The appliance in need for addition.
+   */
   public void addAppliance (Appliance appliance)
   {
     appliances.add(appliance);
   }
 
+  /**
+   * This function is searching for an appliance in the installation given a
+   * certain name.
+   * 
+   * @param name
+   *          The name of the appliance in search of.
+   */
   public Appliance findAppliance (String name)
   {
-
     Appliance result = null;
 
     for (Appliance appliance: appliances) {
@@ -83,71 +146,64 @@ public class Installation
     return result;
   }
 
+  /**
+   * This is a getter function of the Installation model name.
+   * 
+   * @return the name of the Installation model.
+   */
   public String getName ()
   {
 
     return name;
   }
 
-  public String getType ()
-  {
-
-    return type;
-  }
-
+  /**
+   * This is a getter function of the Installation model id.
+   * 
+   * @return the id of the Installation model.
+   */
   public String getInstallationID ()
   {
 
     return installationID;
   }
 
+  /**
+   * This is a getter function of the Installation model's appliances.
+   * 
+   * @return alist with the appliances of the Installation model.
+   */
   public ArrayList<Appliance> getAppliances ()
   {
-
     return appliances;
   }
 
+  /**
+   * This is a getter function of the Installation model person.
+   * 
+   * @return the person within the Installation model.
+   */
   public Person getPerson ()
   {
 
     return person;
   }
 
-  public String getMeasurementsFile ()
-  {
-
-    return measurementsFile;
-  }
-
-  public double[] getActivePower ()
-  {
-
-    return activePower;
-  }
-
-  public double getActivePower (int index)
-  {
-
-    return activePower[index];
-  }
-
-  public double[] getReactivePower ()
-  {
-
-    return reactivePower;
-  }
-
-  public double getReactivePower (int index)
-  {
-
-    return reactivePower[index];
-  }
-
+  /**
+   * This is a setter function of the Installation model id.
+   * 
+   * @param the
+   *          id of the Installation model.
+   */
   public void setInstallationID (String id)
   {
     installationID = id;
   }
 
+  /**
+   * This is the parser for the measurement file. It parses through the file and
+   * creates the arrays of the active and reactive power consumptions.
+   */
   public void parseMeasurementsFile () throws IOException
   {
 
@@ -171,7 +227,7 @@ public class Installation
 
         temp.add(Double.parseDouble(line.split(",")[1]));
 
-        if (!power)
+        if (!activeOnly)
           temp2.add(Double.parseDouble(line.split(",")[2]));
 
       }
@@ -191,7 +247,7 @@ public class Installation
         // Set value of the first cell.
         HSSFRow row = sheet.getRow(i + 1);
         temp.add(row.getCell(1).getNumericCellValue());
-        if (!power)
+        if (!activeOnly)
           temp2.add(row.getCell(2).getNumericCellValue());
       }
 
@@ -204,7 +260,7 @@ public class Installation
     for (int i = 0; i < temp.size(); i++)
       activePower[i] = temp.get(i);
 
-    if (!power) {
+    if (!activeOnly) {
       reactivePower = new double[temp2.size()];
       for (int i = 0; i < temp2.size(); i++)
         reactivePower[i] = temp2.get(i);
@@ -212,10 +268,18 @@ public class Installation
 
   }
 
+  /**
+   * This function is utilized to be graphically represented the installation
+   * consumption measurements in the Training Module.
+   * 
+   * @return a chart panel with the installation consumption measurements'
+   *         graph.
+   */
+
   public ChartPanel measurementsChart () throws IOException
   {
 
-    if (power)
+    if (activeOnly)
       return ChartUtils.createLineDiagram(name + " Measurements", "Time Step",
                                           "Power", activePower);
     else
@@ -224,16 +288,25 @@ public class Installation
                                           "Power", activePower, reactivePower);
   }
 
+  /**
+   * This function is used to remove all the appliances from an installation.
+   */
   public void clear ()
   {
     appliances.clear();
   }
 
+  @Override
   public String toString ()
   {
     return name;
   }
 
+  /**
+   * Creating a JSON object out of the Installation model.
+   * 
+   * @return the JSON object created from Installation model.
+   */
   public DBObject toJSON (String userID)
   {
 
@@ -252,6 +325,10 @@ public class Installation
 
   }
 
+  /**
+   * This function is used to present the basic information of the Installation
+   * Model on the console.
+   */
   public void status ()
   {
     System.out.println("Name: " + name);
