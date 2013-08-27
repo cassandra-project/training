@@ -72,9 +72,9 @@ public class ActivityModel
 
   /**
    * The daytype variable is used to show the type of days or season this
-   * activity model can be used (working day, non working day, both etc.).
+   * activity model can be used (working day, non working day, any etc.).
    */
-  protected String dayType = "working";
+  protected String dayType = "any";
 
   /**
    * This array contains the appliances that are participating in the activity

@@ -105,6 +105,12 @@ public class MainGUI extends JFrame
   private JPanel contentPane;
 
   /**
+   * This variable is used to check if one or more items are processed at the
+   * same time.
+   */
+  private boolean manyFlag = false;
+
+  /**
    * This is the variable controlling over the radio buttons used for choosing
    * the Data Measurement Type (Single Appliance or Installation) in the Data
    * Import tab.
@@ -1071,6 +1077,9 @@ public class MainGUI extends JFrame
         selectedAppliances.clear();
         selectedApplianceList.setListData(new String[0]);
         selectedApplianceList.repaint();
+        timesHistogramRadioButton.setSelected(true);
+        durationHistogramRadioButton.setSelected(true);
+        startHistogramRadioButton.setSelected(true);
 
         // Cleaning the Create Response Models tab components
         monetarySlider.setValue(50);
@@ -2012,6 +2021,17 @@ public class MainGUI extends JFrame
         }
         exportModelList.setModel(exportModels);
 
+        if (manyFlag == false) {
+
+          JFrame success = new JFrame();
+
+          JOptionPane.showMessageDialog(success, "The response model "
+                                                 + response
+                                                 + " was created successfully",
+                                        "Response Model Created",
+                                        JOptionPane.INFORMATION_MESSAGE);
+        }
+
       }
     });
 
@@ -2024,10 +2044,22 @@ public class MainGUI extends JFrame
        */
       public void actionPerformed (ActionEvent arg0)
       {
+        manyFlag = true;
+
         for (int i = 0; i < activitySelectList.getModel().getSize(); i++) {
           activitySelectList.setSelectedIndex(i);
           createResponseButton.doClick();
         }
+
+        JFrame success = new JFrame();
+
+        JOptionPane
+                .showMessageDialog(success,
+                                   "The response models were created successfully",
+                                   "Response Models Created",
+                                   JOptionPane.INFORMATION_MESSAGE);
+
+        manyFlag = false;
       }
     });
 
@@ -2445,6 +2477,15 @@ public class MainGUI extends JFrame
             e1.printStackTrace();
           }
 
+          JFrame success = new JFrame();
+
+          JOptionPane.showMessageDialog(success,
+                                        "The installation model "
+                                                + installation.getName()
+                                                + " was exported successfully",
+                                        "Installation Model Exported",
+                                        JOptionPane.INFORMATION_MESSAGE);
+
         }
         // If it is person
         else if (selection.equalsIgnoreCase(installation.getPerson().getName())) {
@@ -2464,6 +2505,16 @@ public class MainGUI extends JFrame
             e1.printStackTrace();
           }
 
+          JFrame success = new JFrame();
+
+          JOptionPane.showMessageDialog(success,
+                                        "The person model "
+                                                + installation.getPerson()
+                                                        .getName()
+                                                + " was exported successfully",
+                                        "Person Model Exported",
+                                        JOptionPane.INFORMATION_MESSAGE);
+
         }
         // If it is appliance
         else if (appliance != null) {
@@ -2481,6 +2532,15 @@ public class MainGUI extends JFrame
                  | NoSuchAlgorithmException e1) {
             e1.printStackTrace();
           }
+
+          JFrame success = new JFrame();
+
+          JOptionPane.showMessageDialog(success,
+                                        "The appliance model "
+                                                + appliance.getName()
+                                                + " was exported successfully",
+                                        "Appliance Model Exported",
+                                        JOptionPane.INFORMATION_MESSAGE);
 
         }
         // If it is activity
@@ -2519,6 +2579,7 @@ public class MainGUI extends JFrame
                    | NoSuchAlgorithmException e1) {
               e1.printStackTrace();
             }
+
           }
 
           try {
@@ -2577,6 +2638,15 @@ public class MainGUI extends JFrame
 
             e1.printStackTrace();
           }
+
+          JFrame success = new JFrame();
+
+          JOptionPane.showMessageDialog(success,
+                                        "The activity model "
+                                                + activity.getName()
+                                                + " was exported successfully",
+                                        "Activity Model Exported",
+                                        JOptionPane.INFORMATION_MESSAGE);
 
         }
         // If it is response
@@ -2673,6 +2743,16 @@ public class MainGUI extends JFrame
 
             e1.printStackTrace();
           }
+
+          JFrame success = new JFrame();
+
+          JOptionPane.showMessageDialog(success,
+                                        "The response model "
+                                                + response.getName()
+                                                + " was exported successfully",
+                                        "Response Model Exported",
+                                        JOptionPane.INFORMATION_MESSAGE);
+
         }
       }
     });
@@ -2889,8 +2969,16 @@ public class MainGUI extends JFrame
               e1.printStackTrace();
             }
           }
-
         }
+
+        JFrame success = new JFrame();
+
+        JOptionPane.showMessageDialog(success,
+                                      "The installation model "
+                                              + installation.getName()
+                                              + " and all the entities contained within were exported successfully",
+                                      "Installation Model Exported",
+                                      JOptionPane.INFORMATION_MESSAGE);
       }
     });
   }

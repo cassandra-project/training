@@ -155,8 +155,9 @@ public class Appliance
     powerConsumptionModelString = powerModel;
     reactiveConsumptionModelString = reactiveModel;
     DBObject dbo = (DBObject) JSON.parse(powerConsumptionModelString);
-    dbo = (DBObject) JSON.parse(reactiveConsumptionModelString);
     powerConsumptionModel.init(dbo);
+    dbo = (DBObject) JSON.parse(reactiveConsumptionModelString);
+    reactiveConsumptionModel.init(dbo);
 
   }
 

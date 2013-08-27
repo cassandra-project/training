@@ -24,7 +24,8 @@ import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
 /**
- * This class stores the variables of an active activeOnly consumption model. It has
+ * This class stores the variables of an active activeOnly consumption model. It
+ * has
  * no functionality except parsing a JSON string and return the values on
  * demand.
  * 
@@ -66,7 +67,8 @@ public class PowerConsumptionModel
    * This is the constructor of the active activeOnly consumption model.
    * 
    * @param amodel
-   *          The string of the JSON schema that fully defines the active activeOnly
+   *          The string of the JSON schema that fully defines the active
+   *          activeOnly
    *          consumption model to implement.
    */
   public PowerConsumptionModel (String amodel)
@@ -135,7 +137,8 @@ public class PowerConsumptionModel
   }
 
   /**
-   * This is a getter function for the number of patterns of the active activeOnly
+   * This is a getter function for the number of patterns of the active
+   * activeOnly
    * consumption model.
    * 
    * @return the number of patterns.
@@ -173,7 +176,8 @@ public class PowerConsumptionModel
   }
 
   /**
-   * This function presents the main attributes of the active activeOnly consumption
+   * This function presents the main attributes of the active activeOnly
+   * consumption
    * model.
    */
   public void status ()
