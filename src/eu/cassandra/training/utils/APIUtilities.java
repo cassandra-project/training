@@ -16,11 +16,14 @@ limitations under the License.
 */
 package eu.cassandra.training.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLContext;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -208,12 +211,10 @@ public class APIUtilities
    * @param password
    *          The password of the user in the server.
    * @return true if connected, else false.
-   * @throws IOException
-   * @throws AuthenticationException
-   * @throws NoSuchAlgorithmException
+   * @throws Exception
    */
   public static boolean sendUserCredentials (String username, char[] password)
-    throws IOException, NoSuchAlgorithmException, AuthenticationException
+    throws Exception
   {
 
     try {
@@ -240,6 +241,24 @@ public class APIUtilities
               .authenticate(usernamePasswordCredentials, httpget, localcontext));
 
       System.out.println("executing request: " + httpget.getRequestLine());
+
+      char SEP = File.separatorChar;
+      File dir =
+        new File(System.getProperty("java.home") + SEP + "lib" + SEP
+                 + "security");
+      File file = new File(dir, "jssecacerts");
+      if (file.isFile() == false) {
+        InstallCert.createCertificate("160.40.50.233", 8443);
+        JFrame success = new JFrame();
+
+        JOptionPane
+                .showMessageDialog(success,
+                                   "Certificate was created for user "
+                                           + username
+                                           + ". Now the connection will start",
+                                   "Response Model Exported",
+                                   JOptionPane.INFORMATION_MESSAGE);
+      }
 
       HttpResponse response = httpclient.execute(httpget, localcontext);
       HttpEntity entity = response.getEntity();
