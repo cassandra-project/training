@@ -338,23 +338,72 @@ public class Person
 
       String temp =
         activity.getNameActivity().replace(" Activity",
-                                           " Response Model (" + responseTemp
-                                                   + ")");
+                                           " Response Model (Optimal)");
+
+      String temp2 =
+        activity.getNameActivity().replace(" Activity",
+                                           " Response Model (Normal)");
+
+      String temp3 =
+        activity.getNameActivity().replace(" Activity",
+                                           " Response Model (Discrete)");
 
       ResponseModel exists = findResponse(temp);
 
-      if (exists != null)
+      if (exists != null) {
+        // System.out.println("Optimal Exists!");
         responseModels.remove(exists);
+      }
+      else {
+        exists = findResponse(temp2);
+        if (exists != null) {
+          // System.out.println("Normal Exists!");
+          responseModels.remove(exists);
+        }
+        else {
+          exists = findResponse(temp3);
+          if (exists != null) {
+            // System.out.println("Discrete Exists!");
+            responseModels.remove(exists);
+          }
+        }
+      }
+
     }
     else {
       String temp =
-        name + " " + activity.getAppliancesOf()[0] + " Response Model ("
-                + responseTemp + ")";
+        name + " " + activity.getAppliancesOf()[0]
+                + " Response Model (Optimal)";
+
+      String temp2 =
+        name + " " + activity.getAppliancesOf()[0] + " Response Model (Normal)";
+
+      String temp3 =
+        name + " " + activity.getAppliancesOf()[0]
+                + " Response Model (Discrete)";
 
       ResponseModel exists = findResponse(temp);
 
-      if (exists != null)
+      // System.out.println(temp + " " + temp2 + " " + temp3);
+
+      if (exists != null) {
+        // System.out.println("Optimal Exists!");
         responseModels.remove(exists);
+      }
+      else {
+        exists = findResponse(temp2);
+        if (exists != null) {
+          // System.out.println("Normal Exists!");
+          responseModels.remove(exists);
+        }
+        else {
+          exists = findResponse(temp3);
+          if (exists != null) {
+            // System.out.println("Discrete Exists!");
+            responseModels.remove(exists);
+          }
+        }
+      }
     }
 
     String result = "";

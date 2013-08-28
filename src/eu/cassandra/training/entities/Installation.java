@@ -190,6 +190,17 @@ public class Installation
   }
 
   /**
+   * This is a setter function of the Installation model name.
+   * 
+   * @param the
+   *          id of the Installation model.
+   */
+  public void setName (String name)
+  {
+    this.name = name;
+  }
+
+  /**
    * This is a setter function of the Installation model id.
    * 
    * @param the

@@ -665,7 +665,6 @@ public class MainGUI extends JFrame
 
     final JRadioButton startHistogramRadioButton =
       new JRadioButton("Histogram");
-    startHistogramRadioButton.setSelected(true);
     startTimeButtonGroup.add(startHistogramRadioButton);
     startHistogramRadioButton.setBounds(160, 131, 87, 18);
     trainingParametersPanel.add(startHistogramRadioButton);
@@ -678,6 +677,7 @@ public class MainGUI extends JFrame
 
     final JRadioButton startGaussianRadioButton =
       new JRadioButton("Gaussian Mixture");
+    startGaussianRadioButton.setSelected(true);
     startTimeButtonGroup.add(startGaussianRadioButton);
     startGaussianRadioButton.setBounds(478, 131, 137, 18);
     trainingParametersPanel.add(startGaussianRadioButton);
@@ -688,13 +688,13 @@ public class MainGUI extends JFrame
 
     final JRadioButton durationHistogramRadioButton =
       new JRadioButton("Histogram");
-    durationHistogramRadioButton.setSelected(true);
     durationButtonGroup.add(durationHistogramRadioButton);
     durationHistogramRadioButton.setBounds(160, 84, 87, 18);
     trainingParametersPanel.add(durationHistogramRadioButton);
 
     final JRadioButton durationNormalRadioButton =
       new JRadioButton("Normal Distribution");
+    durationNormalRadioButton.setSelected(true);
     durationButtonGroup.add(durationNormalRadioButton);
     durationNormalRadioButton.setBounds(304, 86, 137, 18);
     trainingParametersPanel.add(durationNormalRadioButton);
@@ -921,20 +921,19 @@ public class MainGUI extends JFrame
     connectionPanel.add(usernameTextField);
 
     final JButton exportButton = new JButton("Export");
-
     exportButton.setEnabled(false);
     exportButton.setBounds(201, 217, 147, 28);
     connectionPanel.add(exportButton);
 
-    final JButton exportAllButton = new JButton("Export All");
-    exportAllButton.addActionListener(new ActionListener() {
-      public void actionPerformed (ActionEvent e)
-      {
-      }
-    });
-    exportAllButton.setEnabled(false);
-    exportAllButton.setBounds(390, 217, 181, 28);
-    connectionPanel.add(exportAllButton);
+    final JButton exportAllBaseButton = new JButton("Export All Base");
+    exportAllBaseButton.setEnabled(false);
+    exportAllBaseButton.setBounds(390, 186, 181, 28);
+    connectionPanel.add(exportAllBaseButton);
+
+    final JButton exportAllResponseButton = new JButton("Export All Response");
+    exportAllResponseButton.setEnabled(false);
+    exportAllResponseButton.setBounds(390, 217, 181, 28);
+    connectionPanel.add(exportAllResponseButton);
 
     JLabel passwordLabel = new JLabel("Password:");
     passwordLabel.setBounds(46, 89, 71, 16);
@@ -1078,8 +1077,8 @@ public class MainGUI extends JFrame
         selectedApplianceList.setListData(new String[0]);
         selectedApplianceList.repaint();
         timesHistogramRadioButton.setSelected(true);
-        durationHistogramRadioButton.setSelected(true);
-        startHistogramRadioButton.setSelected(true);
+        durationNormalRadioButton.setSelected(true);
+        startGaussianRadioButton.setSelected(true);
 
         // Cleaning the Create Response Models tab components
         monetarySlider.setValue(50);
@@ -1112,7 +1111,8 @@ public class MainGUI extends JFrame
         exportStartButton.setEnabled(false);
         exportStartBinnedButton.setEnabled(false);
         exportButton.setEnabled(false);
-        exportAllButton.setEnabled(false);
+        exportAllBaseButton.setEnabled(false);
+        exportAllResponseButton.setEnabled(false);
 
         // Disabling the necessary tabs
         tabbedPane.setEnabledAt(1, false);
@@ -1974,13 +1974,20 @@ public class MainGUI extends JFrame
         exportPreviewPanel.updateUI();
 
         int responseType = -1;
+        String responseString = "";
         // Check for the selected response type
-        if (optimalCaseRadioButton.isSelected())
+        if (optimalCaseRadioButton.isSelected()) {
           responseType = 0;
-        else if (normalCaseRadioButton.isSelected())
+          responseString = "Optimal";
+        }
+        else if (normalCaseRadioButton.isSelected()) {
           responseType = 1;
-        else if (discreteCaseRadioButton.isSelected())
+          responseString = "Normal";
+        }
+        else if (discreteCaseRadioButton.isSelected()) {
           responseType = 2;
+          responseString = "Discrete";
+        }
 
         // Parse the pricing schemes
         double[] basicScheme =
@@ -2011,6 +2018,26 @@ public class MainGUI extends JFrame
 
         if (size > 0) {
           exportModels = (DefaultListModel<String>) exportModelList.getModel();
+
+          String response2 = "", response3 = "";
+          if (responseString.equalsIgnoreCase("Optimal")) {
+            response2 = response.replace(responseString, "Normal");
+            response3 = response.replace(responseString, "Discrete");
+          }
+          else if (responseString.equalsIgnoreCase("Normal")) {
+            response2 = response.replace(responseString, "Optimal");
+            response3 = response.replace(responseString, "Discrete");
+          }
+          else {
+            response2 = response.replace(responseString, "Optimal");
+            response3 = response.replace(responseString, "Normal");
+          }
+
+          if (exportModels.contains(response2))
+            exportModels.removeElement(response2);
+          if (exportModels.contains(response3))
+            exportModels.removeElement(response3);
+
           if (exportModels.contains(response) == false)
             exportModels.addElement(response);
         }
@@ -2415,7 +2442,8 @@ public class MainGUI extends JFrame
         if (result) {
 
           exportButton.setEnabled(true);
-          exportAllButton.setEnabled(true);
+          exportAllBaseButton.setEnabled(true);
+          exportAllResponseButton.setEnabled(true);
         }
         // Else a error message appears.
         else {
@@ -2757,14 +2785,14 @@ public class MainGUI extends JFrame
       }
     });
 
-    exportAllButton.addActionListener(new ActionListener() {
+    exportAllBaseButton.addActionListener(new ActionListener() {
       /**
-       * This function is called when the user presses the Export All button on
-       * the Connection Properties panel of the Export Models tab. The export
-       * procedure above is iterated through all the entities available on the
-       * list.
+       * This function is called when the user presses the Export All Base
+       * button on the Connection Properties panel of the Export Models tab. The
+       * export procedure above is iterated through all the entities available
+       * on the list except for the response models.
        */
-      public void actionPerformed (ActionEvent e)
+      public void actionPerformed (ActionEvent arg0)
       {
         for (int i = 0; i < exportModelList.getModel().getSize(); i++) {
           exportModelList.setSelectedIndex(i);
@@ -2782,10 +2810,14 @@ public class MainGUI extends JFrame
           if (selection.equalsIgnoreCase(installation.getName())) {
 
             try {
+              String oldName = installation.getName();
+              installation.setName(oldName + " Base");
+
               installation.setInstallationID(APIUtilities
                       .sendEntity(installation.toJSON(APIUtilities.getUserID())
                               .toString(), "/inst"));
 
+              installation.setName(oldName);
             }
             catch (IOException | AuthenticationException
                    | NoSuchAlgorithmException e1) {
@@ -2901,6 +2933,102 @@ public class MainGUI extends JFrame
 
           }
           else if (response != null) {
+
+          }
+        }
+
+        JFrame success = new JFrame();
+
+        JOptionPane.showMessageDialog(success,
+                                      "The installation model "
+                                              + installation.getName()
+                                              + " for the base pricing scheme and all the entities contained within were exported successfully",
+                                      "Installation Model Exported",
+                                      JOptionPane.INFORMATION_MESSAGE);
+      }
+    });
+
+    exportAllResponseButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Export All Base
+       * button on the Connection Properties panel of the Export Models tab. The
+       * export procedure above is iterated through all the entities available
+       * on the list except for the activity models.
+       */
+      public void actionPerformed (ActionEvent e)
+      {
+        for (int i = 0; i < exportModelList.getModel().getSize(); i++) {
+          exportModelList.setSelectedIndex(i);
+
+          String selection = exportModelList.getSelectedValue();
+
+          Appliance appliance = installation.findAppliance(selection);
+
+          ActivityModel activity =
+            installation.getPerson().findActivity(selection, false);
+
+          ResponseModel response =
+            installation.getPerson().findResponse(selection);
+
+          if (selection.equalsIgnoreCase(installation.getName())) {
+
+            try {
+              String oldName = installation.getName();
+              installation.setName(oldName + " Response");
+
+              installation.setInstallationID(APIUtilities
+                      .sendEntity(installation.toJSON(APIUtilities.getUserID())
+                              .toString(), "/inst"));
+
+              installation.setName(oldName);
+
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+
+          }
+          else if (selection.equalsIgnoreCase(installation.getPerson()
+                  .getName())) {
+
+            try {
+              installation
+                      .getPerson()
+                      .setPersonID(APIUtilities.sendEntity(installation
+                                                                   .getPerson()
+                                                                   .toJSON(installation
+                                                                                   .getInstallationID())
+                                                                   .toString(),
+                                                           "/pers"));
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+
+          }
+          else if (appliance != null) {
+
+            try {
+              appliance.setApplianceID(APIUtilities.sendEntity(appliance
+                      .toJSON(installation.getInstallationID().toString())
+                      .toString(), "/app"));
+
+              APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
+                      .toString(), "/consmod");
+
+            }
+            catch (IOException | AuthenticationException
+                   | NoSuchAlgorithmException e1) {
+              e1.printStackTrace();
+            }
+
+          }
+          else if (activity != null) {
+
+          }
+          else if (response != null) {
             String[] applianceTemp =
               new String[response.getAppliancesOf().length];
 
@@ -2976,7 +3104,7 @@ public class MainGUI extends JFrame
         JOptionPane.showMessageDialog(success,
                                       "The installation model "
                                               + installation.getName()
-                                              + " and all the entities contained within were exported successfully",
+                                              + " for the new pricing scheme and all the entities contained within were exported successfully",
                                       "Installation Model Exported",
                                       JOptionPane.INFORMATION_MESSAGE);
       }
