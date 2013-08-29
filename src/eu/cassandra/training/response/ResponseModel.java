@@ -19,6 +19,7 @@ package eu.cassandra.training.response;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import org.jfree.chart.ChartPanel;
 
@@ -42,6 +43,12 @@ public class ResponseModel extends ActivityModel
    * represents.
    */
   String responseType = "";
+
+  /**
+   * This variable shows the activity model that was used as a base for the
+   * response model.
+   */
+  ActivityModel activityModel;
 
   /**
    * Simple constructor of an Response model.
@@ -68,6 +75,7 @@ public class ResponseModel extends ActivityModel
     throws IOException
   {
     applianceOf = activity.getAppliancesOf();
+    activityModel = activity;
     if (activity.getActivity()) {
 
       String temp = activity.getNameActivity().replace(" Activity", "");
@@ -94,8 +102,9 @@ public class ResponseModel extends ActivityModel
     }
 
     name = name + " (" + this.responseType + ")";
-    fileMap = activity.getFileMap();
-    distributionTypes = activity.getDistributionTypes();
+    fileMap = new HashMap<String, String>(activity.getFileMap());
+    distributionTypes =
+      new HashMap<String, String>(activity.getDistributionTypes());
     consumptionEventRepo = activity.getConsumptionEventRepo();
 
     String[] types =
@@ -136,6 +145,8 @@ public class ResponseModel extends ActivityModel
       activity.getStartTime().shiftingPreview(responseType, basicScheme,
                                               newScheme);
 
+    after = Utils.aggregateStartTimeDistribution(after);
+
     return ChartUtils.createResponseHistogram("Response",
                                               "10 Minute Intervals",
                                               "Probability", before, after);
@@ -157,7 +168,12 @@ public class ResponseModel extends ActivityModel
                        double[] newScheme)
   {
 
-    startTime.shifting(responseType, basicScheme, newScheme);
+    startTime =
+      new Histogram(name + " Start Time", activityModel.getStartTime()
+              .shiftingPreview(responseType, basicScheme, newScheme));
+
+    distributionTypes.put("StartTime", "Histogram");
+    distributionTypes.put("StartTimeBinned", "Histogram");
 
     startTimeBinned =
       new Histogram(name + "Start Time Binned",

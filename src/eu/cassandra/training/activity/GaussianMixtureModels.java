@@ -30,7 +30,6 @@ import eu.cassandra.training.response.Incentive;
 import eu.cassandra.training.response.IncentiveVector;
 import eu.cassandra.training.response.PricingVector;
 import eu.cassandra.training.utils.Constants;
-import eu.cassandra.training.utils.Utils;
 
 /**
  * This class is used for implementing a Gaussian Mixture Models distribution to
@@ -209,6 +208,12 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   }
 
   @Override
+  public String getName ()
+  {
+    return name;
+  }
+
+  @Override
   public String getDistributionID ()
   {
     return distributionID;
@@ -366,21 +371,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
                         double[] newScheme)
   {
 
-    if (shiftingCase == 0) {
-
-      histogram = shiftingOptimal(newScheme);
-    }
-    else if (shiftingCase == 1) {
-
-      histogram = shiftingNormal(basicScheme, newScheme);
-    }
-    else if (shiftingCase == 2) {
-
-      histogram = shiftingDiscrete(basicScheme, newScheme);
-    }
-    else {
-      System.out.println("ERROR in shifting function");
-    }
+    histogram = shiftingPreview(shiftingCase, basicScheme, newScheme);
 
   }
 
@@ -406,8 +397,6 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     else {
       System.out.println("ERROR in shifting function");
     }
-
-    result = Utils.aggregateStartTimeDistribution(result);
 
     return result;
 

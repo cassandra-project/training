@@ -100,19 +100,21 @@ public class MixtureCreator
 
     // Initial mixture model
     MixtureModel mm = new MixtureModel(n);
+    MixtureModel best = null;
     mm.EF = new UnivariateGaussian();
     for (int i = 0; i < n; i++) {
       PVector param = new PVector(2);
       param.array[0] = interval * i + median;
       param.array[1] = param.array[0] / 10;
       mm.param[i] = param;
-      mm.weight[i] = i + 1;
+      mm.weight[i] = 1;
     }
     mm.normalizeWeights();
     // System.out.println("Initial mixture model \n" + mm + "\n");
 
     double[] whatever = new double[1];
 
+    // PVector[] pointsInit = mm.drawRandomPoints(n);
     PVector[] points = mm.drawRandomPoints(temp.length);
 
     for (int i = 0; i < temp.length; i++) {
@@ -122,20 +124,46 @@ public class MixtureCreator
 
     }
 
-    Vector<PVector>[] clusters = KMeans.run(points, n);
-
-    // Classical MixtureCreator
-    MixtureModel mmc;
-    mmc = ExpectationMaximization1D.initialize(clusters);
-    // System.out.println("Mixture model initial state \n" + mmc + "\n");
-    mmc = ExpectationMaximization1D.run(points, mmc);
-
-    // System.out.println("Mixture model estimated using classical MixtureCreator \n"
-    // +
-    // mmc
-    // + "\n");
+    // Vector<PVector>[] clusters = new Vector[n];
     //
-    GMM2File(mmc, output);
+    // for (int i = 0; i < n; i++) {
+    //
+    // whatever[0] = (1440.0 / n) * i;
+    // pointsInit[i].setArray(whatever.clone());
+    // Vector<PVector> tempVector = new Vector<PVector>();
+    // tempVector.add(pointsInit[i]);
+    //
+    // clusters[i] = tempVector;
+    // }
+
+    double logBest = Double.NEGATIVE_INFINITY, logNew = 0;
+    MixtureModel mmc = null;
+
+    for (int i = 0; i < 100; i++) {
+
+      Vector<PVector>[] clusters = KMeans.run(points, n);
+
+      // Classical MixtureCreator
+
+      mmc = ExpectationMaximization1D.initialize(clusters);
+      // System.out.println("Mixture model initial state \n" + mmc + "\n");
+      mmc = ExpectationMaximization1D.run(points, mmc);
+
+      logNew = Math.abs(ExpectationMaximization1D.logLikelihood(points, mmc));
+
+      // System.out.println(logNew);
+
+      if (logBest < logNew) {
+        logBest = logNew;
+        best = mmc;
+      }
+    }
+
+    // System.out
+    // .println("Mixture model estimated using classical MixtureCreator \n"
+    // + mmc + "\n");
+
+    GMM2File(best, output);
 
   }
 

@@ -320,19 +320,6 @@ public class Person
                                 double[] basicScheme, double[] newScheme)
     throws IOException
   {
-    String responseTemp = "";
-
-    switch (responseType) {
-
-    case 0:
-      responseTemp = "Optimal";
-      break;
-    case 1:
-      responseTemp = "Normal";
-      break;
-    case 2:
-      responseTemp = "Discrete";
-    }
 
     if (activity.getActivity()) {
 

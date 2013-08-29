@@ -28,7 +28,7 @@ public class ExpectationMaximization1D
   /**
    * Maximum number of iterations permitted.
    */
-  private static int MAX_ITERATIONS = 30;
+  private static int MAX_ITERATIONS = 200;
 
   /**
    * Initializes a mixture model from clusters of points. The parameters
@@ -74,7 +74,7 @@ public class ExpectationMaximization1D
         var = 0.0;
 
       if (var < 0.00000001) {
-        var = 0.00000001;
+        var = 25;
       }
 
       // Parameters
@@ -194,7 +194,7 @@ public class ExpectationMaximization1D
    *          mixture model.
    * @return log likelihood.
    */
-  private static double logLikelihood (PVector[] points, MixtureModel f)
+  public static double logLikelihood (PVector[] points, MixtureModel f)
   {
     double value = 0;
     for (int i = 0; i < points.length; i++)

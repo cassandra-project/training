@@ -28,7 +28,6 @@ import eu.cassandra.training.response.Incentive;
 import eu.cassandra.training.response.IncentiveVector;
 import eu.cassandra.training.response.PricingVector;
 import eu.cassandra.training.utils.Constants;
-import eu.cassandra.training.utils.Utils;
 
 /**
  * This class is used for implementing a Normal (Gaussian) distribution to use
@@ -229,6 +228,12 @@ public class Gaussian implements ProbabilityDistribution
 
     input.close();
 
+  }
+
+  @Override
+  public String getName ()
+  {
+    return name;
   }
 
   @Override
@@ -438,8 +443,6 @@ public class Gaussian implements ProbabilityDistribution
     else {
       System.out.println("ERROR in shifting function");
     }
-
-    result = Utils.aggregateStartTimeDistribution(result);
 
     return result;
 

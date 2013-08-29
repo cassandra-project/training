@@ -34,6 +34,13 @@ public interface ProbabilityDistribution
 {
 
   /**
+   * Return a string with the name of the distribution.
+   * 
+   * @return String with description of distribution.
+   */
+  public String getName ();
+
+  /**
    * Return a string describing the distribution in free text.
    * 
    * @return String with description of distribution.

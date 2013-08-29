@@ -2228,6 +2228,11 @@ public class MainGUI extends JFrame
 
               try {
                 chartPanel = installation.measurementsChart();
+
+                exportDailyButton.setEnabled(false);
+                exportDurationButton.setEnabled(false);
+                exportStartButton.setEnabled(false);
+                exportStartBinnedButton.setEnabled(false);
               }
               catch (IOException e1) {
                 e1.printStackTrace();
