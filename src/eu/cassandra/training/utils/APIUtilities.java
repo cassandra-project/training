@@ -217,30 +217,11 @@ public class APIUtilities
     throws Exception
   {
 
-    try {
-      sslContext = SSLContext.getInstance("TLS");
-      sslContext.init(null, null, null);
-      sf =
-        new SSLSocketFactory(sslContext,
-                             SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-    }
-    catch (Exception e1) {
-    }
-
-    Scheme scheme = new Scheme("https", 8443, sf);
-    httpclient.getConnectionManager().getSchemeRegistry().register(scheme);
-
     String pass = String.valueOf(password);
 
     try {
       UsernamePasswordCredentials usernamePasswordCredentials =
         new UsernamePasswordCredentials(username, pass);
-
-      HttpGet httpget = new HttpGet(url + "/usr");
-      httpget.addHeader(new BasicScheme()
-              .authenticate(usernamePasswordCredentials, httpget, localcontext));
-
-      System.out.println("executing request: " + httpget.getRequestLine());
 
       char SEP = File.separatorChar;
       File dir =
@@ -259,6 +240,25 @@ public class APIUtilities
                                    "Response Model Exported",
                                    JOptionPane.INFORMATION_MESSAGE);
       }
+
+      try {
+        sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, null, null);
+        sf =
+          new SSLSocketFactory(sslContext,
+                               SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+      }
+      catch (Exception e1) {
+      }
+
+      Scheme scheme = new Scheme("https", 8443, sf);
+      httpclient.getConnectionManager().getSchemeRegistry().register(scheme);
+
+      HttpGet httpget = new HttpGet(url + "/usr");
+      httpget.addHeader(new BasicScheme()
+              .authenticate(usernamePasswordCredentials, httpget, localcontext));
+
+      System.out.println("executing request: " + httpget.getRequestLine());
 
       HttpResponse response = httpclient.execute(httpget, localcontext);
       HttpEntity entity = response.getEntity();
