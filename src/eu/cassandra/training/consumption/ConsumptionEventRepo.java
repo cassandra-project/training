@@ -100,6 +100,17 @@ public class ConsumptionEventRepo
   Map<Integer, Double> eventsStartTimeBinnedHistogram =
     new TreeMap<Integer, Double>();
 
+  /**
+   * This variable represents the number of bins that are appropriate for that
+   * size of sample for the activity..
+   */
+  int bins;
+
+  /**
+   * This variable represents the number of minutes each bin contains.
+   */
+  int binSize;
+
   // =================CREATION FUNCTIONS==============================//
 
   /**
@@ -205,12 +216,11 @@ public class ConsumptionEventRepo
     createEventPerDateHashmap();
 
     System.out.println("Overall Days:" + eventsPerDate.keySet().size());
-
+    setBins();
     createDurationHistogram();
     createDailyTimesHistogram();
     createStartTimeHistogram();
-    createStartTimeBinnedHistogram(Constants.MINUTES_PER_BIN,
-                                   Constants.NUMBER_OF_BINS);
+    createStartTimeBinnedHistogram(binSize, bins);
 
     // ChartUtils.createHistogram("Duration", "Minutes", "Possibility",
     // eventsDurationHistogram);
@@ -227,6 +237,59 @@ public class ConsumptionEventRepo
     // "Possibility", eventsStartTimeHistogram);
     // StartTimeBinnedHistogramToFile();
 
+  }
+
+  /**
+   * This function sets the appropriate size and number of the bins for the
+   * histograms.
+   */
+  private void setBins ()
+  {
+
+    if (events.size() <= Constants.HOUR_SAMPLE_LIMIT) {
+      binSize = Constants.MINUTES_PER_HOUR;
+      bins = Constants.HOURS_PER_DAY;
+    }
+    else if (events.size() <= Constants.QUARTER_SAMPLE_LIMIT) {
+      binSize = Constants.QUARTER;
+      bins = Constants.QUARTERS_PER_DAY;
+    }
+    else if (events.size() <= Constants.TEN_MINUTE_SAMPLE_LIMIT) {
+      binSize = Constants.TEN_MINUTES;
+      bins = Constants.TEN_MINUTES_PER_DAY;
+    }
+    else if (events.size() <= Constants.FIVE_MINUTE_SAMPLE_LIMIT) {
+      binSize = Constants.FIVE_MINUTES;
+      bins = Constants.FIVE_MINUTES_PER_DAY;
+    }
+    else {
+      binSize = Constants.ONE_MINUTE;
+      bins = Constants.MINUTES_PER_DAY;
+    }
+
+    System.out.println("Events: " + events.size() + " Bins: " + bins
+                       + " Minutes per bin: " + binSize);
+
+  }
+
+  /**
+   * This is a getter function for the bin number variable.
+   * 
+   * @return the number of bins for the histograms.
+   */
+  public int getBins ()
+  {
+    return bins;
+  }
+
+  /**
+   * This is a getter function for the bin size variable.
+   * 
+   * @return the size of the bins for the histograms.
+   */
+  public int getBinSize ()
+  {
+    return binSize;
   }
 
   /**
@@ -443,6 +506,72 @@ public class ConsumptionEventRepo
   }
 
   /**
+   * This is the function that creates the start time histogram by parsing
+   * through all the available consumption events and checking on their
+   * start minute of the day.
+   */
+  public void createStartTimeHistogram2 ()
+  {
+
+    Map<Integer, Double> tempStartTimeHistogram =
+      new HashMap<Integer, Double>();
+
+    Map<Integer, Double> temp = new HashMap<Integer, Double>();
+
+    ArrayList<ConsumptionEvent> events = getEvents();
+    double percentage = 0;
+    Integer minute;
+
+    for (int i = 0; i < events.size(); i++) {
+
+      minute = events.get(i).getStartMinuteOfDay() / binSize;
+
+      if (tempStartTimeHistogram.containsKey(minute))
+        tempStartTimeHistogram.put(minute,
+                                   tempStartTimeHistogram.get(minute) + 1);
+      else
+        tempStartTimeHistogram.put(minute, Double.valueOf(1));
+    }
+
+    // System.out.println(tempStartTimeHistogram.toString());
+
+    for (Integer startTime: tempStartTimeHistogram.keySet()) {
+
+      tempStartTimeHistogram.put(startTime,
+                                 Double.valueOf(tempStartTimeHistogram
+                                         .get(startTime) / events.size()));
+
+    }
+
+    for (int i = 0; i < bins; i++) {
+
+      if (tempStartTimeHistogram.containsKey(i)) {
+
+        percentage = tempStartTimeHistogram.get(i) / binSize;
+
+        for (int j = 0; j < binSize; j++) {
+          minute = i * binSize + j;
+          temp.put(minute, percentage);
+        }
+
+      }
+
+    }
+
+    // double sum = 0;
+    //
+    // for (Integer startTime: temp.keySet())
+    // sum += temp.get(startTime);
+
+    eventsStartTimeHistogram = new TreeMap<Integer, Double>(temp);
+
+    // System.out.print("Number of Events:" + events.size() + " ");
+    // System.out.println(temp.toString());
+    // System.out.println(sum);
+
+  }
+
+  /**
    * This is the function that creates the start time binned histogram by
    * aggregating the data available from the start time histogram to certain
    * time intervals.
@@ -487,10 +616,9 @@ public class ConsumptionEventRepo
 
     eventsStartTimeBinnedHistogram =
       new TreeMap<Integer, Double>(tempStartTimeBinnedHistogram);
-    /*
-     * System.out.println(tempStartTimeBinnedHistogram.toString());
-     * System.out.println(sum);
-     */
+
+    // System.out.println(tempStartTimeBinnedHistogram.toString());
+    // System.out.println(sum);
 
   }
 
@@ -591,7 +719,7 @@ public class ConsumptionEventRepo
       case "StartTimeBinned":
         for (int i = 0; i < events.size(); i++) {
           temp =
-            (int) (events.get(i).getStartMinuteOfDay() / Constants.MINUTES_PER_BIN);
+            (int) (events.get(i).getStartMinuteOfDay() / Constants.TEN_MINUTES);
           System.out.println(temp);
         }
         break;

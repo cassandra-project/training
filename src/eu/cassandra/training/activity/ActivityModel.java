@@ -482,7 +482,7 @@ public class ActivityModel
 
     case Constants.START_TIME_BINNED:
 
-      variablePath = "";
+      variablePath = Constants.START_TIME_BINNED_FILE;
       break;
 
     default:
@@ -548,13 +548,20 @@ public class ActivityModel
         duration = new Histogram(file);
       }
       else if (index == 2) {
+        consumptionEventRepo.createStartTimeHistogram2();
         consumptionEventRepo.StartTimeHistogramToFile(file);
         startTime = new Histogram(file);
-        double[] temp =
-          Utils.aggregateStartTimeDistribution(startTime.getHistogram());
-        startTimeBinned = new Histogram(file + " Binned", temp);
       }
       else if (index == 3) {
+        if (distributionTypes.get("StartTime").equalsIgnoreCase("Histogram")) {
+          consumptionEventRepo.StartTimeBinnedHistogramToFile(file);
+          startTimeBinned = new Histogram(file);
+        }
+        else {
+          double[] temp =
+            Utils.aggregateStartTimeDistribution(startTime.getHistogram());
+          startTimeBinned = new Histogram(file + " Binned", temp);
+        }
 
       }
       else
@@ -664,7 +671,7 @@ public class ActivityModel
   {
 
     String variable = "Daily Times Distribution";
-    String x = "Daily Times";
+    String x = "Number of Daily Times";
     String y = "Probability";
 
     switch (distributionTypes.get("DailyTimes")) {
@@ -692,7 +699,7 @@ public class ActivityModel
   public ChartPanel createStartTimeDistributionChart ()
   {
     String variable = "Start Time Distribution";
-    String x = "Start Time";
+    String x = "Start Time Minute of the Day";
     String y = "Probability";
 
     switch (distributionTypes.get("StartTime")) {
@@ -721,7 +728,9 @@ public class ActivityModel
   public ChartPanel createStartTimeBinnedDistributionChart ()
   {
     String variable = "Start Time Binned Distribution";
-    String x = "10 Minutes Interval";
+    String x =
+      "Start Time in " + consumptionEventRepo.getBinSize()
+              + " Minutes Interval";
     String y = "Probability";
 
     // System.out.println(name + " " + distributionTypes.toString());

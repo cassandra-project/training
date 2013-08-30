@@ -137,9 +137,21 @@ public class ResponseModel extends ActivityModel
                                                  double[] newScheme)
   {
 
-    double[] before =
-      Arrays.copyOf(activity.getStartTimeBinned().getHistogram(), activity
-              .getStartTimeBinned().getHistogram().length);
+    double[] before = null;
+
+    if (activity.getDistributionTypes().get("StartTime")
+            .equalsIgnoreCase("Histogram")) {
+      before =
+        Arrays.copyOf(activity.getStartTime().getHistogram(), activity
+                .getStartTime().getHistogram().length);
+
+      before = Utils.aggregateStartTimeDistribution(before);
+    }
+    else {
+      before =
+        Arrays.copyOf(activity.getStartTimeBinned().getHistogram(), activity
+                .getStartTimeBinned().getHistogram().length);
+    }
 
     double[] after =
       activity.getStartTime().shiftingPreview(responseType, basicScheme,

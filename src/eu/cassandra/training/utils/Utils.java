@@ -305,11 +305,11 @@ public class Utils
    */
   public static double[] aggregateStartTimeDistribution (double[] values)
   {
-    double[] result = new double[values.length / Constants.MINUTES_PER_BIN];
+    double[] result = new double[values.length / Constants.TEN_MINUTES];
 
     for (int i = 0; i < result.length; i++)
-      for (int j = 0; j < Constants.MINUTES_PER_BIN; j++)
-        result[i] += values[i * Constants.MINUTES_PER_BIN + j];
+      for (int j = 0; j < Constants.TEN_MINUTES; j++)
+        result[i] += values[i * Constants.TEN_MINUTES + j];
 
     return result;
   }

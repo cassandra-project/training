@@ -91,7 +91,7 @@ public class MixtureCreator
       n = 25;
     }
     else if (variable.equals("StartTimeBinned")) {
-      max = Constants.MINUTES_PER_DAY / Constants.MINUTES_PER_BIN;
+      max = Constants.MINUTES_PER_DAY / Constants.TEN_MINUTES;
       n = 25;
     }
 
@@ -191,7 +191,7 @@ public class MixtureCreator
     else if (variable.equals("StartTime"))
       max = Constants.MINUTES_PER_DAY;
     else if (variable.equals("StartTimeBinned"))
-      max = Constants.MINUTES_PER_DAY / Constants.MINUTES_PER_BIN;
+      max = Constants.MINUTES_PER_DAY / Constants.TEN_MINUTES;
 
     int interval = (int) (max / n);
 

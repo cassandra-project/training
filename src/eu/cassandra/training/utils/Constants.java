@@ -32,8 +32,16 @@ public class Constants
   public static final int START_TIME_BINNED = 3;
 
   public static final int MINUTES_PER_DAY = 1440;
-  public static final int NUMBER_OF_BINS = 144;
-  public static final int MINUTES_PER_BIN = 10;
+  public static final int HOURS_PER_DAY = 24;
+  public static final int QUARTERS_PER_DAY = 96;
+  public static final int TEN_MINUTES_PER_DAY = 144;
+  public static final int FIVE_MINUTES_PER_DAY = 288;
+  public static final int MINUTES_PER_HOUR = 60;
+  public static final int QUARTER = 15;
+  public static final int TEN_MINUTES = 10;
+  public static final int FIVE_MINUTES = 5;
+  public static final int ONE_MINUTE = 1;
+
   public static final int SHIFTING_WINDOW_IN_MINUTES = 60;
 
   public static final String DAYS_FILE = "Files/daysArray";
@@ -43,6 +51,11 @@ public class Constants
   public static final String DAILY_TIMES_FILE = "Files/dailyTimes";
   public static final String START_TIME_BINNED_FILE = "Files/startTimeBinned";
 
-  public static double SMALL_NUMBER = 1.0E7;
+  public static final double SMALL_NUMBER = 1.0E7;
+
+  public static final int HOUR_SAMPLE_LIMIT = 5000;
+  public static final int QUARTER_SAMPLE_LIMIT = 10000;
+  public static final int TEN_MINUTE_SAMPLE_LIMIT = 20000;
+  public static final int FIVE_MINUTE_SAMPLE_LIMIT = 40000;
 
 }
