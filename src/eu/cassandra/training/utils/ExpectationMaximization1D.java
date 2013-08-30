@@ -160,7 +160,8 @@ public class ExpectationMaximization1D
           double diff = points[row].array[0] - mu;
           sigma += p[row][col] * diff * diff;
         }
-        sigma /= sum;
+        // sigma /= sum;
+        sigma = Math.sqrt(sigma / sum);
 
         // Set new mu and sigma to the PVectorMatrix
         PVector param = new PVector(2);

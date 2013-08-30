@@ -88,11 +88,11 @@ public class MixtureCreator
     }
     else if (variable.equals("StartTime")) {
       max = Constants.MINUTES_PER_DAY;
-      n = 25;
+      n = 10;
     }
     else if (variable.equals("StartTimeBinned")) {
       max = Constants.MINUTES_PER_DAY / Constants.TEN_MINUTES;
-      n = 25;
+      n = 10;
     }
 
     int interval = (int) (max / n);
@@ -161,7 +161,7 @@ public class MixtureCreator
 
     // System.out
     // .println("Mixture model estimated using classical MixtureCreator \n"
-    // + mmc + "\n");
+    // + best + "\n");
 
     GMM2File(best, output);
 
