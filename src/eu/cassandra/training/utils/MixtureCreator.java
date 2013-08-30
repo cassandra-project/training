@@ -226,13 +226,10 @@ public class MixtureCreator
     // Classical MixtureCreator
     MixtureModel mmc;
     mmc = ExpectationMaximization1D.initialize(clusters);
-    // System.out.println("Mixture model initial state \n" + mmc + "\n");
-    mmc = ExpectationMaximization1D.run(points, mmc);
 
-    // System.out.println("Mixture model estimated using classical MixtureCreator \n"
-    // +
-    // mmc
-    // + "\n");
+    // System.out
+    // .println("Mixture model estimated using classical MixtureCreator \n"
+    // + mmc + "\n");
 
     Gaussian2File(mmc, output);
 

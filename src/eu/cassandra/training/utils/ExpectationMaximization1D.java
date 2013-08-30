@@ -68,13 +68,14 @@ public class ExpectationMaximization1D
         var +=
           (clusters[i].get(j).array[0] - mean)
                   * (clusters[i].get(j).array[0] - mean);
+
       if (clusters[i].size() > 0)
-        var /= clusters[i].size();
+        var = Math.sqrt(var / clusters[i].size());
       else
         var = 0.0;
 
       if (var < 0.00000001) {
-        var = 25;
+        var = 0.00000001;
       }
 
       // Parameters
