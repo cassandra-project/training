@@ -29,5 +29,6 @@
 	<classpathentry kind="lib" path="lib/httpclient-cache-4.2.5.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.2.5.jar"/>
+	<classpathentry kind="lib" path="lib/Disaggregation.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

@@ -70,6 +70,7 @@ import javax.swing.event.ListSelectionListener;
 import org.apache.http.auth.AuthenticationException;
 import org.jfree.chart.ChartPanel;
 
+import eu.cassandra.disaggregation.Disaggregate;
 import eu.cassandra.training.activity.ActivityModel;
 import eu.cassandra.training.entities.ActivityTemp;
 import eu.cassandra.training.entities.Appliance;
@@ -1257,11 +1258,19 @@ public class MainGUI extends JFrame
 
         // Get auxiliary files containing appliances and activities which are
         // the output of the disaggregation process.
-        String filename =
-          pathField.getText().substring(0, pathField.getText().length() - 4);
+        String filename = pathField.getText();
 
-        File appliancesFile = new File(filename + "IdentificationList.csv");
-        File activitiesFile = new File(filename + "IdentifiedAppliances.csv");
+        try {
+          Disaggregate dis = new Disaggregate(filename);
+        }
+        catch (Exception e2) {
+          System.out.println("Missing File");
+          e2.printStackTrace();
+        }
+        filename =
+          pathField.getText().substring(0, pathField.getText().length() - 4);
+        File appliancesFile = new File(filename + "ApplianceList.csv");
+        File activitiesFile = new File(filename + "ActivityList.csv");
 
         // If these exist, disaggregation was successful and the procedure can
         // continue
