@@ -29,6 +29,10 @@
 	<classpathentry kind="lib" path="lib/httpclient-cache-4.2.5.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.2.5.jar"/>
-	<classpathentry kind="lib" path="lib/Disaggregation.jar"/>
+	<classpathentry kind="lib" path="lib/Disaggregation.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Training Module/extLib"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
