@@ -306,13 +306,15 @@ public class Gaussian implements ProbabilityDistribution
 
     double residual =
       bigPhi(startValue, mean, sigma) + 1 - bigPhi(endValue, mean, sigma);
-    residual /= nBins;
+    double res2 = 1 - bigPhi(0, mean, sigma);
+    residual /= res2;
+
     for (int i = 0; i < nBins; i++) {
       // double x = startValue + i * div - small_number;
       double x = startValue + i * div;
       histogram[i] =
         bigPhi(x + div / 2.0, mean, sigma) - bigPhi(x - div / 2.0, mean, sigma);
-      histogram[i] += residual;
+      histogram[i] += (histogram[i] * residual);
     }
     precomputed = true;
   }
