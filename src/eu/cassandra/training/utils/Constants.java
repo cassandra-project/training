@@ -58,8 +58,8 @@ public class Constants
   public static final int TEN_MINUTE_SAMPLE_LIMIT = 2 * TEN_MINUTES_PER_DAY;
   public static final int FIVE_MINUTE_SAMPLE_LIMIT = 2 * FIVE_MINUTES_PER_DAY;
 
-  public static final int LOW_SAMPLE_MIXTURE = 2;
-  public static final int MEDIUM_SAMPLE_MIXTURE = 4;
-  public static final int HIGH_SAMPLE_MIXTURE = 7;
+  public static final int LOW_SAMPLE_MIXTURE = 1;
+  public static final int MEDIUM_SAMPLE_MIXTURE = 3;
+  public static final int HIGH_SAMPLE_MIXTURE = 5;
   public static final int VERY_HIGH_SAMPLE_MIXTURE = 10;
 }
