@@ -270,7 +270,7 @@ public class Person
     throws IOException
   {
     ActivityModel exists =
-      findActivity(activity.getName() + " Activity Model", false);
+      findActivity(name + " " + activity.getName() + " Activity Model", false);
 
     if (exists != null)
       activityModels.remove(exists);

@@ -574,7 +574,7 @@ public class ActivityModel
       newFile += type + variable + name + ".csv";
       consumptionEventRepo.attributeToFile(file, variable);
       mixtureCreator = new MixtureCreator();
-      mixtureCreator.createNormal(file, newFile, variable);
+      mixtureCreator.createNormal(file, newFile, variable, false);
 
       if (index == 0)
         dailyTimes = new Gaussian(newFile);

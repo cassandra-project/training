@@ -167,14 +167,19 @@ public class MixtureCreator
         logBest = logNew;
         best = mmc;
       }
+
     }
 
     // System.out
-    // .println("Mixture model estimated using classical MixtureCreator \n"
+    // .println("Mixture model estimated using classical MixtureCreator: "
     // + best + "\n");
-
-    GMM2File(best, output);
-
+    if (best != null)
+      GMM2File(best, output);
+    else {
+      System.out
+              .println("The GMM is not working for too small sample sizes. Turn to normal.");
+      createNormal(input, output, variable, true);
+    }
   }
 
   /**
@@ -189,8 +194,8 @@ public class MixtureCreator
    *          The random variable for which the GMM is created.
    * @throws IOException
    */
-  public void createNormal (String input, String output, String variable)
-    throws IOException
+  public void createNormal (String input, String output, String variable,
+                            boolean fromGMM) throws IOException
   {
 
     temp = readFile(input);
@@ -241,7 +246,7 @@ public class MixtureCreator
     // .println("Mixture model estimated using classical MixtureCreator \n"
     // + mmc + "\n");
 
-    Gaussian2File(mmc, output);
+    Gaussian2File(mmc, output, fromGMM);
 
   }
 
@@ -374,8 +379,9 @@ public class MixtureCreator
    *          The name of the export file.
    * @throws IOException
    */
-  private void Gaussian2File (MixtureModel mm, String filename)
-    throws IOException
+  private void
+    Gaussian2File (MixtureModel mm, String filename, boolean fromGMM)
+      throws IOException
   {
 
     String line;
@@ -408,6 +414,10 @@ public class MixtureCreator
 
     System.out.println("Max Value:" + max);
 
+    if (true) {
+      System.out.println(n);
+      System.out.println(n);
+    }
     for (int i = 0; i < n; i++) {
 
       System.out.print(df.format(means[i]));
