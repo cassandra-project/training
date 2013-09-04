@@ -53,9 +53,13 @@ public class Constants
 
   public static final double SMALL_NUMBER = 1.0E7;
 
-  public static final int HOUR_SAMPLE_LIMIT = 5000;
-  public static final int QUARTER_SAMPLE_LIMIT = 10000;
-  public static final int TEN_MINUTE_SAMPLE_LIMIT = 20000;
-  public static final int FIVE_MINUTE_SAMPLE_LIMIT = 40000;
+  public static final int HOUR_SAMPLE_LIMIT = 2 * HOURS_PER_DAY;
+  public static final int QUARTER_SAMPLE_LIMIT = 2 * QUARTERS_PER_DAY;
+  public static final int TEN_MINUTE_SAMPLE_LIMIT = 2 * TEN_MINUTES_PER_DAY;
+  public static final int FIVE_MINUTE_SAMPLE_LIMIT = 2 * FIVE_MINUTES_PER_DAY;
 
+  public static final int LOW_SAMPLE_MIXTURE = 2;
+  public static final int MEDIUM_SAMPLE_MIXTURE = 4;
+  public static final int HIGH_SAMPLE_MIXTURE = 7;
+  public static final int VERY_HIGH_SAMPLE_MIXTURE = 10;
 }

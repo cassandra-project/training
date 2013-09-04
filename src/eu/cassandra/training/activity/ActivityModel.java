@@ -706,6 +706,8 @@ public class ActivityModel
 
     case "Histogram":
 
+      // Utils.histogramValues(startTime.getHistogram());
+
       return ChartUtils.createHistogram(variable, x, y,
                                         startTime.getHistogram());
 
@@ -733,11 +735,11 @@ public class ActivityModel
               + " Minutes Interval";
     String y = "Probability";
 
-    // System.out.println(name + " " + distributionTypes.toString());
-
     switch (distributionTypes.get("StartTimeBinned")) {
 
     case "Histogram":
+
+      // Utils.histogramValues(startTimeBinned.getHistogram());
 
       return ChartUtils.createHistogram(variable, x, y,
                                         startTimeBinned.getHistogram());

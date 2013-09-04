@@ -84,15 +84,25 @@ public class MixtureCreator
 
     if (variable.equals("Duration") || variable.equals("DailyTimes")) {
       max = findMax();
-      n = 10;
     }
     else if (variable.equals("StartTime")) {
       max = Constants.MINUTES_PER_DAY;
-      n = 10;
     }
     else if (variable.equals("StartTimeBinned")) {
       max = Constants.MINUTES_PER_DAY / Constants.TEN_MINUTES;
-      n = 10;
+    }
+
+    if (temp.length < Constants.HOUR_SAMPLE_LIMIT) {
+      n = Constants.LOW_SAMPLE_MIXTURE;
+    }
+    else if (temp.length < Constants.QUARTER_SAMPLE_LIMIT) {
+      n = Constants.MEDIUM_SAMPLE_MIXTURE;
+    }
+    else if (temp.length < Constants.TEN_MINUTE_SAMPLE_LIMIT) {
+      n = Constants.HIGH_SAMPLE_MIXTURE;
+    }
+    else {
+      n = Constants.VERY_HIGH_SAMPLE_MIXTURE;
     }
 
     int interval = (int) (max / n);

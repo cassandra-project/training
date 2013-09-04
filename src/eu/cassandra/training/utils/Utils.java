@@ -20,6 +20,7 @@ package eu.cassandra.training.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -312,5 +313,16 @@ public class Utils
         result[i] += values[i * Constants.TEN_MINUTES + j];
 
     return result;
+  }
+
+  public static void histogramValues (double[] values)
+  {
+    double sum = 0;
+
+    for (int i = 0; i < values.length; i++)
+      sum += values[i];
+    System.out.println("Array of Histogram:" + Arrays.toString(values));
+    System.out.println("Summary:" + sum);
+
   }
 }
