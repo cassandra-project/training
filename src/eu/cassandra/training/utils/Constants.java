@@ -42,7 +42,7 @@ public class Constants
   public static final int FIVE_MINUTES = 5;
   public static final int ONE_MINUTE = 1;
 
-  public static final int SHIFTING_WINDOW_IN_MINUTES = 60;
+  public static final int SHIFTING_WINDOW_IN_MINUTES = 120;
 
   public static final String DAYS_FILE = "Files/daysArray";
   public static final String EVENTS_FILE = "Files/eventsAll";
@@ -62,4 +62,6 @@ public class Constants
   public static final int MEDIUM_SAMPLE_MIXTURE = 3;
   public static final int HIGH_SAMPLE_MIXTURE = 5;
   public static final int VERY_HIGH_SAMPLE_MIXTURE = 10;
+
+  public static final boolean FILED = true;
 }
