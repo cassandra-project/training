@@ -325,4 +325,35 @@ public class Utils
     System.out.println("Summary:" + sum);
 
   }
+
+  /**
+   * This function is called when the temporary files must be removed from the
+   * temporary folder used to store the csv and xls used to create the entity
+   * models during the procedure of training and disaggregation. It is done when
+   * the program starts, when the program ends and when the reset button is
+   * pressed by the user.
+   */
+  public static void cleanFiles ()
+  {
+    File directory = new File("Files");
+    File files[] = directory.listFiles();
+    String extension = "";
+    for (int index = 0; index < files.length; index++) {
+      {
+        extension =
+          files[index].getAbsolutePath().substring(files[index]
+                                                           .getAbsolutePath()
+                                                           .length() - 3,
+                                                   files[index]
+                                                           .getAbsolutePath()
+                                                           .length());
+        if (extension.equalsIgnoreCase("csv")) {
+          boolean wasDeleted = files[index].delete();
+          if (!wasDeleted) {
+            System.out.println("Not Deleted File " + files[index].toString());
+          }
+        }
+      }
+    }
+  }
 }

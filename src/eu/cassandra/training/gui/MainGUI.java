@@ -19,6 +19,8 @@ package eu.cassandra.training.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,6 +59,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
@@ -264,13 +267,13 @@ public class MainGUI extends JFrame
       @Override
       public void windowClosing (WindowEvent e)
       {
-        cleanFiles();
+        Utils.cleanFiles();
         System.exit(0);
       }
     });
 
     // Cleaning temporary files from the temp folder when starting the GUI.
-    cleanFiles();
+    Utils.cleanFiles();
 
     // Change the platforms look and feel to Nimbus
     LookAndFeel lnf = new javax.swing.plaf.nimbus.NimbusLookAndFeel();
@@ -293,7 +296,7 @@ public class MainGUI extends JFrame
     mntmExit.addActionListener(new ActionListener() {
       public void actionPerformed (ActionEvent e)
       {
-        cleanFiles();
+        Utils.cleanFiles();
         System.exit(0);
       }
     });
@@ -1126,7 +1129,7 @@ public class MainGUI extends JFrame
         tempActivities.clear();
 
         // Removing temporary files
-        cleanFiles();
+        Utils.cleanFiles();
 
       }
     });
@@ -1164,86 +1167,94 @@ public class MainGUI extends JFrame
        */
       public void actionPerformed (ActionEvent e)
       {
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
-        // Change the state of some components
-        installationRadioButton.setEnabled(false);
-        singleApplianceRadioButton.setEnabled(false);
-        importDataButton.setEnabled(false);
-        dataBrowseButton.setEnabled(false);
-        activePowerRadioButton.setEnabled(false);
-        activeAndReactivePowerRadioButton.setEnabled(false);
-
-        // Check if both active and reactive activeOnly data set are available
-        boolean power = activePowerRadioButton.isSelected();
-        int parse = -1;
-
-        // Parsing the measurements file
         try {
-          parse = Utils.parseMeasurementsFile(pathField.getText(), power);
-        }
-        catch (IOException e2) {
-          e2.printStackTrace();
-        }
 
-        // If everything is OK
-        if (parse == -1) {
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+          // Change the state of some components
+          installationRadioButton.setEnabled(false);
+          singleApplianceRadioButton.setEnabled(false);
+          importDataButton.setEnabled(false);
+          dataBrowseButton.setEnabled(false);
+          activePowerRadioButton.setEnabled(false);
+          activeAndReactivePowerRadioButton.setEnabled(false);
+
+          // Check if both active and reactive activeOnly data set are available
+          boolean power = activePowerRadioButton.isSelected();
+          int parse = -1;
+
+          // Parsing the measurements file
           try {
-            // Creating new installation
-            installation = new Installation(pathField.getText(), power);
+            parse = Utils.parseMeasurementsFile(pathField.getText(), power);
           }
           catch (IOException e2) {
             e2.printStackTrace();
           }
 
-          // Show the measurements in the preview chart
-          ChartPanel chartPanel = null;
-          try {
-            chartPanel = installation.measurementsChart();
+          // If everything is OK
+          if (parse == -1) {
+            try {
+              // Creating new installation
+              installation = new Installation(pathField.getText(), power);
+            }
+            catch (IOException e2) {
+              e2.printStackTrace();
+            }
+
+            // Show the measurements in the preview chart
+            ChartPanel chartPanel = null;
+            try {
+              chartPanel = installation.measurementsChart();
+            }
+            catch (IOException e1) {
+              e1.printStackTrace();
+            }
+
+            dataReviewPanel.add(chartPanel, BorderLayout.CENTER);
+            dataReviewPanel.validate();
+
+            disaggregateButton.setEnabled(false);
+            createEventsButton.setEnabled(false);
+
+            // Enable the appropriate buttons given source of measurements
+            if (installationRadioButton.isSelected()) {
+              disaggregateButton.setEnabled(true);
+            }
+            else if (singleApplianceRadioButton.isSelected()) {
+              consumptionPathField.setEnabled(true);
+              consumptionBrowseButton.setEnabled(true);
+
+            }
+
+            // Add installation to the export models list
+            exportModels.addElement(installation.toString());
+            exportModels.addElement(installation.getPerson().getName());
+
+            // Enable Export Models tab
+            exportModelList.setEnabled(true);
+            exportModelList.setModel(exportModels);
+            tabbedPane.setEnabledAt(3, true);
+
           }
-          catch (IOException e1) {
-            e1.printStackTrace();
+          // In case of an error during the measurement parsing show the line of
+          // error and reset settings.
+          else {
+            JFrame error = new JFrame();
+
+            JOptionPane
+                    .showMessageDialog(error,
+                                       "Parsing measurements file failed. The problem seems to be in line "
+                                               + parse
+                                               + ".Check the selected buttons and the file provided and try again.",
+                                       "Inane error", JOptionPane.ERROR_MESSAGE);
+            resetButton.doClick();
           }
-
-          dataReviewPanel.add(chartPanel, BorderLayout.CENTER);
-          dataReviewPanel.validate();
-
-          disaggregateButton.setEnabled(false);
-          createEventsButton.setEnabled(false);
-
-          // Enable the appropriate buttons given source of measurements
-          if (installationRadioButton.isSelected()) {
-            disaggregateButton.setEnabled(true);
-          }
-          else if (singleApplianceRadioButton.isSelected()) {
-            consumptionPathField.setEnabled(true);
-            consumptionBrowseButton.setEnabled(true);
-
-          }
-
-          // Add installation to the export models list
-          exportModels.addElement(installation.toString());
-          exportModels.addElement(installation.getPerson().getName());
-
-          // Enable Export Models tab
-          exportModelList.setEnabled(true);
-          exportModelList.setModel(exportModels);
-          tabbedPane.setEnabledAt(3, true);
-
         }
-        // In case of an error during the measurement parsing show the line of
-        // error and reset settings.
-        else {
-          JFrame error = new JFrame();
-
-          JOptionPane
-                  .showMessageDialog(error,
-                                     "Parsing measurements file failed. The problem seems to be in line "
-                                             + parse
-                                             + ".Check the selected buttons and the file provided and try again.",
-                                     "Inane error", JOptionPane.ERROR_MESSAGE);
-          resetButton.doClick();
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
         }
-
       }
     });
 
@@ -1257,236 +1268,247 @@ public class MainGUI extends JFrame
       public void actionPerformed (ActionEvent e)
       {
 
-        // Get auxiliary files containing appliances and activities which are
-        // the output of the disaggregation process.
-        String filename = pathField.getText();
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
-        if (Constants.FILED == false) {
-          try {
-            Disaggregate dis = new Disaggregate(filename);
-          }
-          catch (Exception e2) {
-            System.out.println("Missing File");
-            e2.printStackTrace();
-          }
-        }
+        try {
 
-        filename =
-          pathField.getText().substring(0, pathField.getText().length() - 4);
-        File appliancesFile = new File(filename + "ApplianceList.csv");
-        File activitiesFile = new File(filename + "ActivityList.csv");
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        // If these exist, disaggregation was successful and the procedure can
-        // continue
-        if (appliancesFile.exists() && activitiesFile.exists()) {
+          // Get auxiliary files containing appliances and activities which are
+          // the output of the disaggregation process.
+          String filename = pathField.getText();
 
-          // Read appliance file and start appliance parsing
-          Scanner input = null;
-          try {
-            input = new Scanner(appliancesFile);
-          }
-          catch (FileNotFoundException e1) {
-            e1.printStackTrace();
-          }
-          String nextLine;
-          String[] line;
-
-          while (input.hasNext()) {
-            nextLine = input.nextLine();
-            line = nextLine.split(",");
-
-            String name = line[line.length - 2] + " " + line[line.length - 1];
-            String activity = line[line.length - 2];
-            String[] temp = line[line.length - 1].split(" ");
-
-            String type = "";
-
-            if (temp.length == 1)
-              type = temp[0];
-            else {
-              for (int i = 0; i < temp.length - 1; i++)
-                type += temp[i] + " ";
-              type = type.trim();
-
-            }
-            double p = Double.parseDouble(line[0]);
-            double q = Double.parseDouble(line[1]);
-            // For each appliance found in the file, an temporary Appliance
-            // Entity is created.
-            tempAppliances.add(new ApplianceTemp(name, installation.getName(),
-                                                 type, activity, p, q));
-
-          }
-
-          System.out.println("Appliances:" + tempAppliances.size());
-
-          input.close();
-
-          // Read activity file and start activity parsing
-
-          try {
-            input = new Scanner(activitiesFile);
-          }
-          catch (FileNotFoundException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-          }
-
-          while (input.hasNext()) {
-            nextLine = input.nextLine();
-            line = nextLine.split(",");
-
-            String name = line[line.length - 2];
-            int start = Integer.parseInt(line[0]);
-            int end = Integer.parseInt(line[1]);
-
-            // Search for existing activity
-            int activityIndex = findActivity(name);
-
-            // if not found, create a new one
-            if (activityIndex == -1) {
-
-              ActivityTemp newActivity = new ActivityTemp(name);
-              newActivity.addEvent(start, end);
-              tempActivities.add(newActivity);
-
-            }
-            // else add data to the found activity
-            else
-              tempActivities.get(activityIndex).addEvent(start, end);
-          }
-
-          // This is hard copied for now
-          int activityIndex = findActivity("Refrigeration");
-          if (activityIndex != -1) {
-            tempActivities.remove(activityIndex);
-            System.out.println("Refrigeration Removed");
-          }
-          // TODO Add these lines in case we want to remove activities with
-          // small sampling number
-
-          // System.out.println(tempActivities.size());
-          // for (int i = tempActivities.size() - 1; i >= 0; i--)
-          // if (tempActivities.get(i).getEvents().size() < threshold)
-          // tempActivities.remove(i);
-
-          // Create an event file for each activity, in order to be able to use
-          // it for training the beahviour models if asked from the user
-          for (int i = 0; i < tempActivities.size(); i++) {
-            // tempActivities.get(i).status();
+          if (Constants.FILED == false) {
             try {
-              tempActivities.get(i).createEventFile();
+              Disaggregate dis = new Disaggregate(filename);
             }
-            catch (IOException e1) {
+            catch (Exception e2) {
+              System.out.println("Missing File");
+              e2.printStackTrace();
+            }
+          }
+
+          filename =
+            pathField.getText().substring(0, pathField.getText().length() - 4);
+          File appliancesFile = new File(filename + "ApplianceList.csv");
+          File activitiesFile = new File(filename + "ActivityList.csv");
+
+          // If these exist, disaggregation was successful and the procedure can
+          // continue
+          if (appliancesFile.exists() && activitiesFile.exists()) {
+
+            // Read appliance file and start appliance parsing
+            Scanner input = null;
+            try {
+              input = new Scanner(appliancesFile);
+            }
+            catch (FileNotFoundException e1) {
               e1.printStackTrace();
             }
-          }
+            String nextLine;
+            String[] line;
 
-          input.close();
+            while (input.hasNext()) {
+              nextLine = input.nextLine();
+              line = nextLine.split(",");
 
-          // Add each found appliance (after converting temporary appliance to
-          // normal appliance) in the installation Entity, to the detected
-          // appliance and export models list
-          for (ApplianceTemp temp: tempAppliances) {
+              String name = line[line.length - 2] + " " + line[line.length - 1];
+              String activity = line[line.length - 2];
+              String[] temp = line[line.length - 1].split(" ");
 
-            Appliance tempAppliance = temp.toAppliance();
+              String type = "";
 
-            installation.addAppliance(tempAppliance);
-            detectedAppliances.addElement(tempAppliance.toString());
-            exportModels.addElement(tempAppliance.toString());
+              if (temp.length == 1)
+                type = temp[0];
+              else {
+                for (int i = 0; i < temp.length - 1; i++)
+                  type += temp[i] + " ";
+                type = type.trim();
 
-          }
+              }
+              double p = Double.parseDouble(line[0]);
+              double q = Double.parseDouble(line[1]);
+              // For each appliance found in the file, an temporary Appliance
+              // Entity is created.
+              tempAppliances.add(new ApplianceTemp(name,
+                                                   installation.getName(),
+                                                   type, activity, p, q));
 
-          // Add appliances corresponding to each activity, remove activities
-          // without appliances and add activities to the selected activities
-          // list.
-          for (int i = tempActivities.size() - 1; i >= 0; i--) {
-
-            tempActivities.get(i).setAppliances(findAppliances(tempActivities
-                                                        .get(i)));
-            if (tempActivities.get(i).getAppliances().size() == 0) {
-              tempActivities.remove(i);
-            }
-            else
-              selectedAppliances.addElement(tempActivities.get(i).toString());
-
-          }
-
-        }
-        // Demonstration of the disaggregation in case it was not successful.
-        // For presentation purposes only.
-        else {
-
-          int temp = 8 + ((int) (Math.random() * 2));
-
-          for (int i = 0; i < temp; i++) {
-
-            String name = "Appliance " + i;
-            String powerModel = "";
-            String reactiveModel = "";
-            int tempIndex = i % 5;
-            switch (tempIndex) {
-            case 0:
-              powerModel =
-                "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"p\":1900,\"d\":1,\"s\":0}]},{\"n\":0,\"values\":[{\"p\":300,\"d\":1,\"s\":0}]}]}";
-              reactiveModel =
-                "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"q\":-40,\"d\":1,\"s\":0}]},{\"n\":0,\"values\":[{\"q\":-10,\"d\":1,\"s\":0}]}]}";
-              break;
-            case 1:
-              powerModel =
-                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}]}]}";
-              reactiveModel =
-                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : 120.0, \"d\" : 20, \"s\": 0.0}]}]}";
-              break;
-            case 2:
-              powerModel =
-                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 95.0, \"d\" : 20, \"s\": 0.0}, {\"p\" :80.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 0.0, \"d\" : 73, \"s\": 0.0}]}]}]}";
-              reactiveModel =
-                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : 0.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 73, \"s\": 0.0}]}]}]}";
-              break;
-            case 3:
-              powerModel =
-                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 30.0, \"d\" : 20, \"s\": 0.0}]}]}";
-              reactiveModel =
-                "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : -5.0, \"d\" : 20, \"s\": 0.0}]}]}";
-              break;
-            case 4:
-              powerModel =
-                "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"p\":150,\"d\":25,\"s\":0},{\"p\":2000,\"d\":13,\"s\":0},{\"p\":100,\"d\":62,\"s\":0}]}]}";
-              reactiveModel =
-                "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"q\":400,\"d\":25,\"s\":0},{\"q\":200,\"d\":13,\"s\":0},{\"q\":300,\"d\":62,\"s\":0}]}]}";
-              break;
             }
 
-            Appliance tempAppliance =
-              new Appliance(name, installation.getName(), powerModel,
-                            reactiveModel, "Demo/eventsAll" + tempIndex
-                                           + ".csv");
+            System.out.println("Appliances:" + tempAppliances.size());
 
-            installation.addAppliance(tempAppliance);
-            detectedAppliances.addElement(tempAppliance.toString());
-            selectedAppliances.addElement(tempAppliance.toString());
-            exportModels.addElement(tempAppliance.toString());
+            input.close();
+
+            // Read activity file and start activity parsing
+
+            try {
+              input = new Scanner(activitiesFile);
+            }
+            catch (FileNotFoundException e1) {
+              // TODO Auto-generated catch block
+              e1.printStackTrace();
+            }
+
+            while (input.hasNext()) {
+              nextLine = input.nextLine();
+              line = nextLine.split(",");
+
+              String name = line[line.length - 2];
+              int start = Integer.parseInt(line[0]);
+              int end = Integer.parseInt(line[1]);
+
+              // Search for existing activity
+              int activityIndex = findActivity(name);
+
+              // if not found, create a new one
+              if (activityIndex == -1) {
+
+                ActivityTemp newActivity = new ActivityTemp(name);
+                newActivity.addEvent(start, end);
+                tempActivities.add(newActivity);
+
+              }
+              // else add data to the found activity
+              else
+                tempActivities.get(activityIndex).addEvent(start, end);
+            }
+
+            // This is hard copied for now
+            int activityIndex = findActivity("Refrigeration");
+            if (activityIndex != -1) {
+              tempActivities.remove(activityIndex);
+              System.out.println("Refrigeration Removed");
+            }
+            // TODO Add these lines in case we want to remove activities with
+            // small sampling number
+
+            // System.out.println(tempActivities.size());
+            // for (int i = tempActivities.size() - 1; i >= 0; i--)
+            // if (tempActivities.get(i).getEvents().size() < threshold)
+            // tempActivities.remove(i);
+
+            // Create an event file for each activity, in order to be able to
+            // use
+            // it for training the beahviour models if asked from the user
+            for (int i = 0; i < tempActivities.size(); i++) {
+              // tempActivities.get(i).status();
+              try {
+                tempActivities.get(i).createEventFile();
+              }
+              catch (IOException e1) {
+                e1.printStackTrace();
+              }
+            }
+
+            input.close();
+
+            // Add each found appliance (after converting temporary appliance to
+            // normal appliance) in the installation Entity, to the detected
+            // appliance and export models list
+            for (ApplianceTemp temp: tempAppliances) {
+
+              Appliance tempAppliance = temp.toAppliance();
+
+              installation.addAppliance(tempAppliance);
+              detectedAppliances.addElement(tempAppliance.toString());
+              exportModels.addElement(tempAppliance.toString());
+
+            }
+
+            // Add appliances corresponding to each activity, remove activities
+            // without appliances and add activities to the selected activities
+            // list.
+            for (int i = tempActivities.size() - 1; i >= 0; i--) {
+
+              tempActivities.get(i).setAppliances(findAppliances(tempActivities
+                                                          .get(i)));
+              if (tempActivities.get(i).getAppliances().size() == 0) {
+                tempActivities.remove(i);
+              }
+              else
+                selectedAppliances.addElement(tempActivities.get(i).toString());
+
+            }
+
           }
+          // Demonstration of the disaggregation in case it was not successful.
+          // For presentation purposes only.
+          else {
+
+            int temp = 8 + ((int) (Math.random() * 2));
+
+            for (int i = 0; i < temp; i++) {
+
+              String name = "Appliance " + i;
+              String powerModel = "";
+              String reactiveModel = "";
+              int tempIndex = i % 5;
+              switch (tempIndex) {
+              case 0:
+                powerModel =
+                  "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"p\":1900,\"d\":1,\"s\":0}]},{\"n\":0,\"values\":[{\"p\":300,\"d\":1,\"s\":0}]}]}";
+                reactiveModel =
+                  "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"q\":-40,\"d\":1,\"s\":0}]},{\"n\":0,\"values\":[{\"q\":-10,\"d\":1,\"s\":0}]}]}";
+                break;
+              case 1:
+                powerModel =
+                  "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 140.0, \"d\" : 20, \"s\": 0.0}]}]}";
+                reactiveModel =
+                  "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : 120.0, \"d\" : 20, \"s\": 0.0}]}]}";
+                break;
+              case 2:
+                powerModel =
+                  "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 95.0, \"d\" : 20, \"s\": 0.0}, {\"p\" :80.0, \"d\" : 18, \"s\": 0.0}, {\"p\" : 0.0, \"d\" : 73, \"s\": 0.0}]}]}]}";
+                reactiveModel =
+                  "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : 0.0, \"d\" : 20, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 18, \"s\": 0.0}, {\"q\" : 0.0, \"d\" : 73, \"s\": 0.0}]}]}]}";
+                break;
+              case 3:
+                powerModel =
+                  "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" : 30.0, \"d\" : 20, \"s\": 0.0}]}]}";
+                reactiveModel =
+                  "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" : -5.0, \"d\" : 20, \"s\": 0.0}]}]}";
+                break;
+              case 4:
+                powerModel =
+                  "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"p\":150,\"d\":25,\"s\":0},{\"p\":2000,\"d\":13,\"s\":0},{\"p\":100,\"d\":62,\"s\":0}]}]}";
+                reactiveModel =
+                  "{\"n\":1,\"params\":[{\"n\":1,\"values\":[{\"q\":400,\"d\":25,\"s\":0},{\"q\":200,\"d\":13,\"s\":0},{\"q\":300,\"d\":62,\"s\":0}]}]}";
+                break;
+              }
+
+              Appliance tempAppliance =
+                new Appliance(name, installation.getName(), powerModel,
+                              reactiveModel, "Demo/eventsAll" + tempIndex
+                                             + ".csv");
+
+              installation.addAppliance(tempAppliance);
+              detectedAppliances.addElement(tempAppliance.toString());
+              selectedAppliances.addElement(tempAppliance.toString());
+              exportModels.addElement(tempAppliance.toString());
+            }
+          }
+
+          // Enable all appliance/activity lists
+          detectedApplianceList.setEnabled(true);
+          detectedApplianceList.setModel(detectedAppliances);
+          detectedApplianceList.setSelectedIndex(0);
+
+          tabbedPane.setEnabledAt(1, true);
+          selectedApplianceList.setEnabled(true);
+          selectedApplianceList.setModel(selectedAppliances);
+
+          // exportModelList.setEnabled(true);
+          // exportModelList.setModel(exportModels);
+          // tabbedPane.setEnabledAt(3, true);
+
+          // Disable unnecessary buttons.
+          disaggregateButton.setEnabled(false);
+          createEventsButton.setEnabled(false);
         }
-
-        // Enable all appliance/activity lists
-        detectedApplianceList.setEnabled(true);
-        detectedApplianceList.setModel(detectedAppliances);
-        detectedApplianceList.setSelectedIndex(0);
-
-        tabbedPane.setEnabledAt(1, true);
-        selectedApplianceList.setEnabled(true);
-        selectedApplianceList.setModel(selectedAppliances);
-
-        // exportModelList.setEnabled(true);
-        // exportModelList.setModel(exportModels);
-        // tabbedPane.setEnabledAt(3, true);
-
-        // Disable unnecessary buttons.
-        disaggregateButton.setEnabled(false);
-        createEventsButton.setEnabled(false);
-
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
+        }
       }
     });
 
@@ -1501,51 +1523,59 @@ public class MainGUI extends JFrame
        */
       public void actionPerformed (ActionEvent e)
       {
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
-        // Parse the consumption model file
-        File file = new File(consumptionPathField.getText());
-        String temp = file.getName();
-        temp = temp.replace(".", " ");
-        String name = temp.split(" ")[0];
-
-        Appliance appliance = null;
         try {
 
-          int rand = (int) (Math.random() * 5);
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-          appliance =
-            new Appliance(name, consumptionPathField.getText(),
-                          consumptionPathField.getText(), "Demo/eventsAll"
-                                                          + rand + ".csv",
-                          installation, activePowerRadioButton.isSelected());
+          // Parse the consumption model file
+          File file = new File(consumptionPathField.getText());
+          String temp = file.getName();
+          temp = temp.replace(".", " ");
+          String name = temp.split(" ")[0];
+
+          Appliance appliance = null;
+          try {
+
+            int rand = (int) (Math.random() * 5);
+
+            appliance =
+              new Appliance(name, consumptionPathField.getText(),
+                            consumptionPathField.getText(), "Demo/eventsAll"
+                                                            + rand + ".csv",
+                            installation, activePowerRadioButton.isSelected());
+          }
+          catch (IOException e1) {
+            e1.printStackTrace();
+          }
+          // Add appliance to the installation entity
+          installation.addAppliance(appliance);
+
+          // Enable all appliance/activity lists
+          detectedAppliances.addElement(appliance.toString());
+          selectedAppliances.addElement(appliance.toString());
+          exportModels.addElement(appliance.toString());
+
+          detectedApplianceList.setEnabled(true);
+          detectedApplianceList.setModel(detectedAppliances);
+          detectedApplianceList.setSelectedIndex(0);
+
+          tabbedPane.setEnabledAt(1, true);
+          selectedApplianceList.setEnabled(true);
+          selectedApplianceList.setModel(selectedAppliances);
+
+          // exportModelList.setEnabled(true);
+          // exportModelList.setModel(exportModels);
+          // tabbedPane.setEnabledAt(3, true);
+
+          // Disable unnecessary buttons.
+          disaggregateButton.setEnabled(false);
+          createEventsButton.setEnabled(false);
         }
-        catch (IOException e1) {
-          e1.printStackTrace();
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
         }
-        // Add appliance to the installation entity
-        installation.addAppliance(appliance);
-
-        // Enable all appliance/activity lists
-        detectedAppliances.addElement(appliance.toString());
-        selectedAppliances.addElement(appliance.toString());
-        exportModels.addElement(appliance.toString());
-
-        detectedApplianceList.setEnabled(true);
-        detectedApplianceList.setModel(detectedAppliances);
-        detectedApplianceList.setSelectedIndex(0);
-
-        tabbedPane.setEnabledAt(1, true);
-        selectedApplianceList.setEnabled(true);
-        selectedApplianceList.setModel(selectedAppliances);
-
-        // exportModelList.setEnabled(true);
-        // exportModelList.setModel(exportModels);
-        // tabbedPane.setEnabledAt(3, true);
-
-        // Disable unnecessary buttons.
-        disaggregateButton.setEnabled(false);
-        createEventsButton.setEnabled(false);
-
       }
     });
 
@@ -1596,130 +1626,142 @@ public class MainGUI extends JFrame
        */
       public void actionPerformed (ActionEvent e)
       {
-        // Searching for existing activity or appliance.
-        String selection = selectedApplianceList.getSelectedValue();
-        ActivityTemp activity = null;
 
-        if (tempActivities.size() > 0)
-          activity = tempActivities.get(findActivity(selection));
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
-        Appliance current = installation.findAppliance(selection);
+        try {
 
-        String startTime, duration, dailyTimes;
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        // Check for the selected distribution methods for training.
-        if (timesHistogramRadioButton.isSelected())
-          dailyTimes = "Histogram";
-        else if (timesNormalRadioButton.isSelected())
-          dailyTimes = "Normal";
-        else
-          dailyTimes = "GMM";
+          // Searching for existing activity or appliance.
+          String selection = selectedApplianceList.getSelectedValue();
+          ActivityTemp activity = null;
 
-        if (durationHistogramRadioButton.isSelected())
-          duration = "Histogram";
-        else if (durationNormalRadioButton.isSelected())
-          duration = "Normal";
-        else
-          duration = "GMM";
+          if (tempActivities.size() > 0)
+            activity = tempActivities.get(findActivity(selection));
 
-        if (startHistogramRadioButton.isSelected())
-          startTime = "Histogram";
-        else if (startNormalRadioButton.isSelected())
-          startTime = "Normal";
-        else
-          startTime = "GMM";
+          Appliance current = installation.findAppliance(selection);
 
-        String[] distributions =
-          { dailyTimes, duration, startTime, "Histogram" };
+          String startTime, duration, dailyTimes;
 
-        // If the selected object from the list is an appliance the training
-        // procedure for the appliance begins.
-        if (activity == null) {
+          // Check for the selected distribution methods for training.
+          if (timesHistogramRadioButton.isSelected())
+            dailyTimes = "Histogram";
+          else if (timesNormalRadioButton.isSelected())
+            dailyTimes = "Normal";
+          else
+            dailyTimes = "GMM";
 
-          try {
-            installation.getPerson().train(current, distributions);
+          if (durationHistogramRadioButton.isSelected())
+            duration = "Histogram";
+          else if (durationNormalRadioButton.isSelected())
+            duration = "Normal";
+          else
+            duration = "GMM";
+
+          if (startHistogramRadioButton.isSelected())
+            startTime = "Histogram";
+          else if (startNormalRadioButton.isSelected())
+            startTime = "Normal";
+          else
+            startTime = "GMM";
+
+          String[] distributions =
+            { dailyTimes, duration, startTime, "Histogram" };
+
+          // If the selected object from the list is an appliance the training
+          // procedure for the appliance begins.
+          if (activity == null) {
+
+            try {
+              installation.getPerson().train(current, distributions);
+            }
+            catch (IOException e1) {
+              e1.printStackTrace();
+            }
           }
-          catch (IOException e1) {
-            e1.printStackTrace();
-          }
-        }
-        // If the selected object from the list is an activity the training
-        // procedure for the activity begins.
-        else {
+          // If the selected object from the list is an activity the training
+          // procedure for the activity begins.
+          else {
 
-          try {
-            installation.getPerson().train(activity, distributions);
-          }
-          catch (IOException e1) {
-            e1.printStackTrace();
+            try {
+              installation.getPerson().train(activity, distributions);
+            }
+            catch (IOException e1) {
+              e1.printStackTrace();
+            }
+
           }
 
-        }
+          // System.out.println("Training OK!");
 
-        // System.out.println("Training OK!");
+          distributionPreviewPanel.removeAll();
+          distributionPreviewPanel.updateUI();
 
-        distributionPreviewPanel.removeAll();
-        distributionPreviewPanel.updateUI();
+          // Show the distribution created on the Distribution Preview Panel
+          ActivityModel activityModel =
+            installation.getPerson().findActivity(selection, true);
 
-        // Show the distribution created on the Distribution Preview Panel
-        ActivityModel activityModel =
-          installation.getPerson().findActivity(selection, true);
+          if (activityModel == null)
+            activityModel = installation.getPerson().findActivity(current);
 
-        if (activityModel == null)
-          activityModel = installation.getPerson().findActivity(current);
+          ChartPanel chartPanel =
+            activityModel.createDailyTimesDistributionChart();
+          distributionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
+          distributionPreviewPanel.validate();
 
-        ChartPanel chartPanel =
-          activityModel.createDailyTimesDistributionChart();
-        distributionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
-        distributionPreviewPanel.validate();
+          // Add the Activity model to the list of trained Activity models of
+          // the Create Response Models tab
+          int size = activitySelectList.getModel().getSize();
 
-        // Add the Activity model to the list of trained Activity models of
-        // the Create Response Models tab
-        int size = activitySelectList.getModel().getSize();
-
-        if (size > 0) {
-          activityModels =
-            (DefaultListModel<String>) activitySelectList.getModel();
-          if (activityModels.contains(activityModel.getName()) == false)
+          if (size > 0) {
+            activityModels =
+              (DefaultListModel<String>) activitySelectList.getModel();
+            if (activityModels.contains(activityModel.getName()) == false)
+              activityModels.addElement(activityModel.getName());
+          }
+          else {
+            activityModels = new DefaultListModel<String>();
             activityModels.addElement(activityModel.getName());
-        }
-        else {
-          activityModels = new DefaultListModel<String>();
-          activityModels.addElement(activityModel.getName());
-          activitySelectList.setEnabled(true);
-        }
+            activitySelectList.setEnabled(true);
+          }
 
-        activitySelectList.setModel(activityModels);
+          activitySelectList.setModel(activityModels);
 
-        // Add the trained model to the export list also.
-        size = exportModelList.getModel().getSize();
-        if (size > 0) {
-          exportModels = (DefaultListModel<String>) exportModelList.getModel();
-          if (exportModels.contains(activityModel.getName()) == false)
+          // Add the trained model to the export list also.
+          size = exportModelList.getModel().getSize();
+          if (size > 0) {
+            exportModels =
+              (DefaultListModel<String>) exportModelList.getModel();
+            if (exportModels.contains(activityModel.getName()) == false)
+              exportModels.addElement(activityModel.getName());
+          }
+          else {
+            exportModels = new DefaultListModel<String>();
             exportModels.addElement(activityModel.getName());
+            exportModelList.setEnabled(true);
+          }
+
+          // Enable some buttons necessary to show the results.
+          dailyTimesButton.setEnabled(true);
+          durationButton.setEnabled(true);
+          startTimeButton.setEnabled(true);
+          startTimeBinnedButton.setEnabled(true);
+
+          exportModelList.setModel(exportModels);
+
+          exportDailyButton.setEnabled(true);
+          exportDurationButton.setEnabled(true);
+          exportStartButton.setEnabled(true);
+          exportStartBinnedButton.setEnabled(true);
+
+          tabbedPane.setEnabledAt(2, true);
         }
-        else {
-          exportModels = new DefaultListModel<String>();
-          exportModels.addElement(activityModel.getName());
-          exportModelList.setEnabled(true);
+
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
         }
-
-        // Enable some buttons necessary to show the results.
-        dailyTimesButton.setEnabled(true);
-        durationButton.setEnabled(true);
-        startTimeButton.setEnabled(true);
-        startTimeBinnedButton.setEnabled(true);
-
-        exportModelList.setModel(exportModels);
-
-        exportDailyButton.setEnabled(true);
-        exportDurationButton.setEnabled(true);
-        exportStartButton.setEnabled(true);
-        exportStartBinnedButton.setEnabled(true);
-
-        tabbedPane.setEnabledAt(2, true);
       }
-
     });
 
     trainAllButton.addActionListener(new ActionListener() {
@@ -1942,40 +1984,52 @@ public class MainGUI extends JFrame
        * type and pricing for testing and presents a preview of the response
        * model that may be extracted.
        */
-      public void actionPerformed (ActionEvent arg0)
+      public void actionPerformed (ActionEvent e)
       {
-        responsePanel.removeAll();
 
-        // Find the selected activity
-        ActivityModel activity =
-          installation.getPerson().findActivity(activitySelectList
-                                                        .getSelectedValue(),
-                                                false);
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
-        int response = -1;
+        try {
 
-        // Check for the selected response type
-        if (optimalCaseRadioButton.isSelected())
-          response = 0;
-        else if (normalCaseRadioButton.isSelected())
-          response = 1;
-        else
-          response = 2;
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        // Parse the pricing schemes
-        double[] basicScheme =
-          Utils.parseScheme(basicPricingSchemePane.getText());
-        double[] newScheme = Utils.parseScheme(newPricingSchemePane.getText());
+          responsePanel.removeAll();
 
-        // Create a preview chart of the response model
-        ChartPanel chartPanel =
-          installation.getPerson().previewResponse(activity, response,
-                                                   basicScheme, newScheme);
-        responsePanel.add(chartPanel, BorderLayout.CENTER);
-        responsePanel.validate();
+          // Find the selected activity
+          ActivityModel activity =
+            installation.getPerson().findActivity(activitySelectList
+                                                          .getSelectedValue(),
+                                                  false);
 
-        createResponseButton.setEnabled(true);
-        createResponseAllButton.setEnabled(true);
+          int response = -1;
+
+          // Check for the selected response type
+          if (optimalCaseRadioButton.isSelected())
+            response = 0;
+          else if (normalCaseRadioButton.isSelected())
+            response = 1;
+          else
+            response = 2;
+
+          // Parse the pricing schemes
+          double[] basicScheme =
+            Utils.parseScheme(basicPricingSchemePane.getText());
+          double[] newScheme =
+            Utils.parseScheme(newPricingSchemePane.getText());
+
+          // Create a preview chart of the response model
+          ChartPanel chartPanel =
+            installation.getPerson().previewResponse(activity, response,
+                                                     basicScheme, newScheme);
+          responsePanel.add(chartPanel, BorderLayout.CENTER);
+          responsePanel.validate();
+
+          createResponseButton.setEnabled(true);
+          createResponseAllButton.setEnabled(true);
+        }
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
+        }
       }
     });
 
@@ -1987,97 +2041,110 @@ public class MainGUI extends JFrame
        * activity model, response type and pricing for testing and creates the
        * response model for the user.
        */
-      public void actionPerformed (ActionEvent arg0)
+      public void actionPerformed (ActionEvent e)
       {
-        exportPreviewPanel.removeAll();
-        exportPreviewPanel.updateUI();
-
-        int responseType = -1;
-        String responseString = "";
-        // Check for the selected response type
-        if (optimalCaseRadioButton.isSelected()) {
-          responseType = 0;
-          responseString = "Optimal";
-        }
-        else if (normalCaseRadioButton.isSelected()) {
-          responseType = 1;
-          responseString = "Normal";
-        }
-        else if (discreteCaseRadioButton.isSelected()) {
-          responseType = 2;
-          responseString = "Discrete";
-        }
-
-        // Parse the pricing schemes
-        double[] basicScheme =
-          Utils.parseScheme(basicPricingSchemePane.getText());
-        double[] newScheme = Utils.parseScheme(newPricingSchemePane.getText());
-
-        // Create the response model
-        ActivityModel activity =
-          installation.getPerson().findActivity(activitySelectList
-                                                        .getSelectedValue(),
-                                                false);
-
-        String response = "";
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
         try {
-          response =
-            installation.getPerson().createResponse(activity, responseType,
-                                                    basicScheme, newScheme);
-        }
-        catch (IOException e) {
 
-          e.printStackTrace();
-        }
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        // Add the response model extracted to the export model list.
-        int size = exportModelList.getModel().getSize();
-        // System.out.println(size);
+          exportPreviewPanel.removeAll();
+          exportPreviewPanel.updateUI();
 
-        if (size > 0) {
-          exportModels = (DefaultListModel<String>) exportModelList.getModel();
-
-          String response2 = "", response3 = "";
-          if (responseString.equalsIgnoreCase("Optimal")) {
-            response2 = response.replace(responseString, "Normal");
-            response3 = response.replace(responseString, "Discrete");
+          int responseType = -1;
+          String responseString = "";
+          // Check for the selected response type
+          if (optimalCaseRadioButton.isSelected()) {
+            responseType = 0;
+            responseString = "Optimal";
           }
-          else if (responseString.equalsIgnoreCase("Normal")) {
-            response2 = response.replace(responseString, "Optimal");
-            response3 = response.replace(responseString, "Discrete");
+          else if (normalCaseRadioButton.isSelected()) {
+            responseType = 1;
+            responseString = "Normal";
+          }
+          else if (discreteCaseRadioButton.isSelected()) {
+            responseType = 2;
+            responseString = "Discrete";
+          }
+
+          // Parse the pricing schemes
+          double[] basicScheme =
+            Utils.parseScheme(basicPricingSchemePane.getText());
+          double[] newScheme =
+            Utils.parseScheme(newPricingSchemePane.getText());
+
+          // Create the response model
+          ActivityModel activity =
+            installation.getPerson().findActivity(activitySelectList
+                                                          .getSelectedValue(),
+                                                  false);
+
+          String response = "";
+
+          try {
+            response =
+              installation.getPerson().createResponse(activity, responseType,
+                                                      basicScheme, newScheme);
+          }
+          catch (IOException exc) {
+
+            exc.printStackTrace();
+          }
+
+          // Add the response model extracted to the export model list.
+          int size = exportModelList.getModel().getSize();
+          // System.out.println(size);
+
+          if (size > 0) {
+            exportModels =
+              (DefaultListModel<String>) exportModelList.getModel();
+
+            String response2 = "", response3 = "";
+            if (responseString.equalsIgnoreCase("Optimal")) {
+              response2 = response.replace(responseString, "Normal");
+              response3 = response.replace(responseString, "Discrete");
+            }
+            else if (responseString.equalsIgnoreCase("Normal")) {
+              response2 = response.replace(responseString, "Optimal");
+              response3 = response.replace(responseString, "Discrete");
+            }
+            else {
+              response2 = response.replace(responseString, "Optimal");
+              response3 = response.replace(responseString, "Normal");
+            }
+
+            if (exportModels.contains(response2))
+              exportModels.removeElement(response2);
+            if (exportModels.contains(response3))
+              exportModels.removeElement(response3);
+
+            if (exportModels.contains(response) == false)
+              exportModels.addElement(response);
           }
           else {
-            response2 = response.replace(responseString, "Optimal");
-            response3 = response.replace(responseString, "Normal");
-          }
-
-          if (exportModels.contains(response2))
-            exportModels.removeElement(response2);
-          if (exportModels.contains(response3))
-            exportModels.removeElement(response3);
-
-          if (exportModels.contains(response) == false)
+            exportModels = new DefaultListModel<String>();
             exportModels.addElement(response);
-        }
-        else {
-          exportModels = new DefaultListModel<String>();
-          exportModels.addElement(response);
-          exportModelList.setEnabled(true);
-        }
-        exportModelList.setModel(exportModels);
+            exportModelList.setEnabled(true);
+          }
+          exportModelList.setModel(exportModels);
 
-        if (manyFlag == false) {
+          if (manyFlag == false) {
 
-          JFrame success = new JFrame();
+            JFrame success = new JFrame();
 
-          JOptionPane.showMessageDialog(success, "The response model "
-                                                 + response
-                                                 + " was created successfully",
-                                        "Response Model Created",
-                                        JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane
+                    .showMessageDialog(success, "The response model "
+                                                + response
+                                                + " was created successfully",
+                                       "Response Model Created",
+                                       JOptionPane.INFORMATION_MESSAGE);
+          }
         }
 
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
+        }
       }
     });
 
@@ -2131,73 +2198,86 @@ public class MainGUI extends JFrame
        * enabled after adding the two pricing schemes that are prerequisites for
        * the creation of a response model.
        */
-      public void actionPerformed (ActionEvent arg0)
+      public void actionPerformed (ActionEvent e)
       {
 
-        boolean basicScheme = false;
-        boolean newScheme = false;
-        int parseBasic = 0;
-        int parseNew = 0;
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
-        pricingPreviewPanel.removeAll();
+        try {
 
-        // Check if both pricing schemes are entered
-        if (basicPricingSchemePane.getText().equalsIgnoreCase("") == false)
-          basicScheme = true;
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        if (newPricingSchemePane.getText().equalsIgnoreCase("") == false)
-          newScheme = true;
+          boolean basicScheme = false;
+          boolean newScheme = false;
+          int parseBasic = 0;
+          int parseNew = 0;
 
-        // Parse the pricing schemes for errors
-        if (basicScheme)
-          parseBasic =
-            Utils.parsePricingScheme(basicPricingSchemePane.getText());
+          pricingPreviewPanel.removeAll();
 
-        if (newScheme)
-          parseNew = Utils.parsePricingScheme(newPricingSchemePane.getText());
+          // Check if both pricing schemes are entered
+          if (basicPricingSchemePane.getText().equalsIgnoreCase("") == false)
+            basicScheme = true;
 
-        // If errors are found then present the line the error may be at
-        if (parseBasic != -1) {
-          JFrame error = new JFrame();
+          if (newPricingSchemePane.getText().equalsIgnoreCase("") == false)
+            newScheme = true;
 
-          JOptionPane
-                  .showMessageDialog(error,
-                                     "Basic Pricing Scheme is not defined correctly. Please check your input in line "
-                                             + parseBasic + " and try again.",
-                                     "Inane error", JOptionPane.ERROR_MESSAGE);
-        }
-        else if (parseNew != -1) {
-          JFrame error = new JFrame();
+          // Parse the pricing schemes for errors
+          if (basicScheme)
+            parseBasic =
+              Utils.parsePricingScheme(basicPricingSchemePane.getText());
 
-          JOptionPane.showMessageDialog(error,
-                                        "New Pricing Scheme is not defined correctly. Please check your input in line "
-                                                + parseNew + " and try again.",
-                                        "Inane error",
-                                        JOptionPane.ERROR_MESSAGE);
-        }
-        // If no errors are found make a preview chart of the two pricing
-        // schemes
-        else {
-          if (basicScheme && newScheme) {
-            ChartPanel chartPanel =
-              ChartUtils.parsePricingScheme(basicPricingSchemePane.getText(),
-                                            newPricingSchemePane.getText());
+          if (newScheme)
+            parseNew = Utils.parsePricingScheme(newPricingSchemePane.getText());
 
-            pricingPreviewPanel.add(chartPanel, BorderLayout.CENTER);
-            pricingPreviewPanel.validate();
-
-            previewResponseButton.setEnabled(true);
-
-          }
-          else {
+          // If errors are found then present the line the error may be at
+          if (parseBasic != -1) {
             JFrame error = new JFrame();
 
             JOptionPane
                     .showMessageDialog(error,
-                                       "You have not defined both pricing schemes.Please check your input and try again.",
+                                       "Basic Pricing Scheme is not defined correctly. Please check your input in line "
+                                               + parseBasic + " and try again.",
                                        "Inane error", JOptionPane.ERROR_MESSAGE);
-            previewResponseButton.setEnabled(false);
           }
+          else if (parseNew != -1) {
+            JFrame error = new JFrame();
+
+            JOptionPane.showMessageDialog(error,
+                                          "New Pricing Scheme is not defined correctly. Please check your input in line "
+                                                  + parseNew
+                                                  + " and try again.",
+                                          "Inane error",
+                                          JOptionPane.ERROR_MESSAGE);
+          }
+          // If no errors are found make a preview chart of the two pricing
+          // schemes
+          else {
+            if (basicScheme && newScheme) {
+              ChartPanel chartPanel =
+                ChartUtils.parsePricingScheme(basicPricingSchemePane.getText(),
+                                              newPricingSchemePane.getText());
+
+              pricingPreviewPanel.add(chartPanel, BorderLayout.CENTER);
+              pricingPreviewPanel.validate();
+
+              previewResponseButton.setEnabled(true);
+
+            }
+            else {
+              JFrame error = new JFrame();
+
+              JOptionPane
+                      .showMessageDialog(error,
+                                         "You have not defined both pricing schemes.Please check your input and try again.",
+                                         "Inane error",
+                                         JOptionPane.ERROR_MESSAGE);
+              previewResponseButton.setEnabled(false);
+            }
+          }
+        }
+
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
         }
       }
     });
@@ -2505,322 +2585,13 @@ public class MainGUI extends JFrame
        */
       public void actionPerformed (ActionEvent e)
       {
-        // Parsing the selected entity and find out what type of entity it is.
-        String selection = exportModelList.getSelectedValue();
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
-        Appliance appliance = installation.findAppliance(selection);
+        try {
 
-        ActivityModel activity =
-          installation.getPerson().findActivity(selection, false);
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        ResponseModel response =
-          installation.getPerson().findResponse(selection);
-
-        // If it is installation
-        if (selection.equalsIgnoreCase(installation.getName())) {
-
-          try {
-            installation.setInstallationID(APIUtilities.sendEntity(installation
-                    .toJSON(APIUtilities.getUserID()).toString(), "/inst"));
-
-          }
-          catch (IOException | AuthenticationException
-                 | NoSuchAlgorithmException e1) {
-            e1.printStackTrace();
-          }
-
-          JFrame success = new JFrame();
-
-          JOptionPane.showMessageDialog(success,
-                                        "The installation model "
-                                                + installation.getName()
-                                                + " was exported successfully",
-                                        "Installation Model Exported",
-                                        JOptionPane.INFORMATION_MESSAGE);
-
-        }
-        // If it is person
-        else if (selection.equalsIgnoreCase(installation.getPerson().getName())) {
-
-          try {
-            installation
-                    .getPerson()
-                    .setPersonID(APIUtilities.sendEntity(installation
-                                                                 .getPerson()
-                                                                 .toJSON(APIUtilities
-                                                                                 .getUserID())
-                                                                 .toString(),
-                                                         "/pers"));
-          }
-          catch (IOException | AuthenticationException
-                 | NoSuchAlgorithmException e1) {
-            e1.printStackTrace();
-          }
-
-          JFrame success = new JFrame();
-
-          JOptionPane.showMessageDialog(success,
-                                        "The person model "
-                                                + installation.getPerson()
-                                                        .getName()
-                                                + " was exported successfully",
-                                        "Person Model Exported",
-                                        JOptionPane.INFORMATION_MESSAGE);
-
-        }
-        // If it is appliance
-        else if (appliance != null) {
-
-          try {
-            appliance.setApplianceID(APIUtilities
-                    .sendEntity(appliance.toJSON(APIUtilities.getUserID())
-                            .toString(), "/app"));
-
-            APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
-                    .toString(), "/consmod");
-
-          }
-          catch (IOException | AuthenticationException
-                 | NoSuchAlgorithmException e1) {
-            e1.printStackTrace();
-          }
-
-          JFrame success = new JFrame();
-
-          JOptionPane.showMessageDialog(success,
-                                        "The appliance model "
-                                                + appliance.getName()
-                                                + " was exported successfully",
-                                        "Appliance Model Exported",
-                                        JOptionPane.INFORMATION_MESSAGE);
-
-        }
-        // If it is activity
-        else if (activity != null) {
-
-          String[] applianceTemp =
-            new String[activity.getAppliancesOf().length];
-          String activityTemp = "";
-          String durationTemp = "";
-          String dailyTemp = "";
-          String startTemp = "";
-
-          // For each appliance that participates in the activity
-          for (int i = 0; i < activity.getAppliancesOf().length; i++) {
-
-            Appliance activityAppliance =
-              installation.findAppliance(activity.getAppliancesOf()[i]);
-
-            try {
-              // In case the appliances contained in the Activity model are not
-              // in the database, we create the object there before sending the
-              // activity model
-              if (activityAppliance.getApplianceID().equalsIgnoreCase("")) {
-
-                activityAppliance.setApplianceID(APIUtilities
-                        .sendEntity(activityAppliance
-                                            .toJSON(APIUtilities.getUserID())
-                                            .toString(), "/app"));
-
-                APIUtilities.sendEntity(activityAppliance
-                        .powerConsumptionModelToJSON().toString(), "/consmod");
-              }
-              applianceTemp[i] = activityAppliance.getApplianceID();
-            }
-            catch (IOException | AuthenticationException
-                   | NoSuchAlgorithmException e1) {
-              e1.printStackTrace();
-            }
-
-          }
-
-          try {
-
-            String[] appliancesID = applianceTemp;
-
-            // Creating the JSON of the activity model
-            activity.setActivityModelID(APIUtilities.sendEntity(activity.toJSON(appliancesID,
-                                                                                APIUtilities
-                                                                                        .getUserID())
-                                                                        .toString(),
-                                                                "/actmod"));
-
-            activityTemp = activity.getActivityModelID();
-
-            // Creating the JSON of the distributions
-            activity.getDailyTimes()
-                    .setDistributionID(APIUtilities
-                                               .sendEntity(activity.getDailyTimes()
-                                                                   .toJSON(activityTemp)
-                                                                   .toString(),
-                                                           "/distr"));
-
-            activity.setDailyID(activity.getDailyTimes().getDistributionID());
-            dailyTemp = activity.getDailyID();
-
-            activity.getDuration()
-                    .setDistributionID(APIUtilities
-                                               .sendEntity(activity.getDuration()
-                                                                   .toJSON(activityTemp)
-                                                                   .toString(),
-                                                           "/distr"));
-
-            activity.setDurationID(activity.getDuration().getDistributionID());
-            durationTemp = activity.getDurationID();
-
-            activity.getStartTime()
-                    .setDistributionID(APIUtilities
-                                               .sendEntity(activity.getStartTime()
-                                                                   .toJSON(activityTemp)
-                                                                   .toString(),
-                                                           "/distr"));
-
-            activity.setStartID(activity.getStartTime().getDistributionID());
-            startTemp = activity.getStartID();
-
-            // Adding the JSON of the distributions to the activity model
-            APIUtilities.updateEntity(activity.toJSON(appliancesID,
-                                                      APIUtilities.getUserID())
-                                              .toString(), "/actmod",
-                                      activityTemp);
-
-          }
-          catch (AuthenticationException | NoSuchAlgorithmException
-                 | IOException e1) {
-
-            e1.printStackTrace();
-          }
-
-          JFrame success = new JFrame();
-
-          JOptionPane.showMessageDialog(success,
-                                        "The activity model "
-                                                + activity.getName()
-                                                + " was exported successfully",
-                                        "Activity Model Exported",
-                                        JOptionPane.INFORMATION_MESSAGE);
-
-        }
-        // If it is response
-        else if (response != null) {
-          String[] applianceTemp =
-            new String[response.getAppliancesOf().length];
-
-          String responseTemp = "";
-          String durationTemp = "";
-          String dailyTemp = "";
-          String startTemp = "";
-
-          // For each appliance that participates in the activity
-          for (int i = 0; i < response.getAppliancesOf().length; i++) {
-
-            Appliance responseAppliance =
-              installation.findAppliance(response.getAppliancesOf()[i]);
-
-            try {
-              // In case the appliances contained in the Activity model are not
-              // in the database, we create the object there before sending the
-              // activity model
-              if (responseAppliance.getApplianceID().equalsIgnoreCase("")) {
-
-                responseAppliance.setApplianceID(APIUtilities
-                        .sendEntity(responseAppliance
-                                            .toJSON(APIUtilities.getUserID())
-                                            .toString(), "/app"));
-
-                APIUtilities.sendEntity(responseAppliance
-                        .powerConsumptionModelToJSON().toString(), "/consmod");
-              }
-              applianceTemp[i] = responseAppliance.getApplianceID();
-            }
-            catch (IOException | AuthenticationException
-                   | NoSuchAlgorithmException e1) {
-              e1.printStackTrace();
-            }
-          }
-
-          try {
-
-            String[] appliancesID = applianceTemp;
-
-            // Creating the JSON of the response
-            response.setActivityModelID(APIUtilities.sendEntity(response.toJSON(appliancesID,
-                                                                                APIUtilities
-                                                                                        .getUserID())
-                                                                        .toString(),
-                                                                "/actmod"));
-
-            responseTemp = response.getActivityModelID();
-
-            // Creating the JSON of the distributions
-            response.getDailyTimes()
-                    .setDistributionID(APIUtilities
-                                               .sendEntity(response.getDailyTimes()
-                                                                   .toJSON(responseTemp)
-                                                                   .toString(),
-                                                           "/distr"));
-
-            response.setDailyID(response.getDailyTimes().getDistributionID());
-            dailyTemp = response.getDailyID();
-
-            response.getDuration()
-                    .setDistributionID(APIUtilities
-                                               .sendEntity(response.getDuration()
-                                                                   .toJSON(responseTemp)
-                                                                   .toString(),
-                                                           "/distr"));
-
-            response.setDurationID(response.getDuration().getDistributionID());
-            durationTemp = response.getDurationID();
-
-            response.getStartTime()
-                    .setDistributionID(APIUtilities
-                                               .sendEntity(response.getStartTime()
-                                                                   .toJSON(responseTemp)
-                                                                   .toString(),
-                                                           "/distr"));
-
-            response.setStartID(response.getStartTime().getDistributionID());
-            startTemp = response.getStartID();
-
-            // Adding the JSON of the distributions to the activity model
-            APIUtilities.updateEntity(response.toJSON(appliancesID,
-                                                      APIUtilities.getUserID())
-                                              .toString(), "/actmod",
-                                      responseTemp);
-
-          }
-          catch (AuthenticationException | NoSuchAlgorithmException
-                 | IOException e1) {
-
-            e1.printStackTrace();
-          }
-
-          JFrame success = new JFrame();
-
-          JOptionPane.showMessageDialog(success,
-                                        "The response model "
-                                                + response.getName()
-                                                + " was exported successfully",
-                                        "Response Model Exported",
-                                        JOptionPane.INFORMATION_MESSAGE);
-
-        }
-      }
-    });
-
-    exportAllBaseButton.addActionListener(new ActionListener() {
-      /**
-       * This function is called when the user presses the Export All Base
-       * button on the Connection Properties panel of the Export Models tab. The
-       * export procedure above is iterated through all the entities available
-       * on the list except for the response models.
-       */
-      public void actionPerformed (ActionEvent arg0)
-      {
-        for (int i = 0; i < exportModelList.getModel().getSize(); i++) {
-          exportModelList.setSelectedIndex(i);
-
+          // Parsing the selected entity and find out what type of entity it is.
           String selection = exportModelList.getSelectedValue();
 
           Appliance appliance = installation.findAppliance(selection);
@@ -2831,24 +2602,31 @@ public class MainGUI extends JFrame
           ResponseModel response =
             installation.getPerson().findResponse(selection);
 
+          // If it is installation
           if (selection.equalsIgnoreCase(installation.getName())) {
 
             try {
-              String oldName = installation.getName();
-              installation.setName(oldName + " Base");
-
               installation.setInstallationID(APIUtilities
                       .sendEntity(installation.toJSON(APIUtilities.getUserID())
                               .toString(), "/inst"));
 
-              installation.setName(oldName);
             }
             catch (IOException | AuthenticationException
                    | NoSuchAlgorithmException e1) {
               e1.printStackTrace();
             }
 
+            JFrame success = new JFrame();
+
+            JOptionPane.showMessageDialog(success,
+                                          "The installation model "
+                                                  + installation.getName()
+                                                  + " was exported successfully",
+                                          "Installation Model Exported",
+                                          JOptionPane.INFORMATION_MESSAGE);
+
           }
+          // If it is person
           else if (selection.equalsIgnoreCase(installation.getPerson()
                   .getName())) {
 
@@ -2857,8 +2635,8 @@ public class MainGUI extends JFrame
                       .getPerson()
                       .setPersonID(APIUtilities.sendEntity(installation
                                                                    .getPerson()
-                                                                   .toJSON(installation
-                                                                                   .getInstallationID())
+                                                                   .toJSON(APIUtilities
+                                                                                   .getUserID())
                                                                    .toString(),
                                                            "/pers"));
             }
@@ -2867,13 +2645,23 @@ public class MainGUI extends JFrame
               e1.printStackTrace();
             }
 
+            JFrame success = new JFrame();
+
+            JOptionPane
+                    .showMessageDialog(success, "The person model "
+                                                + installation.getPerson()
+                                                        .getName()
+                                                + " was exported successfully",
+                                       "Person Model Exported",
+                                       JOptionPane.INFORMATION_MESSAGE);
+
           }
+          // If it is appliance
           else if (appliance != null) {
 
             try {
               appliance.setApplianceID(APIUtilities.sendEntity(appliance
-                      .toJSON(installation.getInstallationID().toString())
-                      .toString(), "/app"));
+                      .toJSON(APIUtilities.getUserID()).toString(), "/app"));
 
               APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
                       .toString(), "/consmod");
@@ -2884,45 +2672,79 @@ public class MainGUI extends JFrame
               e1.printStackTrace();
             }
 
+            JFrame success = new JFrame();
+
+            JOptionPane.showMessageDialog(success,
+                                          "The appliance model "
+                                                  + appliance.getName()
+                                                  + " was exported successfully",
+                                          "Appliance Model Exported",
+                                          JOptionPane.INFORMATION_MESSAGE);
+
           }
+          // If it is activity
           else if (activity != null) {
 
             String[] applianceTemp =
               new String[activity.getAppliancesOf().length];
-
-            String personTemp = "";
             String activityTemp = "";
             String durationTemp = "";
             String dailyTemp = "";
             String startTemp = "";
 
             // For each appliance that participates in the activity
-            for (int j = 0; j < activity.getAppliancesOf().length; j++) {
+            for (int i = 0; i < activity.getAppliancesOf().length; i++) {
 
               Appliance activityAppliance =
-                installation.findAppliance(activity.getAppliancesOf()[j]);
-              applianceTemp[j] = activityAppliance.getApplianceID();
-            }
+                installation.findAppliance(activity.getAppliancesOf()[i]);
 
-            personTemp = installation.getPerson().getPersonID();
+              try {
+                // In case the appliances contained in the Activity model are
+                // not
+                // in the database, we create the object there before sending
+                // the
+                // activity model
+                if (activityAppliance.getApplianceID().equalsIgnoreCase("")) {
+
+                  activityAppliance.setApplianceID(APIUtilities
+                          .sendEntity(activityAppliance
+                                              .toJSON(APIUtilities.getUserID())
+                                              .toString(), "/app"));
+
+                  APIUtilities
+                          .sendEntity(activityAppliance
+                                              .powerConsumptionModelToJSON()
+                                              .toString(),
+                                      "/consmod");
+                }
+                applianceTemp[i] = activityAppliance.getApplianceID();
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
+
+            }
 
             try {
 
-              activity.setActivityID(APIUtilities.sendEntity(activity
-                      .activityToJSON(personTemp).toString(), "/act"));
-
               String[] appliancesID = applianceTemp;
 
+              // Creating the JSON of the activity model
               activity.setActivityModelID(APIUtilities.sendEntity(activity
-                      .toJSON(appliancesID).toString(), "/actmod"));
+                      .toJSON(appliancesID, APIUtilities.getUserID())
+                      .toString(), "/actmod"));
+
               activityTemp = activity.getActivityModelID();
 
+              // Creating the JSON of the distributions
               activity.getDailyTimes()
                       .setDistributionID(APIUtilities
                                                  .sendEntity(activity
                                                          .getDailyTimes()
                                                          .toJSON(activityTemp)
                                                          .toString(), "/distr"));
+
               activity.setDailyID(activity.getDailyTimes().getDistributionID());
               dailyTemp = activity.getDailyID();
 
@@ -2946,149 +2768,92 @@ public class MainGUI extends JFrame
               activity.setStartID(activity.getStartTime().getDistributionID());
               startTemp = activity.getStartID();
 
-              APIUtilities.updateEntity(activity.toJSON(appliancesID)
-                      .toString(), "/actmod", activityTemp);
+              // Adding the JSON of the distributions to the activity model
+              APIUtilities.updateEntity(activity.toJSON(appliancesID,
+                                                        APIUtilities
+                                                                .getUserID())
+                                                .toString(), "/actmod",
+                                        activityTemp);
 
             }
-            catch (IOException | AuthenticationException
-                   | NoSuchAlgorithmException e1) {
+            catch (AuthenticationException | NoSuchAlgorithmException
+                   | IOException e1) {
+
               e1.printStackTrace();
             }
 
-          }
-          else if (response != null) {
+            JFrame success = new JFrame();
+
+            JOptionPane.showMessageDialog(success,
+                                          "The activity model "
+                                                  + activity.getName()
+                                                  + " was exported successfully",
+                                          "Activity Model Exported",
+                                          JOptionPane.INFORMATION_MESSAGE);
 
           }
-        }
-
-        JFrame success = new JFrame();
-
-        JOptionPane.showMessageDialog(success,
-                                      "The installation model "
-                                              + installation.getName()
-                                              + " for the base pricing scheme and all the entities contained within were exported successfully",
-                                      "Installation Model Exported",
-                                      JOptionPane.INFORMATION_MESSAGE);
-      }
-    });
-
-    exportAllResponseButton.addActionListener(new ActionListener() {
-      /**
-       * This function is called when the user presses the Export All Base
-       * button on the Connection Properties panel of the Export Models tab. The
-       * export procedure above is iterated through all the entities available
-       * on the list except for the activity models.
-       */
-      public void actionPerformed (ActionEvent e)
-      {
-        for (int i = 0; i < exportModelList.getModel().getSize(); i++) {
-          exportModelList.setSelectedIndex(i);
-
-          String selection = exportModelList.getSelectedValue();
-
-          Appliance appliance = installation.findAppliance(selection);
-
-          ActivityModel activity =
-            installation.getPerson().findActivity(selection, false);
-
-          ResponseModel response =
-            installation.getPerson().findResponse(selection);
-
-          if (selection.equalsIgnoreCase(installation.getName())) {
-
-            try {
-              String oldName = installation.getName();
-              installation.setName(oldName + " Response");
-
-              installation.setInstallationID(APIUtilities
-                      .sendEntity(installation.toJSON(APIUtilities.getUserID())
-                              .toString(), "/inst"));
-
-              installation.setName(oldName);
-
-            }
-            catch (IOException | AuthenticationException
-                   | NoSuchAlgorithmException e1) {
-              e1.printStackTrace();
-            }
-
-          }
-          else if (selection.equalsIgnoreCase(installation.getPerson()
-                  .getName())) {
-
-            try {
-              installation
-                      .getPerson()
-                      .setPersonID(APIUtilities.sendEntity(installation
-                                                                   .getPerson()
-                                                                   .toJSON(installation
-                                                                                   .getInstallationID())
-                                                                   .toString(),
-                                                           "/pers"));
-            }
-            catch (IOException | AuthenticationException
-                   | NoSuchAlgorithmException e1) {
-              e1.printStackTrace();
-            }
-
-          }
-          else if (appliance != null) {
-
-            try {
-              appliance.setApplianceID(APIUtilities.sendEntity(appliance
-                      .toJSON(installation.getInstallationID().toString())
-                      .toString(), "/app"));
-
-              APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
-                      .toString(), "/consmod");
-
-            }
-            catch (IOException | AuthenticationException
-                   | NoSuchAlgorithmException e1) {
-              e1.printStackTrace();
-            }
-
-          }
-          else if (activity != null) {
-
-          }
+          // If it is response
           else if (response != null) {
             String[] applianceTemp =
               new String[response.getAppliancesOf().length];
 
-            String personTemp = "";
             String responseTemp = "";
             String durationTemp = "";
             String dailyTemp = "";
             String startTemp = "";
 
             // For each appliance that participates in the activity
-            for (int j = 0; j < response.getAppliancesOf().length; j++) {
+            for (int i = 0; i < response.getAppliancesOf().length; i++) {
 
               Appliance responseAppliance =
-                installation.findAppliance(response.getAppliancesOf()[j]);
+                installation.findAppliance(response.getAppliancesOf()[i]);
 
-              applianceTemp[j] = responseAppliance.getApplianceID();
+              try {
+                // In case the appliances contained in the Activity model are
+                // not
+                // in the database, we create the object there before sending
+                // the
+                // activity model
+                if (responseAppliance.getApplianceID().equalsIgnoreCase("")) {
+
+                  responseAppliance.setApplianceID(APIUtilities
+                          .sendEntity(responseAppliance
+                                              .toJSON(APIUtilities.getUserID())
+                                              .toString(), "/app"));
+
+                  APIUtilities
+                          .sendEntity(responseAppliance
+                                              .powerConsumptionModelToJSON()
+                                              .toString(),
+                                      "/consmod");
+                }
+                applianceTemp[i] = responseAppliance.getApplianceID();
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
             }
-            personTemp = installation.getPerson().getPersonID();
 
             try {
 
-              response.setActivityID(APIUtilities.sendEntity(response
-                      .activityToJSON(personTemp).toString(), "/act"));
-
               String[] appliancesID = applianceTemp;
 
+              // Creating the JSON of the response
               response.setActivityModelID(APIUtilities.sendEntity(response
-                      .toJSON(appliancesID).toString(), "/actmod"));
+                      .toJSON(appliancesID, APIUtilities.getUserID())
+                      .toString(), "/actmod"));
+
               responseTemp = response.getActivityModelID();
 
+              // Creating the JSON of the distributions
               response.getDailyTimes()
                       .setDistributionID(APIUtilities
                                                  .sendEntity(response
                                                          .getDailyTimes()
                                                          .toJSON(responseTemp)
                                                          .toString(), "/distr"));
+
               response.setDailyID(response.getDailyTimes().getDistributionID());
               dailyTemp = response.getDailyID();
 
@@ -3112,15 +2877,380 @@ public class MainGUI extends JFrame
               response.setStartID(response.getStartTime().getDistributionID());
               startTemp = response.getStartID();
 
-              APIUtilities.updateEntity(response.toJSON(appliancesID)
-                      .toString(), "/actmod", responseTemp);
+              // Adding the JSON of the distributions to the activity model
+              APIUtilities.updateEntity(response.toJSON(appliancesID,
+                                                        APIUtilities
+                                                                .getUserID())
+                                                .toString(), "/actmod",
+                                        responseTemp);
 
             }
-            catch (IOException | AuthenticationException
-                   | NoSuchAlgorithmException e1) {
+            catch (AuthenticationException | NoSuchAlgorithmException
+                   | IOException e1) {
+
               e1.printStackTrace();
             }
+
+            JFrame success = new JFrame();
+
+            JOptionPane.showMessageDialog(success,
+                                          "The response model "
+                                                  + response.getName()
+                                                  + " was exported successfully",
+                                          "Response Model Exported",
+                                          JOptionPane.INFORMATION_MESSAGE);
+
           }
+        }
+
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
+        }
+      }
+    });
+
+    exportAllBaseButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Export All Base
+       * button on the Connection Properties panel of the Export Models tab. The
+       * export procedure above is iterated through all the entities available
+       * on the list except for the response models.
+       */
+      public void actionPerformed (ActionEvent e)
+      {
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
+
+        try {
+
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+          for (int i = 0; i < exportModelList.getModel().getSize(); i++) {
+            exportModelList.setSelectedIndex(i);
+
+            String selection = exportModelList.getSelectedValue();
+
+            Appliance appliance = installation.findAppliance(selection);
+
+            ActivityModel activity =
+              installation.getPerson().findActivity(selection, false);
+
+            ResponseModel response =
+              installation.getPerson().findResponse(selection);
+
+            if (selection.equalsIgnoreCase(installation.getName())) {
+
+              try {
+                String oldName = installation.getName();
+                installation.setName(oldName + " Base");
+
+                installation.setInstallationID(APIUtilities
+                        .sendEntity(installation.toJSON(APIUtilities
+                                                                .getUserID())
+                                            .toString(), "/inst"));
+
+                installation.setName(oldName);
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
+
+            }
+            else if (selection.equalsIgnoreCase(installation.getPerson()
+                    .getName())) {
+
+              try {
+                installation
+                        .getPerson()
+                        .setPersonID(APIUtilities.sendEntity(installation
+                                                                     .getPerson()
+                                                                     .toJSON(installation
+                                                                                     .getInstallationID())
+                                                                     .toString(),
+                                                             "/pers"));
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
+
+            }
+            else if (appliance != null) {
+
+              try {
+                appliance.setApplianceID(APIUtilities.sendEntity(appliance
+                        .toJSON(installation.getInstallationID().toString())
+                        .toString(), "/app"));
+
+                APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
+                        .toString(), "/consmod");
+
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
+
+            }
+            else if (activity != null) {
+
+              String[] applianceTemp =
+                new String[activity.getAppliancesOf().length];
+
+              String personTemp = "";
+              String activityTemp = "";
+              String durationTemp = "";
+              String dailyTemp = "";
+              String startTemp = "";
+
+              // For each appliance that participates in the activity
+              for (int j = 0; j < activity.getAppliancesOf().length; j++) {
+
+                Appliance activityAppliance =
+                  installation.findAppliance(activity.getAppliancesOf()[j]);
+                applianceTemp[j] = activityAppliance.getApplianceID();
+              }
+
+              personTemp = installation.getPerson().getPersonID();
+
+              try {
+
+                activity.setActivityID(APIUtilities.sendEntity(activity
+                        .activityToJSON(personTemp).toString(), "/act"));
+
+                String[] appliancesID = applianceTemp;
+
+                activity.setActivityModelID(APIUtilities.sendEntity(activity
+                        .toJSON(appliancesID).toString(), "/actmod"));
+                activityTemp = activity.getActivityModelID();
+
+                activity.getDailyTimes()
+                        .setDistributionID(APIUtilities
+                                                   .sendEntity(activity.getDailyTimes()
+                                                                       .toJSON(activityTemp)
+                                                                       .toString(),
+                                                               "/distr"));
+                activity.setDailyID(activity.getDailyTimes()
+                        .getDistributionID());
+                dailyTemp = activity.getDailyID();
+
+                activity.getDuration()
+                        .setDistributionID(APIUtilities
+                                                   .sendEntity(activity.getDuration()
+                                                                       .toJSON(activityTemp)
+                                                                       .toString(),
+                                                               "/distr"));
+
+                activity.setDurationID(activity.getDuration()
+                        .getDistributionID());
+                durationTemp = activity.getDurationID();
+
+                activity.getStartTime()
+                        .setDistributionID(APIUtilities
+                                                   .sendEntity(activity.getStartTime()
+                                                                       .toJSON(activityTemp)
+                                                                       .toString(),
+                                                               "/distr"));
+
+                activity.setStartID(activity.getStartTime().getDistributionID());
+                startTemp = activity.getStartID();
+
+                APIUtilities.updateEntity(activity.toJSON(appliancesID)
+                        .toString(), "/actmod", activityTemp);
+
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
+
+            }
+            else if (response != null) {
+
+            }
+          }
+
+        }
+
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
+        }
+
+        JFrame success = new JFrame();
+
+        JOptionPane.showMessageDialog(success,
+                                      "The installation model "
+                                              + installation.getName()
+                                              + " for the base pricing scheme and all the entities contained within were exported successfully",
+                                      "Installation Model Exported",
+                                      JOptionPane.INFORMATION_MESSAGE);
+
+      }
+    });
+
+    exportAllResponseButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the Export All Base
+       * button on the Connection Properties panel of the Export Models tab. The
+       * export procedure above is iterated through all the entities available
+       * on the list except for the activity models.
+       */
+      public void actionPerformed (ActionEvent e)
+      {
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
+
+        try {
+
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+          for (int i = 0; i < exportModelList.getModel().getSize(); i++) {
+            exportModelList.setSelectedIndex(i);
+
+            String selection = exportModelList.getSelectedValue();
+
+            Appliance appliance = installation.findAppliance(selection);
+
+            ActivityModel activity =
+              installation.getPerson().findActivity(selection, false);
+
+            ResponseModel response =
+              installation.getPerson().findResponse(selection);
+
+            if (selection.equalsIgnoreCase(installation.getName())) {
+
+              try {
+                String oldName = installation.getName();
+                installation.setName(oldName + " Response");
+
+                installation.setInstallationID(APIUtilities
+                        .sendEntity(installation.toJSON(APIUtilities
+                                                                .getUserID())
+                                            .toString(), "/inst"));
+
+                installation.setName(oldName);
+
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
+
+            }
+            else if (selection.equalsIgnoreCase(installation.getPerson()
+                    .getName())) {
+
+              try {
+                installation
+                        .getPerson()
+                        .setPersonID(APIUtilities.sendEntity(installation
+                                                                     .getPerson()
+                                                                     .toJSON(installation
+                                                                                     .getInstallationID())
+                                                                     .toString(),
+                                                             "/pers"));
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
+
+            }
+            else if (appliance != null) {
+
+              try {
+                appliance.setApplianceID(APIUtilities.sendEntity(appliance
+                        .toJSON(installation.getInstallationID().toString())
+                        .toString(), "/app"));
+
+                APIUtilities.sendEntity(appliance.powerConsumptionModelToJSON()
+                        .toString(), "/consmod");
+
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
+
+            }
+            else if (activity != null) {
+
+            }
+            else if (response != null) {
+              String[] applianceTemp =
+                new String[response.getAppliancesOf().length];
+
+              String personTemp = "";
+              String responseTemp = "";
+              String durationTemp = "";
+              String dailyTemp = "";
+              String startTemp = "";
+
+              // For each appliance that participates in the activity
+              for (int j = 0; j < response.getAppliancesOf().length; j++) {
+
+                Appliance responseAppliance =
+                  installation.findAppliance(response.getAppliancesOf()[j]);
+
+                applianceTemp[j] = responseAppliance.getApplianceID();
+              }
+              personTemp = installation.getPerson().getPersonID();
+
+              try {
+
+                response.setActivityID(APIUtilities.sendEntity(response
+                        .activityToJSON(personTemp).toString(), "/act"));
+
+                String[] appliancesID = applianceTemp;
+
+                response.setActivityModelID(APIUtilities.sendEntity(response
+                        .toJSON(appliancesID).toString(), "/actmod"));
+                responseTemp = response.getActivityModelID();
+
+                response.getDailyTimes()
+                        .setDistributionID(APIUtilities
+                                                   .sendEntity(response.getDailyTimes()
+                                                                       .toJSON(responseTemp)
+                                                                       .toString(),
+                                                               "/distr"));
+                response.setDailyID(response.getDailyTimes()
+                        .getDistributionID());
+                dailyTemp = response.getDailyID();
+
+                response.getDuration()
+                        .setDistributionID(APIUtilities
+                                                   .sendEntity(response.getDuration()
+                                                                       .toJSON(responseTemp)
+                                                                       .toString(),
+                                                               "/distr"));
+
+                response.setDurationID(response.getDuration()
+                        .getDistributionID());
+                durationTemp = response.getDurationID();
+
+                response.getStartTime()
+                        .setDistributionID(APIUtilities
+                                                   .sendEntity(response.getStartTime()
+                                                                       .toJSON(responseTemp)
+                                                                       .toString(),
+                                                               "/distr"));
+
+                response.setStartID(response.getStartTime().getDistributionID());
+                startTemp = response.getStartID();
+
+                APIUtilities.updateEntity(response.toJSON(appliancesID)
+                        .toString(), "/actmod", responseTemp);
+
+              }
+              catch (IOException | AuthenticationException
+                     | NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+              }
+            }
+          }
+        }
+
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
         }
 
         JFrame success = new JFrame();
@@ -3133,37 +3263,6 @@ public class MainGUI extends JFrame
                                       JOptionPane.INFORMATION_MESSAGE);
       }
     });
-  }
-
-  /**
-   * This function is called when the temporary files must be removed from the
-   * temporary folder used to store the csv and xls used to create the entity
-   * models during the procedure of training and disaggregation. It is done when
-   * the program starts, when the program ends and when the reset button is
-   * pressed by the user.
-   */
-  private void cleanFiles ()
-  {
-    File directory = new File("Files");
-    File files[] = directory.listFiles();
-    String extension = "";
-    for (int index = 0; index < files.length; index++) {
-      {
-        extension =
-          files[index].getAbsolutePath().substring(files[index]
-                                                           .getAbsolutePath()
-                                                           .length() - 3,
-                                                   files[index]
-                                                           .getAbsolutePath()
-                                                           .length());
-        if (extension.equalsIgnoreCase("csv")) {
-          boolean wasDeleted = files[index].delete();
-          if (!wasDeleted) {
-            System.out.println("Not Deleted File " + files[index].toString());
-          }
-        }
-      }
-    }
   }
 
   /**
