@@ -3135,7 +3135,8 @@ public class MainGUI extends JFrame
 
               try {
 
-                installation.setName(householdNameTextField.getText() + " Base");
+                installation.setName(householdNameTextField.getText()
+                                     + " Response");
 
                 installation.setInstallationID(APIUtilities
                         .sendEntity(installation.toJSON(APIUtilities
