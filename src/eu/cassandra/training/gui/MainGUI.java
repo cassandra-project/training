@@ -504,7 +504,7 @@ public class MainGUI extends JFrame
                     .getBorder("TitledBorder.border"), "Export Model Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    exportPreviewPanel.setBounds(10, 285, 1177, 395);
+    exportPreviewPanel.setBounds(20, 283, 1177, 395);
     exportTab.add(exportPreviewPanel);
     exportPreviewPanel.setLayout(new BorderLayout(0, 0));
 
@@ -902,11 +902,6 @@ public class MainGUI extends JFrame
     exportButtonsPanel.add(exportDurationButton);
 
     final JButton exportStartButton = new JButton("Start Time");
-    exportStartButton.addActionListener(new ActionListener() {
-      public void actionPerformed (ActionEvent arg0)
-      {
-      }
-    });
     exportStartButton.setEnabled(false);
     exportButtonsPanel.add(exportStartButton);
 
@@ -925,46 +920,56 @@ public class MainGUI extends JFrame
     usernameTextField.setBounds(122, 21, 405, 28);
     connectionPanel.add(usernameTextField);
 
-    final JButton exportButton = new JButton("Export");
+    final JButton exportButton = new JButton("Export Entity");
     exportButton.setEnabled(false);
-    exportButton.setBounds(201, 217, 147, 28);
+    exportButton.setBounds(46, 178, 147, 28);
     connectionPanel.add(exportButton);
 
     final JButton exportAllBaseButton = new JButton("Export All Base");
     exportAllBaseButton.setEnabled(false);
-    exportAllBaseButton.setBounds(390, 186, 181, 28);
+    exportAllBaseButton.setBounds(203, 178, 177, 28);
     connectionPanel.add(exportAllBaseButton);
 
     final JButton exportAllResponseButton = new JButton("Export All Response");
     exportAllResponseButton.setEnabled(false);
-    exportAllResponseButton.setBounds(390, 217, 181, 28);
+    exportAllResponseButton.setBounds(390, 178, 181, 28);
     connectionPanel.add(exportAllResponseButton);
 
     JLabel passwordLabel = new JLabel("Password:");
-    passwordLabel.setBounds(46, 89, 71, 16);
+    passwordLabel.setBounds(46, 62, 71, 16);
     connectionPanel.add(passwordLabel);
 
     JLabel UrlLabel = new JLabel("URL:");
-    UrlLabel.setBounds(46, 153, 71, 16);
+    UrlLabel.setBounds(46, 105, 71, 16);
     connectionPanel.add(UrlLabel);
 
     final JTextField urlTextField;
     urlTextField = new JTextField();
     urlTextField.setText("https://160.40.50.233:8443/cassandra/api");
     urlTextField.setColumns(10);
-    urlTextField.setBounds(122, 147, 405, 28);
+    urlTextField.setBounds(122, 99, 405, 28);
     connectionPanel.add(urlTextField);
 
     final JButton connectButton = new JButton("Connect");
     connectButton.setEnabled(false);
-    connectButton.setBounds(30, 217, 147, 28);
+    connectButton.setBounds(217, 138, 147, 28);
     connectionPanel.add(connectButton);
 
     final JPasswordField passwordField;
     passwordField = new JPasswordField();
-
-    passwordField.setBounds(122, 87, 405, 28);
+    passwordField.setBounds(122, 60, 405, 28);
     connectionPanel.add(passwordField);
+
+    final JTextField householdNameTextField;
+    householdNameTextField = new JTextField();
+    householdNameTextField.setEnabled(false);
+    householdNameTextField.setBounds(166, 225, 405, 31);
+    connectionPanel.add(householdNameTextField);
+    householdNameTextField.setColumns(10);
+
+    final JLabel householdNameLabel = new JLabel("Export Household Name:");
+    householdNameLabel.setBounds(24, 233, 147, 14);
+    connectionPanel.add(householdNameLabel);
 
     // //////////////////
     // ACTIONS ///////
@@ -1118,6 +1123,7 @@ public class MainGUI extends JFrame
         exportButton.setEnabled(false);
         exportAllBaseButton.setEnabled(false);
         exportAllResponseButton.setEnabled(false);
+        householdNameTextField.setEnabled(false);
 
         // Disabling the necessary tabs
         tabbedPane.setEnabledAt(1, false);
@@ -1231,6 +1237,7 @@ public class MainGUI extends JFrame
             // Add installation to the export models list
             exportModels.addElement(installation.toString());
             exportModels.addElement(installation.getPerson().getName());
+            householdNameTextField.setText(installation.getName());
 
             // Enable Export Models tab
             exportModelList.setEnabled(true);
@@ -2544,10 +2551,10 @@ public class MainGUI extends JFrame
 
         // If the use credentials are correct
         if (result) {
-
           exportButton.setEnabled(true);
           exportAllBaseButton.setEnabled(true);
           exportAllResponseButton.setEnabled(true);
+          householdNameTextField.setEnabled(true);
         }
         // Else a error message appears.
         else {
@@ -2604,6 +2611,8 @@ public class MainGUI extends JFrame
 
           // If it is installation
           if (selection.equalsIgnoreCase(installation.getName())) {
+            String oldName = installation.getName();
+            installation.setName(householdNameTextField.getText());
 
             try {
               installation.setInstallationID(APIUtilities
@@ -2615,6 +2624,8 @@ public class MainGUI extends JFrame
                    | NoSuchAlgorithmException e1) {
               e1.printStackTrace();
             }
+
+            installation.setName(oldName);
 
             JFrame success = new JFrame();
 
@@ -2939,9 +2950,11 @@ public class MainGUI extends JFrame
 
             if (selection.equalsIgnoreCase(installation.getName())) {
 
+              String oldName = installation.getName();
+
               try {
-                String oldName = installation.getName();
-                installation.setName(oldName + " Base");
+
+                installation.setName(householdNameTextField.getText() + " Base");
 
                 installation.setInstallationID(APIUtilities
                         .sendEntity(installation.toJSON(APIUtilities
@@ -3118,9 +3131,11 @@ public class MainGUI extends JFrame
 
             if (selection.equalsIgnoreCase(installation.getName())) {
 
+              String oldName = installation.getName();
+
               try {
-                String oldName = installation.getName();
-                installation.setName(oldName + " Response");
+
+                installation.setName(householdNameTextField.getText() + " Base");
 
                 installation.setInstallationID(APIUtilities
                         .sendEntity(installation.toJSON(APIUtilities
