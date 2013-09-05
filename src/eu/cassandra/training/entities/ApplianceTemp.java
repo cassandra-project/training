@@ -53,13 +53,15 @@ public class ApplianceTemp
   private String activity;
 
   /**
-   * This variable contains the value of the active activeOnly consumption of the
+   * This variable contains the value of the active activeOnly consumption of
+   * the
    * temporary appliance model.
    */
   private double p;
 
   /**
-   * This variable contains the value of the reactive activeOnly consumption of the
+   * This variable contains the value of the reactive activeOnly consumption of
+   * the
    * temporary appliance model.
    */
   private double q;
@@ -123,8 +125,13 @@ public class ApplianceTemp
       "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" :" + q
               + ", \"d\" : 10, \"s\": 0.0}]}]}";
 
+    boolean base = false;
+
+    if (activity.equalsIgnoreCase("Refrigeration"))
+      base = true;
+
     Appliance appliance =
-      new Appliance(name, installation, powerModel, reactiveModel, "");
+      new Appliance(name, installation, powerModel, reactiveModel, "", base);
 
     appliance.setType(type);
     appliance.setActivity(activity);

@@ -147,8 +147,9 @@ public class Appliance
    *          The event file of the Appliance Model
    */
   public Appliance (String name, String installation, String powerModel,
-                    String reactiveModel, String eventFile)
+                    String reactiveModel, String eventFile, Boolean... base)
   {
+
     this.name = name;
     this.installation = installation;
     this.eventsFile = eventFile;
@@ -158,20 +159,23 @@ public class Appliance
     powerConsumptionModel.init(dbo);
     dbo = (DBObject) JSON.parse(reactiveConsumptionModelString);
     reactiveConsumptionModel.init(dbo);
+    if (base.length == 1)
+      this.base = base[0];
 
   }
 
   // TODO Remove after disaggregation encapsulation
   public Appliance (String name, String powerModelFile,
                     String reactiveModelFile, String eventFile,
-                    Installation installation, boolean power)
+                    Installation installation, boolean power, Boolean... base)
     throws IOException
   {
     this.name = name;
     this.installation = installation.getName();
     parseConsumptionModel(powerModelFile);
     this.eventsFile = eventFile;
-
+    if (base.length == 1)
+      this.base = base[0];
   }
 
   /**
