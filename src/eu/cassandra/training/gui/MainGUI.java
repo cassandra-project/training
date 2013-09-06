@@ -225,6 +225,7 @@ public class MainGUI extends JFrame
    */
   private DefaultListModel<String> exportModels =
     new DefaultListModel<String>();
+  private JLabel installationNameLabel;
 
   /**
    * This is the main function that launches the application. No arguments are
@@ -960,16 +961,16 @@ public class MainGUI extends JFrame
     passwordField.setBounds(122, 60, 405, 28);
     connectionPanel.add(passwordField);
 
-    final JTextField householdNameTextField;
-    householdNameTextField = new JTextField();
-    householdNameTextField.setEnabled(false);
-    householdNameTextField.setBounds(166, 225, 405, 31);
-    connectionPanel.add(householdNameTextField);
-    householdNameTextField.setColumns(10);
+    final JTextField installationNameTextField;
+    installationNameTextField = new JTextField();
+    installationNameTextField.setEnabled(false);
+    installationNameTextField.setBounds(166, 225, 405, 31);
+    connectionPanel.add(installationNameTextField);
+    installationNameTextField.setColumns(10);
 
-    final JLabel householdNameLabel = new JLabel("Export Household Name:");
-    householdNameLabel.setBounds(24, 233, 147, 14);
-    connectionPanel.add(householdNameLabel);
+    installationNameLabel = new JLabel("Export Installation Name:");
+    installationNameLabel.setBounds(24, 233, 147, 14);
+    connectionPanel.add(installationNameLabel);
 
     // //////////////////
     // ACTIONS ///////
@@ -1123,7 +1124,7 @@ public class MainGUI extends JFrame
         exportButton.setEnabled(false);
         exportAllBaseButton.setEnabled(false);
         exportAllResponseButton.setEnabled(false);
-        householdNameTextField.setEnabled(false);
+        installationNameTextField.setEnabled(false);
 
         // Disabling the necessary tabs
         tabbedPane.setEnabledAt(1, false);
@@ -1237,7 +1238,7 @@ public class MainGUI extends JFrame
             // Add installation to the export models list
             exportModels.addElement(installation.toString());
             exportModels.addElement(installation.getPerson().getName());
-            householdNameTextField.setText(installation.getName());
+            installationNameTextField.setText(installation.getName());
 
             // Enable Export Models tab
             exportModelList.setEnabled(true);
@@ -2554,7 +2555,7 @@ public class MainGUI extends JFrame
           exportButton.setEnabled(true);
           exportAllBaseButton.setEnabled(true);
           exportAllResponseButton.setEnabled(true);
-          householdNameTextField.setEnabled(true);
+          installationNameTextField.setEnabled(true);
         }
         // Else a error message appears.
         else {
@@ -2612,7 +2613,7 @@ public class MainGUI extends JFrame
           // If it is installation
           if (selection.equalsIgnoreCase(installation.getName())) {
             String oldName = installation.getName();
-            installation.setName(householdNameTextField.getText());
+            installation.setName(installationNameTextField.getText());
 
             try {
               installation.setInstallationID(APIUtilities
@@ -2631,7 +2632,8 @@ public class MainGUI extends JFrame
 
             JOptionPane.showMessageDialog(success,
                                           "The installation model "
-                                                  + installation.getName()
+                                                  + installationNameTextField
+                                                          .getText()
                                                   + " was exported successfully",
                                           "Installation Model Exported",
                                           JOptionPane.INFORMATION_MESSAGE);
@@ -2954,7 +2956,8 @@ public class MainGUI extends JFrame
 
               try {
 
-                installation.setName(householdNameTextField.getText() + " Base");
+                installation.setName(installationNameTextField.getText()
+                                     + " Base");
 
                 installation.setInstallationID(APIUtilities
                         .sendEntity(installation.toJSON(APIUtilities
@@ -3093,7 +3096,8 @@ public class MainGUI extends JFrame
 
         JOptionPane.showMessageDialog(success,
                                       "The installation model "
-                                              + installation.getName()
+                                              + installationNameTextField
+                                                      .getText()
                                               + " for the base pricing scheme and all the entities contained within were exported successfully",
                                       "Installation Model Exported",
                                       JOptionPane.INFORMATION_MESSAGE);
@@ -3135,7 +3139,7 @@ public class MainGUI extends JFrame
 
               try {
 
-                installation.setName(householdNameTextField.getText()
+                installation.setName(installationNameTextField.getText()
                                      + " Response");
 
                 installation.setInstallationID(APIUtilities
@@ -3273,7 +3277,8 @@ public class MainGUI extends JFrame
 
         JOptionPane.showMessageDialog(success,
                                       "The installation model "
-                                              + installation.getName()
+                                              + installationNameTextField
+                                                      .getText()
                                               + " for the new pricing scheme and all the entities contained within were exported successfully",
                                       "Installation Model Exported",
                                       JOptionPane.INFORMATION_MESSAGE);
