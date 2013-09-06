@@ -225,7 +225,6 @@ public class MainGUI extends JFrame
    */
   private DefaultListModel<String> exportModels =
     new DefaultListModel<String>();
-  private JLabel installationNameLabel;
 
   /**
    * This is the main function that launches the application. No arguments are
@@ -284,7 +283,7 @@ public class MainGUI extends JFrame
     // Setting the basic attributes of the Training Module GUI
     setTitle("Training Module (BETA)");
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setBounds(100, 100, 1228, 852);
+    setBounds(100, 100, 1228, 799);
 
     // Creating the menu bar and adding the menu items
     JMenuBar menuBar = new JMenuBar();
@@ -324,8 +323,12 @@ public class MainGUI extends JFrame
                           GroupLayout.DEFAULT_SIZE, 1202, Short.MAX_VALUE));
     gl_contentPane.setVerticalGroup(gl_contentPane
             .createParallelGroup(Alignment.LEADING)
-            .addComponent(tabbedPane, GroupLayout.DEFAULT_SIZE, 719,
-                          Short.MAX_VALUE));
+            .addGroup(gl_contentPane
+                              .createSequentialGroup()
+                              .addComponent(tabbedPane,
+                                            GroupLayout.PREFERRED_SIZE, 736,
+                                            GroupLayout.PREFERRED_SIZE)
+                              .addContainerGap(47, Short.MAX_VALUE)));
 
     // TABS //
 
@@ -377,12 +380,12 @@ public class MainGUI extends JFrame
     dataReviewPanel.setBorder(new TitledBorder(null, "Data Preview",
                                                TitledBorder.LEADING,
                                                TitledBorder.TOP, null, null));
-    dataReviewPanel.setBounds(6, 293, 622, 451);
+    dataReviewPanel.setBounds(6, 293, 622, 407);
     importTab.add(dataReviewPanel);
     dataReviewPanel.setLayout(new BorderLayout(0, 0));
 
     final JPanel consumptionModelPanel = new JPanel();
-    consumptionModelPanel.setBounds(629, 293, 567, 451);
+    consumptionModelPanel.setBounds(629, 293, 567, 407);
     importTab.add(consumptionModelPanel);
     consumptionModelPanel.setBorder(new TitledBorder(null, "Consumption Model",
                                                      TitledBorder.LEADING,
@@ -412,16 +415,6 @@ public class MainGUI extends JFrame
     applianceSelectionPanel.setBounds(630, 6, 557, 256);
     trainingTab.add(applianceSelectionPanel);
 
-    final JPanel distributionPreviewPanel = new JPanel();
-    distributionPreviewPanel.setBorder(new TitledBorder(UIManager
-            .getBorder("TitledBorder.border"), "Distribution Preview",
-                                                        TitledBorder.LEADING,
-                                                        TitledBorder.TOP, null,
-                                                        null));
-    distributionPreviewPanel.setBounds(6, 261, 621, 449);
-    trainingTab.add(distributionPreviewPanel);
-    distributionPreviewPanel.setLayout(new BorderLayout(0, 0));
-
     final JPanel consumptionPreviewPanel = new JPanel();
     consumptionPreviewPanel
             .setBorder(new TitledBorder(UIManager
@@ -429,7 +422,7 @@ public class MainGUI extends JFrame
                                         "Example Consumption Model Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    consumptionPreviewPanel.setBounds(630, 261, 557, 483);
+    consumptionPreviewPanel.setBounds(630, 261, 557, 447);
     trainingTab.add(consumptionPreviewPanel);
     consumptionPreviewPanel.setLayout(new BorderLayout(0, 0));
 
@@ -453,7 +446,7 @@ public class MainGUI extends JFrame
                                         "Activity Model Selection",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    activityModelSelectionPanel.setBounds(6, 276, 391, 226);
+    activityModelSelectionPanel.setBounds(6, 516, 391, 228);
     createResponseTab.add(activityModelSelectionPanel);
 
     final JPanel responsePanel = new JPanel();
@@ -461,7 +454,7 @@ public class MainGUI extends JFrame
             .getBorder("TitledBorder.border"), "Activity Model Change Preview",
                                              TitledBorder.LEADING,
                                              TitledBorder.TOP, null, null));
-    responsePanel.setBounds(401, 6, 786, 438);
+    responsePanel.setBounds(401, 6, 786, 385);
     createResponseTab.add(responsePanel);
     responsePanel.setLayout(new BorderLayout(0, 0));
     contentPane.setLayout(gl_contentPane);
@@ -473,7 +466,7 @@ public class MainGUI extends JFrame
                                         "Pricing Scheme Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    pricingPreviewPanel.setBounds(401, 444, 786, 300);
+    pricingPreviewPanel.setBounds(401, 402, 786, 295);
     createResponseTab.add(pricingPreviewPanel);
     pricingPreviewPanel.setLayout(new BorderLayout(0, 0));
 
@@ -485,7 +478,7 @@ public class MainGUI extends JFrame
                                         "Pricing Scheme Selection",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    pricingSchemePanel.setBounds(6, 501, 391, 243);
+    pricingSchemePanel.setBounds(6, 274, 391, 243);
     createResponseTab.add(pricingSchemePanel);
 
     // EXPORT TAB //
@@ -505,12 +498,12 @@ public class MainGUI extends JFrame
                     .getBorder("TitledBorder.border"), "Export Model Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    exportPreviewPanel.setBounds(20, 283, 1177, 395);
+    exportPreviewPanel.setBounds(20, 310, 1177, 387);
     exportTab.add(exportPreviewPanel);
     exportPreviewPanel.setLayout(new BorderLayout(0, 0));
 
     JPanel exportButtonsPanel = new JPanel();
-    exportButtonsPanel.setBounds(368, 711, 482, 33);
+    exportButtonsPanel.setBounds(376, 279, 482, 33);
     exportTab.add(exportButtonsPanel);
 
     JPanel connectionPanel = new JPanel();
@@ -738,7 +731,7 @@ public class MainGUI extends JFrame
     // DISTRIBUTION SELECTION //
 
     JPanel distributionSelectionPanel = new JPanel();
-    distributionSelectionPanel.setBounds(57, 711, 482, 33);
+    distributionSelectionPanel.setBounds(87, 261, 482, 33);
     trainingTab.add(distributionSelectionPanel);
 
     final JButton dailyTimesButton = new JButton("Daily Times");
@@ -756,6 +749,16 @@ public class MainGUI extends JFrame
     final JButton startTimeBinnedButton = new JButton("Start Time Binned");
     startTimeBinnedButton.setEnabled(false);
     distributionSelectionPanel.add(startTimeBinnedButton);
+
+    final JPanel distributionPreviewPanel = new JPanel();
+    distributionPreviewPanel.setBorder(new TitledBorder(UIManager
+            .getBorder("TitledBorder.border"), "Distribution Preview",
+                                                        TitledBorder.LEADING,
+                                                        TitledBorder.TOP, null,
+                                                        null));
+    distributionPreviewPanel.setBounds(6, 299, 621, 409);
+    trainingTab.add(distributionPreviewPanel);
+    distributionPreviewPanel.setLayout(new BorderLayout(0, 0));
 
     // /////////////////
     // RESPONSE TAB //
@@ -837,7 +840,7 @@ public class MainGUI extends JFrame
     activityModelSelectionPanel.add(lblSelectedActivity);
 
     JScrollPane activityListScrollPane = new JScrollPane();
-    activityListScrollPane.setBounds(20, 39, 355, 176);
+    activityListScrollPane.setBounds(20, 39, 355, 143);
     activityModelSelectionPanel.add(activityListScrollPane);
 
     final JList<String> activitySelectList = new JList<String>();
@@ -961,16 +964,16 @@ public class MainGUI extends JFrame
     passwordField.setBounds(122, 60, 405, 28);
     connectionPanel.add(passwordField);
 
-    final JTextField installationNameTextField;
-    installationNameTextField = new JTextField();
-    installationNameTextField.setEnabled(false);
-    installationNameTextField.setBounds(166, 225, 405, 31);
-    connectionPanel.add(installationNameTextField);
-    installationNameTextField.setColumns(10);
+    final JTextField householdNameTextField;
+    householdNameTextField = new JTextField();
+    householdNameTextField.setEnabled(false);
+    householdNameTextField.setBounds(166, 225, 405, 31);
+    connectionPanel.add(householdNameTextField);
+    householdNameTextField.setColumns(10);
 
-    installationNameLabel = new JLabel("Export Installation Name:");
-    installationNameLabel.setBounds(24, 233, 147, 14);
-    connectionPanel.add(installationNameLabel);
+    final JLabel householdNameLabel = new JLabel("Export Household Name:");
+    householdNameLabel.setBounds(24, 233, 147, 14);
+    connectionPanel.add(householdNameLabel);
 
     // //////////////////
     // ACTIONS ///////
@@ -1124,7 +1127,7 @@ public class MainGUI extends JFrame
         exportButton.setEnabled(false);
         exportAllBaseButton.setEnabled(false);
         exportAllResponseButton.setEnabled(false);
-        installationNameTextField.setEnabled(false);
+        householdNameTextField.setEnabled(false);
 
         // Disabling the necessary tabs
         tabbedPane.setEnabledAt(1, false);
@@ -1238,7 +1241,7 @@ public class MainGUI extends JFrame
             // Add installation to the export models list
             exportModels.addElement(installation.toString());
             exportModels.addElement(installation.getPerson().getName());
-            installationNameTextField.setText(installation.getName());
+            householdNameTextField.setText(installation.getName());
 
             // Enable Export Models tab
             exportModelList.setEnabled(true);
@@ -2555,7 +2558,7 @@ public class MainGUI extends JFrame
           exportButton.setEnabled(true);
           exportAllBaseButton.setEnabled(true);
           exportAllResponseButton.setEnabled(true);
-          installationNameTextField.setEnabled(true);
+          householdNameTextField.setEnabled(true);
         }
         // Else a error message appears.
         else {
@@ -2613,7 +2616,7 @@ public class MainGUI extends JFrame
           // If it is installation
           if (selection.equalsIgnoreCase(installation.getName())) {
             String oldName = installation.getName();
-            installation.setName(installationNameTextField.getText());
+            installation.setName(householdNameTextField.getText());
 
             try {
               installation.setInstallationID(APIUtilities
@@ -2632,8 +2635,7 @@ public class MainGUI extends JFrame
 
             JOptionPane.showMessageDialog(success,
                                           "The installation model "
-                                                  + installationNameTextField
-                                                          .getText()
+                                                  + installation.getName()
                                                   + " was exported successfully",
                                           "Installation Model Exported",
                                           JOptionPane.INFORMATION_MESSAGE);
@@ -2956,8 +2958,7 @@ public class MainGUI extends JFrame
 
               try {
 
-                installation.setName(installationNameTextField.getText()
-                                     + " Base");
+                installation.setName(householdNameTextField.getText() + " Base");
 
                 installation.setInstallationID(APIUtilities
                         .sendEntity(installation.toJSON(APIUtilities
@@ -3096,8 +3097,7 @@ public class MainGUI extends JFrame
 
         JOptionPane.showMessageDialog(success,
                                       "The installation model "
-                                              + installationNameTextField
-                                                      .getText()
+                                              + installation.getName()
                                               + " for the base pricing scheme and all the entities contained within were exported successfully",
                                       "Installation Model Exported",
                                       JOptionPane.INFORMATION_MESSAGE);
@@ -3139,7 +3139,7 @@ public class MainGUI extends JFrame
 
               try {
 
-                installation.setName(installationNameTextField.getText()
+                installation.setName(householdNameTextField.getText()
                                      + " Response");
 
                 installation.setInstallationID(APIUtilities
@@ -3277,8 +3277,7 @@ public class MainGUI extends JFrame
 
         JOptionPane.showMessageDialog(success,
                                       "The installation model "
-                                              + installationNameTextField
-                                                      .getText()
+                                              + installation.getName()
                                               + " for the new pricing scheme and all the entities contained within were exported successfully",
                                       "Installation Model Exported",
                                       JOptionPane.INFORMATION_MESSAGE);

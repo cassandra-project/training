@@ -414,10 +414,9 @@ public class MixtureCreator
 
     System.out.println("Max Value:" + max);
 
-    if (fromGMM) {
+    if (true) {
       System.out.println(n);
       System.out.println(n);
-
     }
     for (int i = 0; i < n; i++) {
 
