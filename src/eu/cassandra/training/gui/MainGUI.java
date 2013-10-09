@@ -83,6 +83,8 @@ import eu.cassandra.training.response.ResponseModel;
 import eu.cassandra.training.utils.APIUtilities;
 import eu.cassandra.training.utils.ChartUtils;
 import eu.cassandra.training.utils.Constants;
+import eu.cassandra.training.utils.MyFilter;
+import eu.cassandra.training.utils.MyFilter2;
 import eu.cassandra.training.utils.Utils;
 
 /**
@@ -1289,7 +1291,7 @@ public class MainGUI extends JFrame
           // the output of the disaggregation process.
           String filename = pathField.getText();
 
-          if (Constants.FILED == false) {
+          if (Constants.NOT_FILED) {
             try {
               Disaggregate dis = new Disaggregate(filename);
             }
