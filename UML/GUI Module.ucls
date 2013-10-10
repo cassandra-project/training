@@ -6,38 +6,37 @@
     <position height="-1" width="-1" x="152" y="252"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+      <attributes public="true" package="true" protected="true" private="true"/>      
+      <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </class>  
   <package id="2" language="java" name="eu.cassandra.training.gui" project="Training Module" 
     file="/Training Module/src/eu/cassandra/training/gui" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="243" y="39"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
-      visibility="true"/>  
+    <display autosize="true" stereotype="true" accessors="true"/>  
   </package>  
-  <class id="3" language="java" name="eu.cassandra.training.utils.MyFilter" project="Training Module" 
-    file="/Training Module/src/eu/cassandra/training/utils/MyFilter.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="3" language="java" name="eu.cassandra.training.gui.MyFilter" project="Training Module" 
+    file="/Training Module/src/eu/cassandra/training/gui/MyFilter.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="418" y="156"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+      <attributes public="true" package="true" protected="true" private="true"/>      
+      <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </class>  
-  <class id="4" language="java" name="eu.cassandra.training.utils.MyFilter2" project="Training Module" 
-    file="/Training Module/src/eu/cassandra/training/utils/MyFilter2.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="4" language="java" name="eu.cassandra.training.gui.MyFilter2" project="Training Module" 
+    file="/Training Module/src/eu/cassandra/training/gui/MyFilter2.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="413" y="328"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+      <attributes public="true" package="true" protected="true" private="true"/>      
+      <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </class>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     accessors="true" visibility="true">    
-    <attributes public="true" package="true" protected="true" private="true" static="true"/>    
-    <operations public="true" package="true" protected="true" private="true" static="true"/>  
+    <attributes public="true" package="true" protected="true" private="true"/>    
+    <operations public="true" package="true" protected="true" private="true"/>  
   </classifier-display>  
   <association-display labels="true" multiplicity="true"/>
 </class-diagram>

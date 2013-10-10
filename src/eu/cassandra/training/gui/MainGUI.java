@@ -35,6 +35,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import javax.swing.ButtonGroup;
@@ -109,7 +110,7 @@ public class MainGUI extends JFrame
    * This variable is the main panel where all the graphical objects of the GUI
    * are added.
    */
-  private JPanel contentPane;
+  private final JPanel contentPane;
 
   /**
    * This variable is used to check if one or more items are processed at the
@@ -197,7 +198,7 @@ public class MainGUI extends JFrame
    * They appear as a list in the Detected Appliances panel on the Data Import
    * tab.
    */
-  private DefaultListModel<String> detectedAppliances =
+  private final DefaultListModel<String> detectedAppliances =
     new DefaultListModel<String>();
 
   /**
@@ -207,7 +208,7 @@ public class MainGUI extends JFrame
    * activity analysis. They appear as a list in the Appliances / Activities
    * Selection panel on the Training Activity Models tab.
    */
-  private DefaultListModel<String> selectedAppliances =
+  private final DefaultListModel<String> selectedAppliances =
     new DefaultListModel<String>();
 
   /**
@@ -235,6 +236,7 @@ public class MainGUI extends JFrame
   public static void main (String[] args)
   {
     EventQueue.invokeLater(new Runnable() {
+      @Override
       public void run ()
       {
         try {
@@ -296,6 +298,7 @@ public class MainGUI extends JFrame
 
     JMenuItem mntmExit = new JMenuItem("Exit");
     mntmExit.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         Utils.cleanFiles();
@@ -991,6 +994,7 @@ public class MainGUI extends JFrame
        * input the data file on the Data File panel of the Import Data tab.
        * 
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         // Opens the browse panel to find the data set file
@@ -1025,6 +1029,7 @@ public class MainGUI extends JFrame
        * Data tab.
        * 
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         // Opens the browse panel to find the consumption model file
@@ -1056,6 +1061,7 @@ public class MainGUI extends JFrame
        * initial state.
        * 
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
 
@@ -1151,6 +1157,7 @@ public class MainGUI extends JFrame
        * This function is called when the user presses the Single Appliance
        * radio button on the Data File panel of the Import Data tab.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         consumptionPathField.setEnabled(false);
@@ -1164,6 +1171,7 @@ public class MainGUI extends JFrame
        * This function is called when the user presses the Installation
        * radio button on the Data File panel of the Import Data tab.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         consumptionPathField.setEnabled(false);
@@ -1177,6 +1185,7 @@ public class MainGUI extends JFrame
        * This function is called when the user presses the Import Data
        * button on the Data File panel of the Import Data tab.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         Component root = SwingUtilities.getRoot((JButton) e.getSource());
@@ -1278,6 +1287,7 @@ public class MainGUI extends JFrame
        * automatically analyse the data set and extract the appliances and
        * activities within.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
 
@@ -1325,9 +1335,9 @@ public class MainGUI extends JFrame
               nextLine = input.nextLine();
               line = nextLine.split(",");
 
-              String name = line[line.length - 2] + " " + line[line.length - 1];
-              String activity = line[line.length - 2];
-              String[] temp = line[line.length - 1].split(" ");
+              String name = line[1] + " " + line[0];
+              String activity = line[1];
+              String[] temp = line[0].split(" ");
 
               String type = "";
 
@@ -1339,8 +1349,8 @@ public class MainGUI extends JFrame
                 type = type.trim();
 
               }
-              double p = Double.parseDouble(line[0]);
-              double q = Double.parseDouble(line[1]);
+              double p = Double.parseDouble(line[2]);
+              double q = Double.parseDouble(line[3]);
               // For each appliance found in the file, an temporary Appliance
               // Entity is created.
               tempAppliances.add(new ApplianceTemp(name,
@@ -1359,7 +1369,7 @@ public class MainGUI extends JFrame
               input = new Scanner(activitiesFile);
             }
             catch (FileNotFoundException e1) {
-              // TODO Auto-generated catch block
+              System.out.println("Problem with activity file.");
               e1.printStackTrace();
             }
 
@@ -1367,19 +1377,22 @@ public class MainGUI extends JFrame
               nextLine = input.nextLine();
               line = nextLine.split(",");
 
-              String name = line[line.length - 2];
-              int start = Integer.parseInt(line[0]);
-              int end = Integer.parseInt(line[1]);
+              System.out.println(Arrays.toString(line));
+              String name = line[0];
+              String activity = line[1];
+              int start = Integer.parseInt(line[2]);
+              int end = Integer.parseInt(line[3]);
 
               // Search for existing activity
-              int activityIndex = findActivity(name);
+              int activityIndex = findActivity(activity);
 
               // if not found, create a new one
               if (activityIndex == -1) {
-
-                ActivityTemp newActivity = new ActivityTemp(name);
+                System.out.println("In!");
+                ActivityTemp newActivity = new ActivityTemp(activity);
                 newActivity.addEvent(start, end);
                 tempActivities.add(newActivity);
+                System.out.println(tempActivities.toString());
 
               }
               // else add data to the found activity
@@ -1410,6 +1423,7 @@ public class MainGUI extends JFrame
                 tempActivities.get(i).createEventFile();
               }
               catch (IOException e1) {
+                System.out.println("Problem with creating events file.");
                 e1.printStackTrace();
               }
             }
@@ -1534,6 +1548,7 @@ public class MainGUI extends JFrame
        * Used for presentation purposes only since is depricated by the
        * disaggregation function.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         Component root = SwingUtilities.getRoot((JButton) e.getSource());
@@ -1600,6 +1615,7 @@ public class MainGUI extends JFrame
        * Data tab. Then the corresponding consumption model is presented in the
        * Consumption Model Preview panel.
        */
+      @Override
       public void valueChanged (ListSelectionEvent e)
       {
 
@@ -1637,6 +1653,7 @@ public class MainGUI extends JFrame
        * contains the procedure needed to create an activity model based on the
        * event set of the appliance or activity.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
 
@@ -1784,6 +1801,7 @@ public class MainGUI extends JFrame
        * is iterating the aforementioned training procedure to each of the
        * objects on the list.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         for (int i = 0; i < selectedApplianceList.getModel().getSize(); i++) {
@@ -1800,6 +1818,7 @@ public class MainGUI extends JFrame
        * shows the Daily Times Distribution for the selected object from the
        * list if available.
        */
+      @Override
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1831,6 +1850,7 @@ public class MainGUI extends JFrame
        * Models tab. It shows the Start Time Binned Distribution for the
        * selected object from the list if available.
        */
+      @Override
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1862,6 +1882,7 @@ public class MainGUI extends JFrame
        * Models tab. It shows the Start Time Distribution for the selected
        * object from the list if available.
        */
+      @Override
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1893,6 +1914,7 @@ public class MainGUI extends JFrame
        * Models tab. It shows the Duration Distribution for the selected
        * object from the list if available.
        */
+      @Override
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -1924,6 +1946,7 @@ public class MainGUI extends JFrame
        * corresponding consumption model is presented in the Consumption Model
        * Preview panel.
        */
+      @Override
       public void valueChanged (ListSelectionEvent arg0)
       {
 
@@ -1997,6 +2020,7 @@ public class MainGUI extends JFrame
        * type and pricing for testing and presents a preview of the response
        * model that may be extracted.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
 
@@ -2054,6 +2078,7 @@ public class MainGUI extends JFrame
        * activity model, response type and pricing for testing and creates the
        * response model for the user.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         Component root = SwingUtilities.getRoot((JButton) e.getSource());
@@ -2168,6 +2193,7 @@ public class MainGUI extends JFrame
        * tab. This is achieved by iterating the procedure above for all the
        * available activity models in the list.
        */
+      @Override
       public void actionPerformed (ActionEvent arg0)
       {
         manyFlag = true;
@@ -2198,6 +2224,7 @@ public class MainGUI extends JFrame
     });
 
     basicPricingSchemePane.addCaretListener(new CaretListener() {
+      @Override
       public void caretUpdate (CaretEvent arg0)
       {
         commitButton.setEnabled(true);
@@ -2211,6 +2238,7 @@ public class MainGUI extends JFrame
        * enabled after adding the two pricing schemes that are prerequisites for
        * the creation of a response model.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
 
@@ -2313,6 +2341,7 @@ public class MainGUI extends JFrame
        * the
        * Export Model Preview panel.
        */
+      @Override
       public void valueChanged (ListSelectionEvent arg0)
       {
         if (tabbedPane.getSelectedIndex() == 3) {
@@ -2404,6 +2433,7 @@ public class MainGUI extends JFrame
        * button on the Entity Preview panel of the Export Models tab. It shows
        * the Daily Times Distribution for the selected object from the list.
        */
+      @Override
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -2438,6 +2468,7 @@ public class MainGUI extends JFrame
        * the Start Time Binned Distribution for the selected object from the
        * list.
        */
+      @Override
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -2472,6 +2503,7 @@ public class MainGUI extends JFrame
        * button on the Entity Preview panel of the Export Models tab. It shows
        * the Start Time Distribution for the selected object from the list.
        */
+      @Override
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -2505,6 +2537,7 @@ public class MainGUI extends JFrame
        * button on the Entity Preview panel of the Export Models tab. It shows
        * the Duration Distribution for the selected object from the list.
        */
+      @Override
       public void actionPerformed (ActionEvent arg0)
       {
 
@@ -2539,6 +2572,7 @@ public class MainGUI extends JFrame
        * to connect to his Cassandra Library and export the models he created
        * there.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         boolean result = false;
@@ -2577,6 +2611,7 @@ public class MainGUI extends JFrame
     });
 
     passwordField.addCaretListener(new CaretListener() {
+      @Override
       public void caretUpdate (CaretEvent e)
       {
         String pass = String.valueOf(passwordField.getPassword());
@@ -2596,6 +2631,7 @@ public class MainGUI extends JFrame
        * selected from the list is then exported to the User Library in
        * Cassandra Platform.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         Component root = SwingUtilities.getRoot((JButton) e.getSource());
@@ -2933,6 +2969,7 @@ public class MainGUI extends JFrame
        * export procedure above is iterated through all the entities available
        * on the list except for the response models.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         Component root = SwingUtilities.getRoot((JButton) e.getSource());
@@ -3114,6 +3151,7 @@ public class MainGUI extends JFrame
        * export procedure above is iterated through all the entities available
        * on the list except for the activity models.
        */
+      @Override
       public void actionPerformed (ActionEvent e)
       {
         Component root = SwingUtilities.getRoot((JButton) e.getSource());
