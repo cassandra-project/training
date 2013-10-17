@@ -28,20 +28,25 @@ public class Pricing
 {
 
   /** This variable signifies the start minute of the day for the incentive. */
-  private int startMinute;
+  private final int startMinute;
 
   /** This variable signifies the end minute of the day for the incentive. */
-  private int endMinute;
+  private final int endMinute;
 
   /**
-   * This variable the price.
+   * This variable is the previous price of the new pricing scheme.
    */
-  private double price;
+  private final double previousPrice;
+
+  /**
+   * This variable is the current price of the new pricing scheme.
+   */
+  private final double currentPrice;
 
   /**
    * This variable states the type of the pricing (Penalty or Reward).
    */
-  private String type;
+  private final String type;
 
   /**
    * A constructor of a pricing where all of the input variables are known.
@@ -55,12 +60,15 @@ public class Pricing
    * @param type
    *          The type of pricing policy (Penalty or Reward)
    */
-  public Pricing (int start, int end, double price, String type)
+  public Pricing (int start, int end, double previous, double current,
+                  String type)
   {
     startMinute = start;
     endMinute = end;
-    this.price = price;
+    previousPrice = previous;
+    currentPrice = current;
     this.type = type;
+
   }
 
   /**
@@ -88,9 +96,19 @@ public class Pricing
    * 
    * @return pricing's price.
    */
-  public double getPrice ()
+  public double getPreviousPrice ()
   {
-    return price;
+    return previousPrice;
+  }
+
+  /**
+   * This function is used as a getter for the price of the pricing.
+   * 
+   * @return pricing's price.
+   */
+  public double getCurrentPrice ()
+  {
+    return currentPrice;
   }
 
   /**
@@ -104,13 +122,34 @@ public class Pricing
   }
 
   /**
+   * This function is used to estimate the ratio of the pricing schemes.
+   * 
+   * @return the ratio of the pricing scheme.
+   */
+  public double getGainRatio ()
+  {
+    return previousPrice / currentPrice;
+  }
+
+  /**
+   * This function is used to estimate the ratio of the pricing schemes.
+   * 
+   * @return the ratio of the pricing scheme.
+   */
+  public double getLossRatio ()
+  {
+    return currentPrice / previousPrice;
+  }
+
+  /**
    * This function is used to present the basic attributes of the price.
    */
   public void status ()
   {
     System.out.println("Start Minute: " + startMinute);
     System.out.println("End Minute: " + endMinute);
-    System.out.println("Pricing: " + price);
+    System.out.println("Current Pricing: " + currentPrice);
+    System.out.println("Previous Pricing: " + previousPrice);
     System.out.println("Pricing Type: " + type);
   }
 

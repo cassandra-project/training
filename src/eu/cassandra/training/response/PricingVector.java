@@ -33,14 +33,15 @@ public class PricingVector
 
   /** This is an list of the available pricings for the day. */
   ArrayList<Pricing> pricings = new ArrayList<Pricing>();
-  /** This variable equals to the number of penalty pricings of the list. */
-  int numberOfPenalties = 0;
 
-  /** This variable equals to the number of reward pricings of the list. */
-  int numberOfRewards = 0;
+  /** This is an list of the the penalty indices in the pricing list. */
+  ArrayList<Integer> penalties = new ArrayList<Integer>();
 
-  /** This variable equals to the number of base pricings of the list. */
-  int numberOfBases = 0;
+  /** This is an list of the the penalty indices in the pricing list. */
+  ArrayList<Integer> rewards = new ArrayList<Integer>();
+
+  /** This is an list of the the penalty indices in the pricing list. */
+  ArrayList<Integer> bases = new ArrayList<Integer>();
 
   /** This variable shows the index to the cheapest pricing of the list. */
   int indexOfCheapest = -1;
@@ -64,6 +65,7 @@ public class PricingVector
     int end = -1;
     String type = "";
     double currentValue = 0;
+    double previousPricing = 0;
     double previousValue = 0;
 
     // For all the minutes of the day the procedure checks the difference
@@ -78,6 +80,7 @@ public class PricingVector
         if (startFlag == false) {
           // System.out.println("In for start!");
           currentValue = newScheme[i];
+          previousPricing = basicScheme[i];
           if (newScheme[i] == basicScheme[i])
             type = "Base";
           else if (newScheme[i] < basicScheme[i])
@@ -92,10 +95,12 @@ public class PricingVector
           // System.out.println("In for end!");
           end = i - 1;
           startFlag = false;
-          pricings.add(new Pricing(start, end, currentValue, type));
+          pricings.add(new Pricing(start, end, previousPricing, currentValue,
+                                   type));
 
           // System.out.println("In for start kapaki!");
           currentValue = newScheme[i];
+          previousPricing = basicScheme[i];
           if (newScheme[i] == basicScheme[i])
             type = "Base";
           else if (newScheme[i] < basicScheme[i])
@@ -114,7 +119,7 @@ public class PricingVector
       // System.out.println("In for end of index!");
       end = Constants.MINUTES_PER_DAY - 1;
       startFlag = false;
-      pricings.add(new Pricing(start, end, currentValue, type));
+      pricings.add(new Pricing(start, end, previousPricing, currentValue, type));
     }
 
     analyze();
@@ -136,19 +141,19 @@ public class PricingVector
     for (int i = 0; i < pricings.size(); i++) {
 
       if (pricings.get(i).getType().equalsIgnoreCase("Base"))
-        numberOfBases++;
+        bases.add(i);
       else if (pricings.get(i).getType().equalsIgnoreCase("Reward"))
-        numberOfRewards++;
+        rewards.add(i);
       else
-        numberOfPenalties++;
+        penalties.add(i);
 
-      if (minPrice > pricings.get(i).getPrice()) {
-        minPrice = pricings.get(i).getPrice();
+      if (minPrice > pricings.get(i).getCurrentPrice()) {
+        minPrice = pricings.get(i).getCurrentPrice();
         minDur =
           pricings.get(i).getEndMinute() - pricings.get(i).getStartMinute();
         indexOfCheapest = i;
       }
-      else if (minPrice == pricings.get(i).getPrice()) {
+      else if (minPrice == pricings.get(i).getCurrentPrice()) {
         newDur =
           pricings.get(i).getEndMinute() - pricings.get(i).getStartMinute();
         if (minDur < newDur) {
@@ -169,9 +174,9 @@ public class PricingVector
   {
     // for (int i = 0; i < pricings.size(); i++)
     // pricings.get(i).status();
-    System.out.println("Penalties: " + numberOfPenalties);
-    System.out.println("Rewards: " + numberOfRewards);
-    System.out.println("Base: " + numberOfBases);
+    System.out.println("Penalties: " + penalties.size());
+    System.out.println("Rewards: " + rewards.size());
+    System.out.println("Base: " + bases.size());
 
     System.out.println("Cheapest Pricing: ");
     pricings.get(indexOfCheapest).status();
@@ -183,9 +188,69 @@ public class PricingVector
    * 
    * @return the list of pricings.
    */
-  public ArrayList<Pricing> getPrices ()
+  public ArrayList<Pricing> getPricings ()
   {
     return pricings;
+  }
+
+  /**
+   * This is a getter function of the penalties' list.
+   * 
+   * @return the list of penalties.
+   */
+  public ArrayList<Integer> getPenalties ()
+  {
+    return penalties;
+  }
+
+  /**
+   * This is a getter function of the rewards' list.
+   * 
+   * @return the list of rewards.
+   */
+  public ArrayList<Integer> getRewards ()
+  {
+    return rewards;
+  }
+
+  /**
+   * This is a getter function of the bases' list.
+   * 
+   * @return the list of bases.
+   */
+  public ArrayList<Integer> getBases ()
+  {
+    return bases;
+  }
+
+  /**
+   * This is a getter function of the number of penalties.
+   * 
+   * @return the number of penalties.
+   */
+  public int getNumberOfPenalties ()
+  {
+    return penalties.size();
+  }
+
+  /**
+   * This is a getter function of the number of rewards.
+   * 
+   * @return the number of rewards.
+   */
+  public int getNumberOfRewards ()
+  {
+    return rewards.size();
+  }
+
+  /**
+   * This is a getter function of the number of bases.
+   * 
+   * @return the number of bases.
+   */
+  public int getNumberOfBases ()
+  {
+    return bases.size();
   }
 
   /**
@@ -193,7 +258,7 @@ public class PricingVector
    * 
    * @return a pricing.
    */
-  public Pricing getPrices (int index)
+  public Pricing getPricings (int index)
   {
     return pricings.get(index);
   }

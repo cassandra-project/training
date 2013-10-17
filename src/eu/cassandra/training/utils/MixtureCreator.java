@@ -134,18 +134,6 @@ public class MixtureCreator
 
     }
 
-    // Vector<PVector>[] clusters = new Vector[n];
-    //
-    // for (int i = 0; i < n; i++) {
-    //
-    // whatever[0] = (1440.0 / n) * i;
-    // pointsInit[i].setArray(whatever.clone());
-    // Vector<PVector> tempVector = new Vector<PVector>();
-    // tempVector.add(pointsInit[i]);
-    //
-    // clusters[i] = tempVector;
-    // }
-
     double logBest = Double.NEGATIVE_INFINITY, logNew = 0;
     MixtureModel mmc = null;
 
@@ -414,7 +402,7 @@ public class MixtureCreator
 
     System.out.println("Max Value:" + max);
 
-    if (true) {
+    if (fromGMM) {
       System.out.println(n);
       System.out.println(n);
     }

@@ -18,11 +18,14 @@ package eu.cassandra.training.activity;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -30,6 +33,7 @@ import com.mongodb.DBObject;
 
 import eu.cassandra.training.response.Incentive;
 import eu.cassandra.training.response.IncentiveVector;
+import eu.cassandra.training.response.Pricing;
 import eu.cassandra.training.response.PricingVector;
 import eu.cassandra.training.utils.Constants;
 
@@ -449,6 +453,127 @@ public class Histogram implements ProbabilityDistribution
   }
 
   @Override
+  public double[] discreteOptimal (double[] values, PricingVector pricing)
+  {
+    // Initialize the auxiliary variables.
+    double temp = 0, additive = 0;
+    Pricing tempPricing;
+    double sum = 0;
+    // double sum = 0;
+    double overDiff = 0;
+    int start, start2, end, end2, duration;
+    double previousPrice, newPrice;
+
+    if (pricing.getNumberOfPenalties() > 0) {
+
+      Map<Integer, Double> percentageMap = new TreeMap<Integer, Double>();
+      ArrayList<Integer> tempList = new ArrayList<Integer>(pricing.getBases());
+      tempList.addAll(pricing.getRewards());
+
+      for (Integer index: tempList)
+        sum += pricing.getPricings(index).getGainRatio();
+
+      for (Integer index: tempList)
+        percentageMap.put(index, pricing.getPricings(index).getGainRatio()
+                                 / sum);
+
+      // System.out.println("Percentage Map: " + percentageMap.toString());
+
+      for (Integer index: pricing.getPenalties()) {
+        overDiff = 0;
+        sum = 0;
+
+        tempPricing = pricing.getPricings(index);
+        start = tempPricing.getStartMinute();
+        end = tempPricing.getEndMinute();
+        previousPrice = tempPricing.getPreviousPrice();
+        newPrice = tempPricing.getCurrentPrice();
+
+        for (int i = start; i <= end; i++) {
+          temp = previousPrice * values[i] / newPrice;
+          overDiff += values[i] - temp;
+          values[i] = temp;
+        }
+
+        // System.out.println("OverDiff for index " + index + ": " + overDiff);
+
+        for (Integer index2: tempList) {
+          start2 = pricing.getPricings(index2).getStartMinute();
+          end2 = pricing.getPricings(index2).getEndMinute();
+          duration = end2 - start2;
+          additive = overDiff * percentageMap.get(index2) / duration;
+          // System.out.println("Additive for index " + index2 + ": " +
+          // additive);
+          for (int i = start2; i < end2; i++)
+            values[i] += additive;
+        }
+
+        for (int i = 0; i < values.length; i++)
+          sum += values[i];
+
+        // System.out.println("Summary: " + sum);
+
+      }
+
+    }
+    else if (pricing.getNumberOfRewards() > 0) {
+
+      Pricing tempPricing2 = null;
+      ArrayList<Pricing> tempList = new ArrayList<Pricing>();
+
+      for (Integer index: pricing.getRewards())
+        tempList.add(pricing.getPricings(index));
+
+      Collections.sort(tempList, comp);
+
+      // System.out.println("Rewards List: " + tempList.toString());
+
+      for (int i = 0; i < tempList.size(); i++) {
+
+        tempPricing2 = tempList.get(i);
+        newPrice = tempPricing2.getCurrentPrice();
+        start2 = tempPricing2.getStartMinute();
+        end2 = tempPricing2.getEndMinute();
+        duration = end2 - start2;
+
+        for (Integer index: pricing.getBases()) {
+          overDiff = 0;
+          sum = 0;
+
+          tempPricing = pricing.getPricings(index);
+          start = tempPricing.getStartMinute();
+          end = tempPricing.getEndMinute();
+          previousPrice = tempPricing.getCurrentPrice();
+
+          for (int j = start; j <= end; j++) {
+            temp = newPrice * values[j] / previousPrice;
+            overDiff += values[j] - temp;
+            values[j] = temp;
+          }
+
+          // System.out.println("OverDiff for index " + index + ": " +
+          // overDiff);
+
+          additive = overDiff / duration;
+          System.out.println("Additive for index " + i + ": " + additive);
+
+          for (int j = start2; j < end2; j++)
+            values[j] += additive;
+        }
+
+        for (int j = 0; j < values.length; j++)
+          sum += values[j];
+
+        // System.out.println("Summary: " + sum);
+
+      }
+
+    }
+
+    return values;
+  }
+
+  @Override
   public double[] discreteAverage (double[] values, PricingVector pricing)
   {
 
@@ -462,21 +587,22 @@ public class Histogram implements ProbabilityDistribution
     // Finding the cheapest window in the day.
     int cheapest = pricing.getCheapest();
     int startCheapest =
-      pricing.getPrices(pricing.getCheapest()).getStartMinute();
-    int endCheapest = pricing.getPrices(pricing.getCheapest()).getEndMinute();
+      pricing.getPricings(pricing.getCheapest()).getStartMinute();
+    int endCheapest = pricing.getPricings(pricing.getCheapest()).getEndMinute();
     int durationCheapest = endCheapest - startCheapest;
-    double cheapestPrice = pricing.getPrices(pricing.getCheapest()).getPrice();
+    double cheapestPrice =
+      pricing.getPricings(pricing.getCheapest()).getCurrentPrice();
 
     // Moving from all the available vectors residual percentages to the
     // cheapest one.
-    for (int i = 0; i < pricing.getPrices().size(); i++) {
+    for (int i = 0; i < pricing.getPricings().size(); i++) {
 
       if (i != cheapest) {
         // sum = 0;
         overDiff = 0;
-        start = pricing.getPrices(i).getStartMinute();
-        end = pricing.getPrices(i).getEndMinute();
-        newPrice = pricing.getPrices(i).getPrice();
+        start = pricing.getPricings(i).getStartMinute();
+        end = pricing.getPricings(i).getEndMinute();
+        newPrice = pricing.getPricings(i).getCurrentPrice();
 
         for (int j = start; j <= end; j++) {
           temp = cheapestPrice * values[j] / newPrice;
@@ -507,7 +633,7 @@ public class Histogram implements ProbabilityDistribution
 
     if (shiftingCase == 0) {
 
-      values = shiftingOptimal(newScheme);
+      values = shiftingOptimal(basicScheme, newScheme);
     }
     else if (shiftingCase == 1) {
 
@@ -532,7 +658,7 @@ public class Histogram implements ProbabilityDistribution
 
     if (shiftingCase == 0) {
 
-      result = shiftingOptimal(newScheme);
+      result = shiftingOptimal(basicScheme, newScheme);
     }
     else if (shiftingCase == 1) {
 
@@ -545,6 +671,21 @@ public class Histogram implements ProbabilityDistribution
     else {
       System.out.println("ERROR in shifting function");
     }
+
+    return result;
+
+  }
+
+  @Override
+  public double[] shiftingOptimal (double[] basicScheme, double[] newScheme)
+  {
+
+    double[] result = Arrays.copyOf(this.values, this.values.length);
+
+    PricingVector pricingVector = new PricingVector(basicScheme, newScheme);
+
+    if (pricingVector.getPricings().size() > 1)
+      result = discreteOptimal(result, pricingVector);
 
     return result;
 
@@ -578,7 +719,7 @@ public class Histogram implements ProbabilityDistribution
 
     IncentiveVector inc = new IncentiveVector(basicScheme, newScheme);
 
-    if (pricingVector.getPrices().size() > 1)
+    if (pricingVector.getPricings().size() > 1)
       for (Incentive incentive: inc.getIncentives())
         result = movingAverage(result, incentive);
 
@@ -593,7 +734,7 @@ public class Histogram implements ProbabilityDistribution
 
     PricingVector pricingVector = new PricingVector(basicScheme, newScheme);
 
-    if (pricingVector.getPrices().size() > 1)
+    if (pricingVector.getPricings().size() > 1)
       result = discreteAverage(result, pricingVector);
 
     return result;

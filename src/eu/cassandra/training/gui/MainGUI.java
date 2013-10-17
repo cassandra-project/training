@@ -675,6 +675,7 @@ public class MainGUI extends JFrame
 
     final JRadioButton startNormalRadioButton =
       new JRadioButton("Normal Distribution");
+    // startNormalRadioButton.setEnabled(false);
     startTimeButtonGroup.add(startNormalRadioButton);
     startNormalRadioButton.setBounds(304, 133, 137, 18);
     trainingParametersPanel.add(startNormalRadioButton);

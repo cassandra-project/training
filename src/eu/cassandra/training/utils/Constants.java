@@ -26,6 +26,8 @@ package eu.cassandra.training.utils;
 public class Constants
 {
 
+  public static final int HUNDRED = 100;
+
   public static final int DAILY_TIMES = 0;
   public static final int DURATION = 1;
   public static final int START_TIME = 2;

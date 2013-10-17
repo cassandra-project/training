@@ -16,9 +16,12 @@
 
 package eu.cassandra.training.activity;
 
+import java.util.Comparator;
+
 import com.mongodb.DBObject;
 
 import eu.cassandra.training.response.Incentive;
+import eu.cassandra.training.response.Pricing;
 import eu.cassandra.training.response.PricingVector;
 
 /**
@@ -32,6 +35,18 @@ import eu.cassandra.training.response.PricingVector;
  */
 public interface ProbabilityDistribution
 {
+
+  /**
+   * This comparator is used for sorting the points of interest based on the
+   * minute of interest.
+   */
+  public static Comparator<Pricing> comp = new Comparator<Pricing>() {
+    @Override
+    public int compare (Pricing poi1, Pricing poi2)
+    {
+      return Double.compare(poi1.getGainRatio(), poi1.getGainRatio());
+    }
+  };
 
   /**
    * Return a string with the name of the distribution.
@@ -195,6 +210,20 @@ public interface ProbabilityDistribution
   public double[] shiftingOptimal (double[] newScheme);
 
   /**
+   * The Optimal Case Scenario shifting function
+   * 
+   * @param basicScheme
+   *          The base pricing scheme as imported by the user.
+   * 
+   * @param newScheme
+   *          The new pricing scheme as imported by the user.
+   * 
+   * @return the new Start Time distribution as a result of the optimal case
+   *         scenario shifting.
+   */
+  public double[] shiftingOptimal (double[] basicScheme, double[] newScheme);
+
+  /**
    * The Normal Case Scenario shifting function
    * 
    * @param newScheme
@@ -207,6 +236,9 @@ public interface ProbabilityDistribution
 
   /**
    * The Discrete Case Scenario shifting function
+   * 
+   * @param basicScheme
+   *          The base pricing scheme as imported by the user.
    * 
    * @param newScheme
    *          The new pricing scheme as imported by the user.
@@ -248,6 +280,19 @@ public interface ProbabilityDistribution
    * @return The values of the distribution histogram.
    */
   public double[] getHistogram ();
+
+  /**
+   * This function is used to estimate the new start time distribution after the
+   * optimal case scenario shifting is applied.
+   * 
+   * @param values
+   *          the start time distribution before shifting
+   * @param pricing
+   *          the pricing vector as it has been estimated from the basic and new
+   *          pricing schemas.
+   * @return the new start time distribution.
+   */
+  public double[] discreteOptimal (double[] values, PricingVector pricing);
 
   /**
    * This function is used to estimate the new start time distribution after the
