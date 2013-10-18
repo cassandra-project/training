@@ -35,7 +35,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 import javax.swing.ButtonGroup;
@@ -1378,7 +1377,7 @@ public class MainGUI extends JFrame
               nextLine = input.nextLine();
               line = nextLine.split(",");
 
-              System.out.println(Arrays.toString(line));
+              // System.out.println(Arrays.toString(line));
               String name = line[0];
               String activity = line[1];
               int start = Integer.parseInt(line[2]);
@@ -1389,11 +1388,11 @@ public class MainGUI extends JFrame
 
               // if not found, create a new one
               if (activityIndex == -1) {
-                System.out.println("In!");
+                // System.out.println("In!");
                 ActivityTemp newActivity = new ActivityTemp(activity);
                 newActivity.addEvent(start, end);
                 tempActivities.add(newActivity);
-                System.out.println(tempActivities.toString());
+                // System.out.println(tempActivities.toString());
 
               }
               // else add data to the found activity
@@ -1405,7 +1404,7 @@ public class MainGUI extends JFrame
             int activityIndex = findActivity("Refrigeration");
             if (activityIndex != -1) {
               tempActivities.remove(activityIndex);
-              System.out.println("Refrigeration Removed");
+              // System.out.println("Refrigeration Removed");
             }
             // TODO Add these lines in case we want to remove activities with
             // small sampling number
