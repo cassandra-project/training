@@ -711,15 +711,14 @@ public class ConsumptionEventRepo
 
       case "StartTime":
         for (int i = 0; i < events.size(); i++) {
-          temp = (int) (events.get(i).getStartMinuteOfDay());
+          temp = (events.get(i).getStartMinuteOfDay());
           System.out.println(temp);
         }
         break;
 
       case "StartTimeBinned":
         for (int i = 0; i < events.size(); i++) {
-          temp =
-            (int) (events.get(i).getStartMinuteOfDay() / Constants.TEN_MINUTES);
+          temp = events.get(i).getStartMinuteOfDay() / Constants.TEN_MINUTES;
           System.out.println(temp);
         }
         break;
@@ -933,8 +932,9 @@ public class ConsumptionEventRepo
         new DateTime(endDateTime.getYear(), endDateTime.getMonthOfYear(),
                      endDateTime.getDayOfMonth(), 0, 0);
 
-      events.add(new ConsumptionEvent(counter++, startDateTime, startDate,
-                                      endDateTime, endDate));
+      if (startDateTime.isAfter(endDateTime) == false)
+        events.add(new ConsumptionEvent(counter++, startDateTime, startDate,
+                                        endDateTime, endDate));
 
     }
 

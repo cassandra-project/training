@@ -25,7 +25,8 @@ import org.joda.time.format.DateTimeFormatter;
 /**
  * This class is used for implementing the notion of the consumption event. As
  * Consumption Event is considered a time period in the consumption data set
- * that the active and reactive activeOnly measurements are high enough to imply the
+ * that the active and reactive activeOnly measurements are high enough to imply
+ * the
  * end use of an electrical appliance.
  * 
  * @author Antonios Chrysopoulos
@@ -42,24 +43,24 @@ public class ConsumptionEvent
   /**
    * This variable represents the start date and time of the consumption event.
    */
-  private DateTime startDateTime;
+  private final DateTime startDateTime;
 
   /**
    * This variable represents the end date and time of the consumption event.
    */
-  private DateTime endDateTime;
+  private final DateTime endDateTime;
 
   /**
    * This variable represents the start date of the consumption event (time
    * 00:00).
    */
-  private DateTime startDate;
+  private final DateTime startDate;
 
   /**
    * This variable represents the end date of the consumption event (time
    * 00:00).
    */
-  private DateTime endDate;
+  private final DateTime endDate;
 
   /**
    * This variable notes the duration of the consumption event in minutes.
@@ -211,6 +212,7 @@ public class ConsumptionEvent
    */
   public void calculateParameters ()
   {
+    
     duration = new Interval(startDateTime, endDateTime).toDuration();
     startMinuteOfDay = startDateTime.getMinuteOfDay();
     endMinuteOfDay = endDateTime.getMinuteOfDay();
