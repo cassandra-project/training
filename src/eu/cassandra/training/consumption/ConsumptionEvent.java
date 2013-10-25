@@ -212,7 +212,6 @@ public class ConsumptionEvent
    */
   public void calculateParameters ()
   {
-    
     duration = new Interval(startDateTime, endDateTime).toDuration();
     startMinuteOfDay = startDateTime.getMinuteOfDay();
     endMinuteOfDay = endDateTime.getMinuteOfDay();

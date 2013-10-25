@@ -935,6 +935,8 @@ public class ConsumptionEventRepo
       if (startDateTime.isAfter(endDateTime) == false)
         events.add(new ConsumptionEvent(counter++, startDateTime, startDate,
                                         endDateTime, endDate));
+      else
+        System.out.println("Start: " + startDateTime + " End: " + endDateTime);
 
     }
 
