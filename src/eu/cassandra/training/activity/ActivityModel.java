@@ -517,7 +517,7 @@ public class ActivityModel
 
     // Parsing the selected file
     Scanner input = new Scanner(file);
-    String newFile = "Files/";
+    String newFile = Constants.tempFolder;
     MixtureCreator mixtureCreator = null;
     String variable = "";
 

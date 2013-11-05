@@ -26,6 +26,17 @@ package eu.cassandra.training.utils;
 public class Constants
 {
 
+  /**
+   * This variable is used as the folder where the result files will be stored.
+   */
+  public static final String resultFolder = "ResultFiles/";
+
+  /**
+   * This variable is used as the folder where the temporary files will be
+   * stored.
+   */
+  public static final String tempFolder = "TempFiles/";
+
   public static final int HUNDRED = 100;
 
   public static final int DAILY_TIMES = 0;
@@ -46,12 +57,13 @@ public class Constants
 
   public static final int SHIFTING_WINDOW_IN_MINUTES = 120;
 
-  public static final String DAYS_FILE = "Files/daysArray";
-  public static final String EVENTS_FILE = "Files/eventsAll";
-  public static final String START_TIME_FILE = "Files/startTime";
-  public static final String DURATION_FILE = "Files/duration";
-  public static final String DAILY_TIMES_FILE = "Files/dailyTimes";
-  public static final String START_TIME_BINNED_FILE = "Files/startTimeBinned";
+  public static final String DAYS_FILE = tempFolder + "/daysArray";
+  public static final String EVENTS_FILE = tempFolder + "/eventsAll";
+  public static final String START_TIME_FILE = tempFolder + "/startTime";
+  public static final String DURATION_FILE = tempFolder + "/duration";
+  public static final String DAILY_TIMES_FILE = tempFolder + "/dailyTimes";
+  public static final String START_TIME_BINNED_FILE =
+    "TempFiles/startTimeBinned";
 
   public static final double SMALL_NUMBER = 1.0E7;
 

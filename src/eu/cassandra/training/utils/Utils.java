@@ -335,7 +335,7 @@ public class Utils
    */
   public static void cleanFiles ()
   {
-    File directory = new File("Files");
+    File directory = new File(Constants.tempFolder);
     File files[] = directory.listFiles();
     String extension = "";
     for (int index = 0; index < files.length; index++) {
@@ -347,7 +347,8 @@ public class Utils
                                                    files[index]
                                                            .getAbsolutePath()
                                                            .length());
-        if (extension.equalsIgnoreCase("csv")) {
+        if (extension.equalsIgnoreCase("csv")
+            || extension.equalsIgnoreCase("txt")) {
           boolean wasDeleted = files[index].delete();
           if (!wasDeleted) {
             System.out.println("Not Deleted File " + files[index].toString());

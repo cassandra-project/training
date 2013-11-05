@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import org.jfree.chart.ChartPanel;
 
 import eu.cassandra.training.activity.ActivityModel;
+import eu.cassandra.training.utils.Constants;
 
 /**
  * This class is used for implementing the temporary activity that will become
@@ -42,13 +43,13 @@ public class ActivityTemp
   /**
    * This variable contains the name of the temporary activity model.
    */
-  private String name;
+  private final String name;
 
   /**
    * This variable contains a list of the consumption events corresponding to
    * the temporary activity model.
    */
-  private ArrayList<Integer[]> events = new ArrayList<Integer[]>();
+  private final ArrayList<Integer[]> events = new ArrayList<Integer[]>();
 
   /**
    * This variable contains the file name of the events file of the temporary
@@ -129,7 +130,7 @@ public class ActivityTemp
   public void createEventFile () throws IOException
   {
     PrintStream realSystemOut = System.out;
-    eventsFile = "Files/" + name + " events.csv";
+    eventsFile = Constants.tempFolder + name + " events.csv";
     OutputStream output = new FileOutputStream(eventsFile);
     PrintStream printOut = new PrintStream(output);
     System.setOut(printOut);

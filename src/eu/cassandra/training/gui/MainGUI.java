@@ -1301,9 +1301,19 @@ public class MainGUI extends JFrame
           // the output of the disaggregation process.
           String filename = pathField.getText();
 
+          File file = new File(filename);
+
+          String folder = file.getParent() + "/";
+
+          String fileNameWithExtension = file.getName();
+
+          String fileName =
+            file.getName().substring(0, file.getName().length() - 4);
+
           if (Constants.NOT_FILED) {
             try {
-              Disaggregate dis = new Disaggregate(filename);
+              Disaggregate dis =
+                new Disaggregate(folder, fileNameWithExtension);
             }
             catch (Exception e2) {
               System.out.println("Missing File");
@@ -1313,8 +1323,10 @@ public class MainGUI extends JFrame
 
           filename =
             pathField.getText().substring(0, pathField.getText().length() - 4);
-          File appliancesFile = new File(filename + "ApplianceList.csv");
-          File activitiesFile = new File(filename + "ActivityList.csv");
+          File appliancesFile =
+            new File(Constants.resultFolder + fileName + "ApplianceList.csv");
+          File activitiesFile =
+            new File(Constants.resultFolder + fileName + "ActivityList.csv");
 
           // If these exist, disaggregation was successful and the procedure can
           // continue
