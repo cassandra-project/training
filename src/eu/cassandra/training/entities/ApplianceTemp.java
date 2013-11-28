@@ -117,16 +117,30 @@ public class ApplianceTemp
    */
   public Appliance toAppliance ()
   {
-    String powerModel =
-      "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" :" + p
-              + ", \"d\" : 10, \"s\": 0.0}]}]}";
-
-    String reactiveModel =
-      "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" :" + q
-              + ", \"d\" : 10, \"s\": 0.0}]}]}";
-
+    String powerModel = "";
+    String reactiveModel = "";
     boolean base = false;
+    if (activity.equalsIgnoreCase("Refrigeration Refrigerator")) {
+      powerModel =
+        "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" :"
+                + p
+                + ", \"d\" : 20, \"s\": 0.0}, {\"p\" : 0 , \"d\" : 20, \"s\": 0.0}]}]}";
 
+      reactiveModel =
+        "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" :"
+                + q
+                + ", \"d\" : 20, \"s\": 0.0}, {\"q\" : 0 , \"d\" : 20, \"s\": 0.0}]}]}";
+    }
+    else {
+      powerModel =
+        "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" :" + p
+                + ", \"d\" : 10, \"s\": 0.0}]}]}";
+
+      reactiveModel =
+        "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" :" + q
+                + ", \"d\" : 10, \"s\": 0.0}]}]}";
+
+    }
     if (activity.equalsIgnoreCase("Refrigeration"))
       base = true;
 
@@ -138,5 +152,4 @@ public class ApplianceTemp
 
     return appliance;
   }
-
 }

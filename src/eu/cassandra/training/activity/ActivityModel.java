@@ -31,6 +31,7 @@ import com.mongodb.DBObject;
 
 import eu.cassandra.training.consumption.ConsumptionEventRepo;
 import eu.cassandra.training.entities.Appliance;
+import eu.cassandra.training.entities.Person;
 import eu.cassandra.training.utils.ChartUtils;
 import eu.cassandra.training.utils.Constants;
 import eu.cassandra.training.utils.MixtureCreator;
@@ -83,12 +84,12 @@ public class ActivityModel
   protected String[] applianceOf;
 
   /**
-   * This is the name of the person type that this activity model corresponds
+   * This is the person type that this activity model corresponds
    * to. In the Training Module, this person is the equivalent of all the
    * inhabitants of the installation since the measurements can not be related
    * to a certain person present.
    */
-  protected String person;
+  protected Person person;
 
   /**
    * This variable contains the consumption event that are related with the
@@ -178,7 +179,7 @@ public class ActivityModel
    * @param person
    *          The name of the person type that this activity model belongs to.
    */
-  public ActivityModel (Appliance appliance, String person)
+  public ActivityModel (Appliance appliance, Person person)
     throws FileNotFoundException
   {
     nameActivity = person + " " + appliance.getName() + " Activity";
@@ -187,7 +188,8 @@ public class ActivityModel
     applianceOf = new String[1];
     applianceOf[0] = appliance.getName();
     consumptionEventRepo = new ConsumptionEventRepo(applianceOf[0]);
-    consumptionEventRepo.readEventsFile(appliance.getEventsFile());
+    consumptionEventRepo.readEventsFile(appliance.getEventsFile(),
+                                        person.getInstallation());
   }
 
   /**
@@ -204,7 +206,7 @@ public class ActivityModel
    *          The filename of the event file used for the training procedure.
    * 
    */
-  public ActivityModel (String activity, String person, String[] appliances,
+  public ActivityModel (String activity, Person person, String[] appliances,
                         String eventsFile) throws FileNotFoundException
   {
     nameActivity = person + " " + activity + " Activity";
@@ -213,7 +215,7 @@ public class ActivityModel
     this.person = person;
     applianceOf = appliances;
     consumptionEventRepo = new ConsumptionEventRepo(activity);
-    consumptionEventRepo.readEventsFile(eventsFile);
+    consumptionEventRepo.readEventsFile(eventsFile, person.getInstallation());
   }
 
   /**

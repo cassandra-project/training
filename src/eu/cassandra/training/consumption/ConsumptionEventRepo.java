@@ -31,6 +31,7 @@ import java.util.TreeMap;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
+import eu.cassandra.training.entities.Installation;
 import eu.cassandra.training.utils.Constants;
 
 /**
@@ -111,6 +112,11 @@ public class ConsumptionEventRepo
    */
   int binSize;
 
+  /**
+   * This variable represents the date the sampling ends.
+   */
+  DateTime endDate;
+
   // =================CREATION FUNCTIONS==============================//
 
   /**
@@ -141,16 +147,16 @@ public class ConsumptionEventRepo
    * Each available consumption event is parsed and added to the appropriate
    * date.
    */
-  public void createEventPerDateHashmap ()
+  public void createEventPerDateHashmap (DateTime startDate, DateTime endDate)
   {
     // Initialize the auxiliary variables
     Map<DateTime, ArrayList<ConsumptionEvent>> tempMap =
-      new HashMap<DateTime, ArrayList<ConsumptionEvent>>();
+      new TreeMap<DateTime, ArrayList<ConsumptionEvent>>(Constants.comp);
     ArrayList<ConsumptionEvent> events = getEvents();
 
     // Find the starting dates of all the events.
-    DateTime temp = events.get(0).getStartDate();
-    DateTime temp2 = events.get(events.size() - 1).getStartDate();
+    DateTime temp = startDate;
+    DateTime temp2 = endDate;
 
     // Fill the map with all the dates
     while (!temp.isAfter(temp2)) {
@@ -160,8 +166,11 @@ public class ConsumptionEventRepo
 
     }
 
+    System.out.println(tempMap.toString());
+
     // Add each and every event to the appropriate date.
     for (int i = 0; i < events.size(); i++) {
+      // System.out.println(events.get(i).getStartDate());
       DateTime loop = events.get(i).getStartDate();
       ArrayList<ConsumptionEvent> tempList = tempMap.get(loop);
       tempList.add(events.get(i));
@@ -174,7 +183,7 @@ public class ConsumptionEventRepo
     // Fill the number of events per date map also.
     for (DateTime date: eventsPerDate.keySet())
       numberEventsPerDate.put(date, eventsPerDate.get(date).size());
-    //
+
     // System.out.println(eventsPerDate.toString());
     // System.out.println(numberEventsPerDate.toString());
   }
@@ -208,12 +217,13 @@ public class ConsumptionEventRepo
    * 
    * @throws FileNotFoundException
    */
-  public void analyze () throws FileNotFoundException
+  public void analyze (DateTime start, DateTime end)
+    throws FileNotFoundException
   {
 
     clear();
 
-    createEventPerDateHashmap();
+    createEventPerDateHashmap(start, end);
 
     System.out.println("Overall Days:" + eventsPerDate.keySet().size());
     setBins();
@@ -893,7 +903,8 @@ public class ConsumptionEventRepo
    *          The name of the file that will be exported.
    * @throws FileNotFoundException
    */
-  public void readEventsFile (String filename) throws FileNotFoundException
+  public void readEventsFile (String filename, Installation installation)
+    throws FileNotFoundException
   {
 
     int startMinute = 0;
@@ -903,7 +914,7 @@ public class ConsumptionEventRepo
     DateTime endDateTime = new DateTime();
     DateTime startDate = new DateTime();
     DateTime endDate = new DateTime();
-    DateTime date = new DateTime(2010, 1, 1, 0, 0);
+    DateTime date = installation.getStartDate();
 
     System.out.println(filename);
 
@@ -942,7 +953,7 @@ public class ConsumptionEventRepo
 
     scanner.close();
 
-    analyze();
+    analyze(installation.getStartDate(), installation.getEndDate());
 
   }
 

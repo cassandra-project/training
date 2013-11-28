@@ -16,6 +16,10 @@ limitations under the License.
 */
 package eu.cassandra.training.utils;
 
+import java.util.Comparator;
+
+import org.joda.time.DateTime;
+
 /**
  * This class contains static constants that are used throughout the Training
  * Module GUI.
@@ -30,6 +34,17 @@ public class Constants
    * This variable is used as the folder where the result files will be stored.
    */
   public static final String resultFolder = "ResultFiles/";
+
+  /**
+   * This comparator is used for sorting the dates based on their minutes.
+   */
+  public static Comparator<DateTime> comp = new Comparator<DateTime>() {
+    @Override
+    public int compare (DateTime date1, DateTime date2)
+    {
+      return Long.compare(date1.getMillis(), date2.getMillis());
+    }
+  };
 
   /**
    * This variable is used as the folder where the temporary files will be

@@ -48,25 +48,25 @@ public class Person
   /**
    * This variable provides the type of the Person model.
    */
-  private String type = "";
+  private final String type = "";
 
   /**
-   * This variable provides the name of the installation the Person model
+   * This variable provides the installation that the Person model
    * corresponds to.
    */
-  private String installation = "";
+  private Installation installation;
 
   /**
    * This variable is an list of the Activity models corresponding to the Person
    * Model.
    */
-  private ArrayList<ActivityModel> activityModels;
+  private final ArrayList<ActivityModel> activityModels;
 
   /**
    * This variable is an list of the Response models corresponding to the Person
    * Model.
    */
-  private ArrayList<ResponseModel> responseModels;
+  private final ArrayList<ResponseModel> responseModels;
 
   /**
    * This variable provides the id of the Person model as sent by the
@@ -91,7 +91,7 @@ public class Person
    * @param installation
    *          The name of the installation that the Person Model is installed
    */
-  public Person (String name, String installation)
+  public Person (String name, Installation installation)
   {
     this.name = name;
     this.installation = installation;
@@ -139,6 +139,17 @@ public class Person
   public int getResponseModelsSize ()
   {
     return responseModels.size();
+  }
+
+  /**
+   * This is a getter function of the installation of the Person
+   * Model.
+   * 
+   * @return the number of Reponse Models present on the Appliance model.
+   */
+  public Installation getInstallation ()
+  {
+    return installation;
   }
 
   /**
@@ -251,7 +262,7 @@ public class Person
     if (exists != null)
       activityModels.remove(exists);
 
-    ActivityModel activityModel = new ActivityModel(appliance, name);
+    ActivityModel activityModel = new ActivityModel(appliance, this);
     activityModel.train(distributions);
     activityModels.add(activityModel);
   }
@@ -275,7 +286,7 @@ public class Person
     if (exists != null)
       activityModels.remove(exists);
 
-    ActivityModel activityModel = activity.toActivityModel(name);
+    ActivityModel activityModel = activity.toActivityModel(this);
     activityModel.train(distributions);
     activityModels.add(activityModel);
   }
@@ -395,7 +406,7 @@ public class Person
 
     String result = "";
 
-    ResponseModel response = new ResponseModel(activity, name, responseType);
+    ResponseModel response = new ResponseModel(activity, this, responseType);
 
     response.respond(responseType, basicScheme, newScheme);
 

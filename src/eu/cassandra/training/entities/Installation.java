@@ -26,6 +26,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.jfree.chart.ChartPanel;
+import org.joda.time.DateTime;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -61,6 +62,16 @@ public class Installation
    * to this installation as imported by the user.
    */
   String measurementsFile = "";
+
+  /**
+   * This variable contains the start date of the measurements.
+   */
+  DateTime startDate;
+
+  /**
+   * This variable contains the start date of the measurements.
+   */
+  DateTime endDate;
 
   /**
    * This variable states if the installation measurements contain both active
@@ -109,7 +120,7 @@ public class Installation
     type = "";
     measurementsFile = filename;
     appliances = new ArrayList<Appliance>();
-    person = new Person("Person", name);
+    person = new Person("Person", this);
     this.activeOnly = power;
     parseMeasurementsFile();
   }
@@ -169,9 +180,31 @@ public class Installation
   }
 
   /**
+   * This is a getter function of the start date of the measurements.
+   * 
+   * @return the start date of the measurements.
+   */
+  public DateTime getStartDate ()
+  {
+
+    return startDate;
+  }
+
+  /**
+   * This is a getter function of the start date of the measurements.
+   * 
+   * @return the start date of the measurements.
+   */
+  public DateTime getEndDate ()
+  {
+
+    return endDate;
+  }
+
+  /**
    * This is a getter function of the Installation model's appliances.
    * 
-   * @return alist with the appliances of the Installation model.
+   * @return a list with the appliances of the Installation model.
    */
   public ArrayList<Appliance> getAppliances ()
   {
@@ -229,19 +262,51 @@ public class Installation
 
     case "csv":
 
+      boolean startFlag = true;
+
       File file = new File(measurementsFile);
       Scanner scanner = new Scanner(file);
-      scanner.nextLine();
+
+      int counter = 0;
+
       while (scanner.hasNext()) {
 
         String line = scanner.nextLine();
+        // System.out.println(line);
+
+        if (startFlag) {
+          if (line.split(",")[0].equalsIgnoreCase("1")) {
+
+            startDate = new DateTime(2012, 01, 01, 00, 00);
+
+          }
+          else {
+
+            int year = Integer.parseInt(line.split(",")[0].substring(0, 4));
+            int month = Integer.parseInt(line.split(",")[0].substring(4, 6));
+            int day = Integer.parseInt(line.split(",")[0].substring(6, 8));
+            int hour = Integer.parseInt(line.split(",")[0].substring(8, 10));
+            int minute = Integer.parseInt(line.split(",")[0].substring(10, 12));
+
+            startDate = new DateTime(year, month, day, hour, minute);
+
+          }
+
+          // System.out.println(startDate.toString());
+          startFlag = false;
+        }
 
         temp.add(Double.parseDouble(line.split(",")[1]));
 
         if (!activeOnly)
           temp2.add(Double.parseDouble(line.split(",")[2]));
 
+        counter++;
       }
+
+      endDate = startDate.plusMinutes(counter);
+
+      // System.out.println(endDate.toString());
 
       scanner.close();
       break;

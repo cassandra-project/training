@@ -1348,7 +1348,8 @@ public class MainGUI extends JFrame
               line = nextLine.split(",");
 
               String name = line[1] + " " + line[0];
-              String activity = line[1];
+              // String activity = line[1];
+              String activity = name;
               String[] temp = line[0].split(" ");
 
               String type = "";
@@ -1390,8 +1391,9 @@ public class MainGUI extends JFrame
               line = nextLine.split(",");
 
               // System.out.println(Arrays.toString(line));
-              String name = line[0];
-              String activity = line[1];
+              // String name = line[0];
+              // String activity = line[1];
+              String activity = line[1] + " " + line[0];
               int start = Integer.parseInt(line[2]);
               int end = Integer.parseInt(line[3]);
 

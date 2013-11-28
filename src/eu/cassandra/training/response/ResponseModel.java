@@ -25,6 +25,7 @@ import org.jfree.chart.ChartPanel;
 
 import eu.cassandra.training.activity.ActivityModel;
 import eu.cassandra.training.activity.Histogram;
+import eu.cassandra.training.entities.Person;
 import eu.cassandra.training.utils.ChartUtils;
 import eu.cassandra.training.utils.Utils;
 
@@ -71,7 +72,7 @@ public class ResponseModel extends ActivityModel
    *          Discrete Case)
    * @throws IOException
    */
-  public ResponseModel (ActivityModel activity, String person, int responseType)
+  public ResponseModel (ActivityModel activity, Person person, int responseType)
     throws IOException
   {
     applianceOf = activity.getAppliancesOf();
