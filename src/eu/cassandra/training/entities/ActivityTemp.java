@@ -185,7 +185,7 @@ public class ActivityTemp
    * @return an Activity Model based on the temporary activity data.
    * @throws FileNotFoundException
    */
-  public ActivityModel toActivityModel (String person)
+  public ActivityModel toActivityModel (Person person)
     throws FileNotFoundException
   {
     String[] appliances = new String[this.appliances.size()];

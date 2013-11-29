@@ -33,38 +33,38 @@ public class ApplianceTemp
   /**
    * This variable contains the name of the temporary appliance model.
    */
-  private String name;
+  private final String name;
 
   /**
    * This variable contains the type of the temporary appliance model.
    */
-  private String type;
+  private final String type;
 
   /**
    * This variable contains the name of the installation the temporary appliance
    * model is connected to.
    */
-  private String installation;
+  private final String installation;
 
   /**
    * This variable contains the name of the activity that the temporary
    * appliance model is part of.
    */
-  private String activity;
+  private final String activity;
 
   /**
    * This variable contains the value of the active activeOnly consumption of
    * the
    * temporary appliance model.
    */
-  private double p;
+  private final double p;
 
   /**
    * This variable contains the value of the reactive activeOnly consumption of
    * the
    * temporary appliance model.
    */
-  private double q;
+  private final double q;
 
   /**
    * Simple constructor of a temporary appliance object.
@@ -141,7 +141,7 @@ public class ApplianceTemp
                 + ", \"d\" : 10, \"s\": 0.0}]}]}";
 
     }
-    if (activity.equalsIgnoreCase("Refrigeration"))
+    if (activity.equalsIgnoreCase("Refrigeration Refrigerator"))
       base = true;
 
     Appliance appliance =

@@ -1415,10 +1415,10 @@ public class MainGUI extends JFrame
             }
 
             // This is hard copied for now
-            int activityIndex = findActivity("Refrigeration");
+            int activityIndex = findActivity("Refrigeration Refrigerator");
             if (activityIndex != -1) {
               tempActivities.remove(activityIndex);
-              // System.out.println("Refrigeration Removed");
+              System.out.println("Refrigeration Removed");
             }
             // TODO Add these lines in case we want to remove activities with
             // small sampling number
