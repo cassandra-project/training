@@ -135,7 +135,9 @@ public class ResponseModel extends ActivityModel
   public static ChartPanel previewResponseModel (ActivityModel activity,
                                                  int responseType,
                                                  double[] basicScheme,
-                                                 double[] newScheme)
+                                                 double[] newScheme,
+                                                 float awareness,
+                                                 float sensitivity)
   {
 
     double[] before = null;
@@ -155,8 +157,9 @@ public class ResponseModel extends ActivityModel
     }
 
     double[] after =
-      activity.getStartTime().shiftingPreview(responseType, basicScheme,
-                                              newScheme);
+      activity.getStartTime()
+              .shiftingPreview(responseType, basicScheme, newScheme, awareness,
+                               sensitivity);
 
     after = Utils.aggregateStartTimeDistribution(after);
 
@@ -178,12 +181,13 @@ public class ResponseModel extends ActivityModel
    *          The imported new pricing scheme.
    */
   public void respond (int responseType, double[] basicScheme,
-                       double[] newScheme)
+                       double[] newScheme, float awareness, float sensitivity)
   {
 
     startTime =
       new Histogram(name + " Start Time", activityModel.getStartTime()
-              .shiftingPreview(responseType, basicScheme, newScheme));
+              .shiftingPreview(responseType, basicScheme, newScheme, awareness,
+                               sensitivity));
 
     distributionTypes.put("StartTime", "Histogram");
     distributionTypes.put("StartTimeBinned", "Histogram");

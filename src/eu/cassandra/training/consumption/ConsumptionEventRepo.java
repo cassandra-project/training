@@ -166,7 +166,7 @@ public class ConsumptionEventRepo
 
     }
 
-    System.out.println(tempMap.toString());
+    // System.out.println(tempMap.toString());
 
     // Add each and every event to the appropriate date.
     for (int i = 0; i < events.size(); i++) {
@@ -225,7 +225,7 @@ public class ConsumptionEventRepo
 
     createEventPerDateHashmap(start, end);
 
-    System.out.println("Overall Days:" + eventsPerDate.keySet().size());
+    // System.out.println("Overall Days:" + eventsPerDate.keySet().size());
     setBins();
     createDurationHistogram();
     createDailyTimesHistogram();

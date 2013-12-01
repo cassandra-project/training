@@ -181,7 +181,7 @@ public interface ProbabilityDistribution
    * 
    */
   public void shifting (int shiftingCase, double[] basicScheme,
-                        double[] newScheme);
+                        double[] newScheme, float awareness, float sensitivity);
 
   /**
    * Makes a preview of the shifting function
@@ -196,18 +196,8 @@ public interface ProbabilityDistribution
    * @return the new Start Time distribution as a result of the shifting.
    */
   public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
-                                   double[] newScheme);
-
-  /**
-   * The Optimal Case Scenario shifting function
-   * 
-   * @param newScheme
-   *          The new pricing scheme as imported by the user.
-   * 
-   * @return the new Start Time distribution as a result of the optimal case
-   *         scenario shifting.
-   */
-  public double[] shiftingOptimal (double[] newScheme);
+                                   double[] newScheme, float awareness,
+                                   float sensitivity);
 
   /**
    * The Optimal Case Scenario shifting function
@@ -221,7 +211,8 @@ public interface ProbabilityDistribution
    * @return the new Start Time distribution as a result of the optimal case
    *         scenario shifting.
    */
-  public double[] shiftingOptimal (double[] basicScheme, double[] newScheme);
+  public double[] shiftingOptimal (double[] basicScheme, double[] newScheme,
+                                   float awareness, float sensitivity);
 
   /**
    * The Normal Case Scenario shifting function
@@ -232,7 +223,8 @@ public interface ProbabilityDistribution
    * @return the new Start Time distribution as a result of the normal case
    *         scenario shifting.
    */
-  public double[] shiftingNormal (double[] basicScheme, double[] newScheme);
+  public double[] shiftingNormal (double[] basicScheme, double[] newScheme,
+                                  float awareness, float sensitivity);
 
   /**
    * The Discrete Case Scenario shifting function
@@ -246,7 +238,8 @@ public interface ProbabilityDistribution
    * @return the new Start Time distribution as a result of the discrete case
    *         scenario shifting.
    */
-  public double[] shiftingDiscrete (double[] basicScheme, double[] newScheme);
+  public double[] shiftingDiscrete (double[] basicScheme, double[] newScheme,
+                                    float awareness, float sensitivity);
 
   /**
    * Returning the distribution ID
@@ -292,7 +285,8 @@ public interface ProbabilityDistribution
    *          pricing schemas.
    * @return the new start time distribution.
    */
-  public double[] discreteOptimal (double[] values, PricingVector pricing);
+  public double[] discreteOptimal (double[] values, PricingVector pricing,
+                                   float awareness, float sensitivity);
 
   /**
    * This function is used to estimate the new start time distribution after the
@@ -305,7 +299,8 @@ public interface ProbabilityDistribution
    *          pricing schemas.
    * @return the new start time distribution.
    */
-  public double[] discreteAverage (double[] values, PricingVector pricing);
+  public double[] discreteAverage (double[] values, PricingVector pricing,
+                                   float awareness, float sensitivity);
 
   /**
    * This function is used to estimate the new start time distribution after the
@@ -318,5 +313,6 @@ public interface ProbabilityDistribution
    *          new pricing schemas.
    * @return the new start time distribution.
    */
-  public double[] movingAverage (double[] values, Incentive incentive);
+  public double[] movingAverage (double[] values, Incentive incentive,
+                                 float awareness, float sensitivity);
 }

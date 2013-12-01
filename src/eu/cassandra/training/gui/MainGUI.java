@@ -771,33 +771,31 @@ public class MainGUI extends JFrame
 
     // RESPONSE PARAMETERS //
 
-    final JLabel label_5 = new JLabel("Monetary Incentive");
-    label_5.setBounds(10, 28, 103, 16);
-    responseParametersPanel.add(label_5);
+    final JLabel lblSensitivity = new JLabel("Sensitivity");
+    lblSensitivity.setBounds(10, 28, 78, 16);
+    responseParametersPanel.add(lblSensitivity);
 
-    final JSlider monetarySlider = new JSlider();
-    monetarySlider.setEnabled(false);
-    monetarySlider.setPaintLabels(true);
-    monetarySlider.setSnapToTicks(true);
-    monetarySlider.setPaintTicks(true);
-    monetarySlider.setMinorTickSpacing(10);
-    monetarySlider.setMajorTickSpacing(10);
-    monetarySlider.setBounds(138, 28, 214, 45);
-    responseParametersPanel.add(monetarySlider);
+    final JSlider sensitivitySlider = new JSlider();
+    sensitivitySlider.setPaintLabels(true);
+    sensitivitySlider.setSnapToTicks(true);
+    sensitivitySlider.setPaintTicks(true);
+    sensitivitySlider.setMinorTickSpacing(10);
+    sensitivitySlider.setMajorTickSpacing(10);
+    sensitivitySlider.setBounds(111, 28, 214, 45);
+    responseParametersPanel.add(sensitivitySlider);
 
-    final JLabel label_6 = new JLabel("Environmental Awareness");
-    label_6.setBounds(10, 79, 157, 16);
-    responseParametersPanel.add(label_6);
+    final JLabel lblAwareness = new JLabel("Awareness");
+    lblAwareness.setBounds(10, 79, 78, 16);
+    responseParametersPanel.add(lblAwareness);
 
-    final JSlider environmentalSlider = new JSlider();
-    environmentalSlider.setEnabled(false);
-    environmentalSlider.setPaintLabels(true);
-    environmentalSlider.setPaintTicks(true);
-    environmentalSlider.setMajorTickSpacing(10);
-    environmentalSlider.setMinorTickSpacing(10);
-    environmentalSlider.setSnapToTicks(true);
-    environmentalSlider.setBounds(138, 79, 214, 45);
-    responseParametersPanel.add(environmentalSlider);
+    final JSlider awarenessSlider = new JSlider();
+    awarenessSlider.setPaintLabels(true);
+    awarenessSlider.setPaintTicks(true);
+    awarenessSlider.setMajorTickSpacing(10);
+    awarenessSlider.setMinorTickSpacing(10);
+    awarenessSlider.setSnapToTicks(true);
+    awarenessSlider.setBounds(111, 79, 214, 45);
+    responseParametersPanel.add(awarenessSlider);
 
     final JLabel label_7 = new JLabel("Response Model");
     label_7.setBounds(10, 153, 103, 16);
@@ -806,21 +804,21 @@ public class MainGUI extends JFrame
     final JRadioButton optimalCaseRadioButton =
       new JRadioButton("Optimal Case Scenario");
     responseModelButtonGroup.add(optimalCaseRadioButton);
-    optimalCaseRadioButton.setBounds(138, 131, 146, 18);
+    optimalCaseRadioButton.setBounds(111, 131, 170, 18);
     responseParametersPanel.add(optimalCaseRadioButton);
 
     final JRadioButton normalCaseRadioButton =
       new JRadioButton("Normal Case Scenario");
     normalCaseRadioButton.setSelected(true);
     responseModelButtonGroup.add(normalCaseRadioButton);
-    normalCaseRadioButton.setBounds(138, 152, 157, 18);
+    normalCaseRadioButton.setBounds(111, 152, 170, 18);
     responseParametersPanel.add(normalCaseRadioButton);
 
     final JRadioButton discreteCaseRadioButton =
       new JRadioButton("Discrete Case Scenario");
     discreteCaseRadioButton.setSelected(true);
     responseModelButtonGroup.add(discreteCaseRadioButton);
-    discreteCaseRadioButton.setBounds(138, 173, 157, 18);
+    discreteCaseRadioButton.setBounds(111, 173, 170, 18);
     responseParametersPanel.add(discreteCaseRadioButton);
 
     final JButton previewResponseButton = new JButton("Preview Response Model");
@@ -1103,8 +1101,8 @@ public class MainGUI extends JFrame
         startGaussianRadioButton.setSelected(true);
 
         // Cleaning the Create Response Models tab components
-        monetarySlider.setValue(50);
-        environmentalSlider.setValue(50);
+        sensitivitySlider.setValue(50);
+        awarenessSlider.setValue(50);
         normalCaseRadioButton.setSelected(true);
         previewResponseButton.setEnabled(false);
         createResponseButton.setEnabled(false);
@@ -2068,10 +2066,18 @@ public class MainGUI extends JFrame
           double[] newScheme =
             Utils.parseScheme(newPricingSchemePane.getText());
 
+          float awareness = (float) (awarenessSlider.getValue()) / 100;
+          float sensitivity = (float) (sensitivitySlider.getValue()) / 100;
+
+          System.out.println("Awareness: " + awareness + " Sensitivity: "
+                             + sensitivity);
+
           // Create a preview chart of the response model
           ChartPanel chartPanel =
             installation.getPerson().previewResponse(activity, response,
-                                                     basicScheme, newScheme);
+                                                     basicScheme, newScheme,
+                                                     awareness, sensitivity);
+
           responsePanel.add(chartPanel, BorderLayout.CENTER);
           responsePanel.validate();
 
@@ -2134,10 +2140,17 @@ public class MainGUI extends JFrame
 
           String response = "";
 
+          float awareness = (float) (awarenessSlider.getValue()) / 100;
+          float sensitivity = (float) (sensitivitySlider.getValue()) / 100;
+
+          System.out.println("Awareness: " + awareness + " Sensitivity: "
+                             + sensitivity);
+
           try {
             response =
               installation.getPerson().createResponse(activity, responseType,
-                                                      basicScheme, newScheme);
+                                                      basicScheme, newScheme,
+                                                      awareness, sensitivity);
           }
           catch (IOException exc) {
 

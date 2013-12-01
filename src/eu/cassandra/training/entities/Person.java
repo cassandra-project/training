@@ -307,10 +307,12 @@ public class Person
    *         representation.
    */
   public ChartPanel previewResponse (ActivityModel activity, int response,
-                                     double[] basicScheme, double[] newScheme)
+                                     double[] basicScheme, double[] newScheme,
+                                     float awareness, float sensitivity)
   {
-    return ResponseModel.previewResponseModel(activity, response, basicScheme,
-                                              newScheme);
+    return ResponseModel
+            .previewResponseModel(activity, response, basicScheme, newScheme,
+                                  awareness, sensitivity);
   }
 
   /**
@@ -328,7 +330,8 @@ public class Person
    * @return the name of the resulting Response model.
    */
   public String createResponse (ActivityModel activity, int responseType,
-                                double[] basicScheme, double[] newScheme)
+                                double[] basicScheme, double[] newScheme,
+                                float awareness, float sensitivity)
     throws IOException
   {
 
@@ -408,7 +411,8 @@ public class Person
 
     ResponseModel response = new ResponseModel(activity, this, responseType);
 
-    response.respond(responseType, basicScheme, newScheme);
+    response.respond(responseType, basicScheme, newScheme, awareness,
+                     sensitivity);
 
     responseModels.add(response);
 

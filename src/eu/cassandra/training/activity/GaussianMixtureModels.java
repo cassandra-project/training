@@ -373,31 +373,34 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
   @Override
   public void shifting (int shiftingCase, double[] basicScheme,
-                        double[] newScheme)
+                        double[] newScheme, float awareness, float sensitivity)
   {
 
-    histogram = shiftingPreview(shiftingCase, basicScheme, newScheme);
+    histogram =
+      shiftingPreview(shiftingCase, basicScheme, newScheme, awareness,
+                      sensitivity);
 
   }
 
   @Override
   public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
-                                   double[] newScheme)
+                                   double[] newScheme, float awareness,
+                                   float sensitivity)
   {
 
     double[] result = new double[Constants.MINUTES_PER_DAY];
 
     if (shiftingCase == 0) {
 
-      result = shiftingOptimal(basicScheme, newScheme);
+      result = shiftingOptimal(basicScheme, newScheme, awareness, sensitivity);
     }
     else if (shiftingCase == 1) {
 
-      result = shiftingNormal(basicScheme, newScheme);
+      result = shiftingNormal(basicScheme, newScheme, awareness, sensitivity);
     }
     else if (shiftingCase == 2) {
 
-      result = shiftingDiscrete(basicScheme, newScheme);
+      result = shiftingDiscrete(basicScheme, newScheme, awareness, sensitivity);
     }
     else {
       System.out.println("ERROR in shifting function");
@@ -408,40 +411,23 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   }
 
   @Override
-  public double[] shiftingOptimal (double[] newScheme)
-  {
-    double[] result = new double[Constants.MINUTES_PER_DAY];
-
-    double sum = 0;
-
-    for (int i = 0; i < newScheme.length; i++) {
-      result[i] = histogram[i] / newScheme[i];
-      sum += result[i];
-    }
-
-    for (int i = 0; i < result.length; i++)
-      result[i] /= sum;
-
-    return result;
-
-  }
-
-  @Override
-  public double[] shiftingOptimal (double[] basicScheme, double[] newScheme)
+  public double[] shiftingOptimal (double[] basicScheme, double[] newScheme,
+                                   float awareness, float sensitivity)
   {
     double[] result = Arrays.copyOf(histogram, histogram.length);
 
     PricingVector pricingVector = new PricingVector(basicScheme, newScheme);
 
     if (pricingVector.getPricings().size() > 1)
-      result = discreteOptimal(result, pricingVector);
+      result = discreteOptimal(result, pricingVector, awareness, sensitivity);
 
     return result;
 
   }
 
   @Override
-  public double[] shiftingNormal (double[] basicScheme, double[] newScheme)
+  public double[] shiftingNormal (double[] basicScheme, double[] newScheme,
+                                  float awareness, float sensitivity)
   {
     double[] result = Arrays.copyOf(histogram, histogram.length);
 
@@ -451,33 +437,35 @@ public class GaussianMixtureModels implements ProbabilityDistribution
 
     if (pricingVector.getPricings().size() > 1)
       for (Incentive incentive: inc.getIncentives())
-        result = movingAverage(result, incentive);
+        result = movingAverage(result, incentive, awareness, sensitivity);
 
     return result;
 
   }
 
   @Override
-  public double[] shiftingDiscrete (double[] basicScheme, double[] newScheme)
+  public double[] shiftingDiscrete (double[] basicScheme, double[] newScheme,
+                                    float awareness, float sensitivity)
   {
     double[] result = Arrays.copyOf(histogram, histogram.length);
 
     PricingVector pricingVector = new PricingVector(basicScheme, newScheme);
 
     if (pricingVector.getPricings().size() > 1)
-      result = discreteAverage(result, pricingVector);
+      result = discreteAverage(result, pricingVector, awareness, sensitivity);
 
     return result;
   }
 
   @Override
-  public double[] movingAverage (double[] values, Incentive incentive)
+  public double[] movingAverage (double[] values, Incentive incentive,
+                                 float awareness, float sensitivity)
   {
     // Initialize the auxiliary variables.
     int side = -1;
     int startIndex = incentive.getStartMinute();
     int endIndex = incentive.getEndMinute();
-    double overDiff = 0;
+    double overDiff = 0, overDiffTemp = 0;
     double temp = 0;
     String type = "";
     // double sum = 0;
@@ -532,9 +520,15 @@ public class GaussianMixtureModels implements ProbabilityDistribution
       if (incentive.isPenalty()) {
 
         for (int i = startIndex; i < endIndex; i++) {
+
           temp = incentive.getBase() * values[i] / incentive.getPrice();
-          overDiff += values[i] - temp;
-          values[i] = temp;
+          // System.out.println("Temp = " + temp);
+          overDiffTemp = (values[i] - temp) * awareness * sensitivity;
+          overDiff += overDiffTemp;
+          values[i] -= overDiffTemp;
+
+          // overDiff += values[i] - temp;
+          // values[i] = temp;
 
         }
         // System.out.println("Over Difference = " + overDiff);
@@ -605,8 +599,12 @@ public class GaussianMixtureModels implements ProbabilityDistribution
               index += Constants.MINUTES_PER_DAY;
 
             temp = incentive.getPrice() * values[index] / incentive.getBase();
-            overDiff += values[index] - temp;
-            values[index] = temp;
+            overDiffTemp = (values[index] - temp) * awareness * sensitivity;
+            overDiff += overDiffTemp;
+            values[index] -= overDiffTemp;
+
+            // overDiff += values[index] - temp;
+            // values[index] = temp;
           }
 
           for (int i = endIndex; i < endIndex + side; i++) {
@@ -617,8 +615,14 @@ public class GaussianMixtureModels implements ProbabilityDistribution
               index %= Constants.MINUTES_PER_DAY;
 
             temp = incentive.getPrice() * values[index] / incentive.getBase();
-            overDiff += values[index] - temp;
-            values[index] = temp;
+            overDiffTemp = (values[index] - temp) * awareness * sensitivity;
+            overDiff += overDiffTemp;
+            values[index] -= overDiffTemp;
+
+            // temp = incentive.getPrice() * values[index] /
+            // incentive.getBase();
+            // overDiff += values[index] - temp;
+            // values[index] = temp;
           }
           break;
 
@@ -632,8 +636,14 @@ public class GaussianMixtureModels implements ProbabilityDistribution
               index += Constants.MINUTES_PER_DAY;
 
             temp = incentive.getPrice() * values[index] / incentive.getBase();
-            overDiff += values[index] - temp;
-            values[index] = temp;
+            overDiffTemp = (values[index] - temp) * awareness * sensitivity;
+            overDiff += overDiffTemp;
+            values[index] -= overDiffTemp;
+
+            // temp = incentive.getPrice() * values[index] /
+            // incentive.getBase();
+            // overDiff += values[index] - temp;
+            // values[index] = temp;
           }
           break;
 
@@ -647,8 +657,14 @@ public class GaussianMixtureModels implements ProbabilityDistribution
               index %= Constants.MINUTES_PER_DAY;
 
             temp = incentive.getPrice() * values[index] / incentive.getBase();
-            overDiff += values[index] - temp;
-            values[index] = temp;
+            overDiffTemp = (values[index] - temp) * awareness * sensitivity;
+            overDiff += overDiffTemp;
+            values[index] -= overDiffTemp;
+
+            // temp = incentive.getPrice() * values[index] /
+            // incentive.getBase();
+            // overDiff += values[index] - temp;
+            // values[index] = temp;
           }
 
         }
@@ -670,14 +686,14 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   }
 
   @Override
-  public double[] discreteOptimal (double[] values, PricingVector pricing)
+  public double[] discreteOptimal (double[] values, PricingVector pricing,
+                                   float awareness, float sensitivity)
   {
     // Initialize the auxiliary variables.
-    double temp = 0, additive = 0;
+    double temp = 0, additive = 0, overDiff = 0, overDiffTemp = 0, sum = 0;
     Pricing tempPricing;
-    double sum = 0;
     // double sum = 0;
-    double overDiff = 0;
+
     int start, start2, end, end2, duration;
     double previousPrice, newPrice;
 
@@ -707,9 +723,12 @@ public class GaussianMixtureModels implements ProbabilityDistribution
         newPrice = tempPricing.getCurrentPrice();
 
         for (int i = start; i <= end; i++) {
-          temp = previousPrice * values[i] / newPrice;
-          overDiff += values[i] - temp;
-          values[i] = temp;
+
+          temp = ((previousPrice * values[i]) / newPrice);
+          // System.out.println("Temp = " + temp);
+          overDiffTemp = (values[i] - temp) * awareness * sensitivity;
+          overDiff += overDiffTemp;
+          values[i] -= overDiffTemp;
         }
 
         // System.out.println("OverDiff for index " + index + ": " + overDiff);
@@ -763,16 +782,19 @@ public class GaussianMixtureModels implements ProbabilityDistribution
           previousPrice = tempPricing.getCurrentPrice();
 
           for (int j = start; j <= end; j++) {
+
             temp = newPrice * values[j] / previousPrice;
-            overDiff += values[j] - temp;
-            values[j] = temp;
+            overDiffTemp = (values[j] - temp) * awareness * sensitivity;
+            overDiff += overDiffTemp;
+            values[j] -= overDiffTemp;
+
           }
 
           // System.out.println("OverDiff for index " + index + ": " +
           // overDiff);
 
           additive = overDiff / duration;
-          System.out.println("Additive for index " + i + ": " + additive);
+          // System.out.println("Additive for index " + i + ": " + additive);
 
           for (int j = start2; j < end2; j++)
             values[j] += additive;
@@ -791,13 +813,14 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   }
 
   @Override
-  public double[] discreteAverage (double[] values, PricingVector pricing)
+  public double[] discreteAverage (double[] values, PricingVector pricing,
+                                   float awareness, float sensitivity)
   {
 
     // Initialize the auxiliary variables.
     double temp = 0;
     // double sum = 0;
-    double overDiff = 0;
+    double overDiff = 0, overDiffTemp = 0;
     int start, end;
     double newPrice;
 
@@ -822,9 +845,14 @@ public class GaussianMixtureModels implements ProbabilityDistribution
         newPrice = pricing.getPricings(i).getCurrentPrice();
 
         for (int j = start; j <= end; j++) {
+
           temp = cheapestPrice * values[j] / newPrice;
-          overDiff += values[j] - temp;
-          values[j] = temp;
+          overDiffTemp = (values[j] - temp) * awareness * sensitivity;
+          overDiff += overDiffTemp;
+          values[j] -= overDiffTemp;
+
+          // overDiff += values[j] - temp;
+          // values[j] = temp;
         }
 
         double additive = overDiff / durationCheapest;
