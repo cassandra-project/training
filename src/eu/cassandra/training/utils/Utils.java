@@ -1,5 +1,5 @@
 /*
-Copyright 2011-2013 The Cassandra Consortium (cassandra-fp7.eu)
+ Copyright 2011-2013 The Cassandra Consortium (cassandra-fp7.eu)
 
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,7 +78,6 @@ public class Utils
         if (power) {
           if (testString.length != 2)
             result = counter;
-          ;
           try {
             Double.parseDouble(testString[1]);
           }

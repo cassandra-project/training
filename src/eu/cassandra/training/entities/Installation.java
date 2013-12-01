@@ -285,8 +285,8 @@ public class Installation
             int year = Integer.parseInt(line.split(",")[0].substring(0, 4));
             int month = Integer.parseInt(line.split(",")[0].substring(4, 6));
             int day = Integer.parseInt(line.split(",")[0].substring(6, 8));
-            int hour = Integer.parseInt(line.split(",")[0].substring(8, 10));
-            int minute = Integer.parseInt(line.split(",")[0].substring(10, 12));
+            int hour = 0;
+            int minute = 0;
 
             startDate = new DateTime(year, month, day, hour, minute);
 
