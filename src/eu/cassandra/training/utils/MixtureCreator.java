@@ -391,6 +391,9 @@ public class MixtureCreator
 
       sigmas[i] = Double.parseDouble(line);
 
+      if (sigmas[i] == 0)
+        sigmas[i] = 1.0;
+
     }
 
     DecimalFormat df = new DecimalFormat("#.##########");

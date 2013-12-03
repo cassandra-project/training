@@ -39,6 +39,7 @@ import eu.cassandra.training.utils.Utils;
  */
 public class ResponseModel extends ActivityModel
 {
+
   /**
    * This variable shows the type of response scenario this response model
    * represents.
@@ -118,6 +119,43 @@ public class ResponseModel extends ActivityModel
   }
 
   /**
+   * It enables the creation of a response model based on the user's
+   * preferences.
+   * 
+   * @param responseType
+   *          The selected response type.
+   * @param basicScheme
+   *          The imported basic pricing scheme.
+   * @param newScheme
+   *          The imported new pricing scheme.
+   */
+  public void respond (int responseType, double[] basicScheme,
+                       double[] newScheme, float awareness, float sensitivity)
+  {
+
+    double energyRatio = Utils.estimateEnergyRatio(basicScheme, newScheme);
+
+    dailyTimes =
+      new Histogram(name + " Start Time",
+                    dailyTimes.shiftingDailyPreview(energyRatio, awareness,
+                                                    sensitivity));
+
+    startTime =
+      new Histogram(name + " Start Time", activityModel.getStartTime()
+              .shiftingPreview(responseType, basicScheme, newScheme, awareness,
+                               sensitivity));
+
+    distributionTypes.put("StartTime", "Histogram");
+    distributionTypes.put("StartTimeBinned", "Histogram");
+
+    startTimeBinned =
+      new Histogram(name + "Start Time Binned",
+                    Utils.aggregateStartTimeDistribution(startTime
+                            .getHistogram()));
+
+  }
+
+  /**
    * It enables the creation of a graphical representation of a response model
    * based on the user's preferences.
    * 
@@ -129,6 +167,10 @@ public class ResponseModel extends ActivityModel
    *          The imported basic pricing scheme.
    * @param newScheme
    *          The imported new pricing scheme.
+   * @param awareness
+   *          The awareness of the person.
+   * @param sensitivity
+   *          The sensitivity of the person.
    * @return a chart panel with the resulting Response model graphical
    *         representation.
    */
@@ -170,39 +212,40 @@ public class ResponseModel extends ActivityModel
   }
 
   /**
-   * It enables the creation of a response model based on the user's
-   * preferences.
+   * It enables the creation of a graphical representation of the daily times
+   * response model
+   * based on the user's preferences.
    * 
-   * @param responseType
-   *          The selected response type.
-   * @param basicScheme
-   *          The imported basic pricing scheme.
-   * @param newScheme
-   *          The imported new pricing scheme.
+   * @param activity
+   *          The selected base Activity Model.
+   * @param energyRatio
+   *          The energy ratio of the given pricing schemes
+   * @param awareness
+   *          The awareness of the person.
+   * @param sensitivity
+   *          The sensitivity of the person.
+   * @return a chart panel with the resulting Response model graphical
+   *         representation.
    */
-  public void respond (int responseType, double[] basicScheme,
-                       double[] newScheme, float awareness, float sensitivity)
+  public static ChartPanel previewDailyResponseModel (ActivityModel activity,
+                                                      double energyRatio,
+                                                      float awareness,
+                                                      float sensitivity)
   {
 
-    startTime =
-      new Histogram(name + " Start Time", activityModel.getStartTime()
-              .shiftingPreview(responseType, basicScheme, newScheme, awareness,
-                               sensitivity));
+    double[] before =
+      Arrays.copyOf(activity.getDailyTimes().getHistogram(), activity
+              .getDailyTimes().getHistogram().length);
 
-    distributionTypes.put("StartTime", "Histogram");
-    distributionTypes.put("StartTimeBinned", "Histogram");
+    double[] after =
+      activity.getDailyTimes().shiftingDailyPreview(energyRatio, awareness,
+                                                    sensitivity);
 
-    startTimeBinned =
-      new Histogram(name + "Start Time Binned",
-                    Utils.aggregateStartTimeDistribution(startTime
-                            .getHistogram()));
+    return ChartUtils
+            .createDailyResponseHistogram("Daily Times Response",
+                                          "Times Per Day", "Probability",
+                                          before, after);
 
-  }
-
-  @Override
-  public String toString ()
-  {
-    return name;
   }
 
   @Override
@@ -210,5 +253,11 @@ public class ResponseModel extends ActivityModel
   {
     super.status();
     System.out.println("Response Type:" + responseType);
+  }
+
+  @Override
+  public String toString ()
+  {
+    return name;
   }
 }

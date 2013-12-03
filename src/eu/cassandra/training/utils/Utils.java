@@ -39,6 +39,68 @@ public class Utils
 {
 
   /**
+   * This function is used for aggregating the start time distribution in
+   * 10-minute intervals to create the start time binned distribution.
+   * 
+   * @param values
+   *          The start time distribution values' array.
+   * @return the start time binned distribution values' array.
+   */
+  public static double[] aggregateStartTimeDistribution (double[] values)
+  {
+    double[] result = new double[values.length / Constants.TEN_MINUTES];
+
+    for (int i = 0; i < result.length; i++)
+      for (int j = 0; j < Constants.TEN_MINUTES; j++)
+        result[i] += values[i * Constants.TEN_MINUTES + j];
+
+    return result;
+  }
+
+  /**
+   * This function is called when the temporary files must be removed from the
+   * temporary folder used to store the csv and xls used to create the entity
+   * models during the procedure of training and disaggregation. It is done when
+   * the program starts, when the program ends and when the reset button is
+   * pressed by the user.
+   */
+  public static void cleanFiles ()
+  {
+    File directory = new File(Constants.tempFolder);
+    File files[] = directory.listFiles();
+    String extension = "";
+    for (int index = 0; index < files.length; index++) {
+      {
+        extension =
+          files[index].getAbsolutePath().substring(files[index]
+                                                           .getAbsolutePath()
+                                                           .length() - 3,
+                                                   files[index]
+                                                           .getAbsolutePath()
+                                                           .length());
+        if (extension.equalsIgnoreCase("csv")
+            || extension.equalsIgnoreCase("txt")) {
+          boolean wasDeleted = files[index].delete();
+          if (!wasDeleted) {
+            System.out.println("Not Deleted File " + files[index].toString());
+          }
+        }
+      }
+    }
+  }
+
+  public static void histogramValues (double[] values)
+  {
+    double sum = 0;
+
+    for (int i = 0; i < values.length; i++)
+      sum += values[i];
+    System.out.println("Array of Histogram:" + Arrays.toString(values));
+    System.out.println("Summary:" + sum);
+
+  }
+
+  /**
    * This is the parser for the measurement file. It parses through the file and
    * checks for errors. It can parse through .csv and .xls file and uses
    * different libraries for each file type.
@@ -153,51 +215,6 @@ public class Utils
   }
 
   /**
-   * This function is used for parsing through the basic pricing schema and
-   * returns the array of prices for the daily schedule.
-   * 
-   * @param scheme
-   *          The input pricing schema
-   * @return an array of the prices by minute of day.
-   */
-  public static double[] parseScheme (String scheme)
-  {
-    double[] data = new double[Constants.MINUTES_PER_DAY];
-
-    String[] lines = scheme.split("\n");
-
-    int startTime = -1;
-    int endTime = -1;
-
-    for (String line: lines) {
-
-      String start = line.split("-")[0];
-
-      int startHour = Integer.parseInt(start.split(":")[0]);
-      int startMinute = Integer.parseInt(start.split(":")[1]);
-
-      String end = line.split("-")[1];
-
-      int endHour = Integer.parseInt(end.split(":")[0]);
-      int endMinute = Integer.parseInt(end.split(":")[1]);
-
-      startTime = startHour * 60 + startMinute;
-      endTime = endHour * 60 + endMinute;
-
-      // System.out.println("Start: " + startTime + " End: " + endTime);
-
-      double value = Double.parseDouble(line.split("-")[2]);
-
-      if (startTime < endTime) {
-        for (int i = startTime; i <= endTime; i++)
-          data[i] = value;
-      }
-    }
-
-    return data;
-  }
-
-  /**
    * This function is used for parsing through the basic pricing schema to check
    * for errors.
    * 
@@ -296,64 +313,66 @@ public class Utils
   }
 
   /**
-   * This function is used for aggregating the start time distribution in
-   * 10-minute intervals to create the start time binned distribution.
+   * This function is used for parsing through the basic pricing schema and
+   * returns the array of prices for the daily schedule.
    * 
-   * @param values
-   *          The start time distribution values' array.
-   * @return the start time binned distribution values' array.
+   * @param scheme
+   *          The input pricing schema
+   * @return an array of the prices by minute of day.
    */
-  public static double[] aggregateStartTimeDistribution (double[] values)
+  public static double[] parseScheme (String scheme)
   {
-    double[] result = new double[values.length / Constants.TEN_MINUTES];
+    double[] data = new double[Constants.MINUTES_PER_DAY];
 
-    for (int i = 0; i < result.length; i++)
-      for (int j = 0; j < Constants.TEN_MINUTES; j++)
-        result[i] += values[i * Constants.TEN_MINUTES + j];
+    String[] lines = scheme.split("\n");
 
-    return result;
-  }
+    int startTime = -1;
+    int endTime = -1;
 
-  public static void histogramValues (double[] values)
-  {
-    double sum = 0;
+    for (String line: lines) {
 
-    for (int i = 0; i < values.length; i++)
-      sum += values[i];
-    System.out.println("Array of Histogram:" + Arrays.toString(values));
-    System.out.println("Summary:" + sum);
+      String start = line.split("-")[0];
 
-  }
+      int startHour = Integer.parseInt(start.split(":")[0]);
+      int startMinute = Integer.parseInt(start.split(":")[1]);
 
-  /**
-   * This function is called when the temporary files must be removed from the
-   * temporary folder used to store the csv and xls used to create the entity
-   * models during the procedure of training and disaggregation. It is done when
-   * the program starts, when the program ends and when the reset button is
-   * pressed by the user.
-   */
-  public static void cleanFiles ()
-  {
-    File directory = new File(Constants.tempFolder);
-    File files[] = directory.listFiles();
-    String extension = "";
-    for (int index = 0; index < files.length; index++) {
-      {
-        extension =
-          files[index].getAbsolutePath().substring(files[index]
-                                                           .getAbsolutePath()
-                                                           .length() - 3,
-                                                   files[index]
-                                                           .getAbsolutePath()
-                                                           .length());
-        if (extension.equalsIgnoreCase("csv")
-            || extension.equalsIgnoreCase("txt")) {
-          boolean wasDeleted = files[index].delete();
-          if (!wasDeleted) {
-            System.out.println("Not Deleted File " + files[index].toString());
-          }
-        }
+      String end = line.split("-")[1];
+
+      int endHour = Integer.parseInt(end.split(":")[0]);
+      int endMinute = Integer.parseInt(end.split(":")[1]);
+
+      startTime = startHour * 60 + startMinute;
+      endTime = endHour * 60 + endMinute;
+
+      // System.out.println("Start: " + startTime + " End: " + endTime);
+
+      double value = Double.parseDouble(line.split("-")[2]);
+
+      if (startTime < endTime) {
+        for (int i = startTime; i <= endTime; i++)
+          data[i] = value;
       }
     }
+
+    return data;
   }
+
+  public static double estimateEnergyRatio (double[] basicScheme,
+                                            double[] newScheme)
+  {
+    double baseEnergy = 0;
+    double newEnergy = 0;
+
+    for (int i = 0; i < basicScheme.length; i++) {
+      baseEnergy += basicScheme[i];
+      newEnergy += newScheme[i];
+    }
+
+    double energyRatio = newEnergy / baseEnergy;
+
+    System.out.println("Energy Ratio: " + energyRatio);
+
+    return energyRatio;
+  }
+
 }

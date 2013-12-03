@@ -460,6 +460,23 @@ public class Gaussian implements ProbabilityDistribution
   }
 
   @Override
+  public double[] shiftingDailyPreview (double energyRatio, float awareness,
+                                        float sensitivity)
+  {
+
+    double[] result = new double[0];
+    return result;
+
+  }
+
+  @Override
+  public void shiftingDaily (double energyRatio, float awareness,
+                             float sensitivity)
+  {
+
+  }
+
+  @Override
   public double[] shiftingOptimal (double[] basicScheme, double[] newScheme,
                                    float awareness, float sensitivity)
   {

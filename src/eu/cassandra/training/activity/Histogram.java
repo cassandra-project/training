@@ -719,6 +719,129 @@ public class Histogram implements ProbabilityDistribution
   }
 
   @Override
+  public void shiftingDaily (double energyRatio, float awareness,
+                             float sensitivity)
+  {
+    values = shiftingDailyPreview(energyRatio, awareness, sensitivity);
+  }
+
+  @Override
+  public double[] shiftingDailyPreview (double energyRatio, float awareness,
+                                        float sensitivity)
+  {
+    double[] temp = Arrays.copyOf(values, values.length);
+
+    double diff = (energyRatio - 1) * (awareness * sensitivity);
+
+    System.out.println("Diff: " + diff);
+    double[] result;
+    if (diff > 0)
+      result = reduceUse(temp, diff);
+    else
+      result = increaseUse(temp, Math.abs(diff));
+
+    System.out.println("Final:" + Arrays.toString(result));
+
+    return result;
+
+  }
+
+  private double[] reduceUse (double[] result, double diff)
+  {
+    int index = result.length - 1;
+    double diffTemp = diff;
+    double sum = 0;
+
+    System.out.println("Before:" + Arrays.toString(result));
+
+    while (diffTemp > 0) {
+
+      double reduction = Math.min(result[index], diffTemp);
+
+      result[index] -= reduction;
+      diffTemp -= reduction;
+
+      System.out.println("Index: " + index + " Reduction: " + reduction
+                         + " DiffTemp: " + diffTemp);
+
+      index--;
+
+    }
+
+    // Fixes out of bounds error
+    index = Math.max(0, index);
+
+    System.out.println("After:" + Arrays.toString(result));
+
+    for (int i = 0; i <= index; i++)
+      sum += result[i];
+
+    for (int i = 0; i <= index; i++)
+      result[i] += (result[i] / sum) * diff;
+
+    sum = 0;
+
+    for (int i = 0; i < result.length; i++)
+      sum += result[i];
+
+    System.out.println("After Normalization:" + Arrays.toString(result));
+
+    System.out.println("Summary: " + sum);
+
+    index = result.length - 1;
+
+    while (result[index] == 0)
+      index--;
+
+    return Arrays.copyOfRange(result, 0, index + 1);
+
+  }
+
+  private double[] increaseUse (double[] result, double diff)
+  {
+    int index = 0;
+    double diffTemp = diff;
+    double sum = 0;
+
+    System.out.println("Before:" + Arrays.toString(result));
+
+    while (diffTemp > 0) {
+
+      double reduction = Math.min(result[index], diffTemp);
+
+      result[index] -= reduction;
+      diffTemp -= reduction;
+
+      System.out.println("Index: " + index + " Reduction: " + reduction
+                         + " DiffTemp: " + diffTemp);
+
+      index++;
+
+    }
+
+    index = Math.min(index, result.length - 1);
+
+    System.out.println("After:" + Arrays.toString(result));
+
+    for (int i = index; i < result.length; i++)
+      sum += result[i];
+
+    for (int i = index; i < result.length; i++)
+      result[i] += (result[i] / sum) * diff;
+
+    sum = 0;
+
+    for (int i = 0; i < result.length; i++)
+      sum += result[i];
+
+    System.out.println("After Normalization:" + Arrays.toString(result));
+
+    System.out.println("Summary: " + sum);
+
+    return Arrays.copyOf(result, result.length);
+  }
+
+  @Override
   public double[] shiftingOptimal (double[] basicScheme, double[] newScheme,
                                    float awareness, float sensitivity)
   {

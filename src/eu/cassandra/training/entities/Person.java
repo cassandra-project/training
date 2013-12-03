@@ -28,6 +28,7 @@ import com.mongodb.DBObject;
 import eu.cassandra.training.activity.ActivityModel;
 import eu.cassandra.training.response.ResponseModel;
 import eu.cassandra.training.utils.ChartUtils;
+import eu.cassandra.training.utils.Utils;
 
 /**
  * This class is used for implementing the Person Models in the Training
@@ -100,70 +101,6 @@ public class Person
   }
 
   /**
-   * This is a getter function of the Person model name.
-   * 
-   * @return the name of the Person model.
-   */
-  public String getName ()
-  {
-    return name;
-  }
-
-  /**
-   * This is a getter function of the id of the Person model.
-   * 
-   * @return the id of the Person model.
-   */
-  public String getPersonID ()
-  {
-    return personID;
-  }
-
-  /**
-   * This is a getter function of the size of the Activity models of the Person
-   * Model.
-   * 
-   * @return the number of Activity Models present on the Appliance model.
-   */
-  public int getActivityModelsSize ()
-  {
-    return activityModels.size();
-  }
-
-  /**
-   * This is a getter function of the size of the Response models of the Person
-   * Model.
-   * 
-   * @return the number of Reponse Models present on the Appliance model.
-   */
-  public int getResponseModelsSize ()
-  {
-    return responseModels.size();
-  }
-
-  /**
-   * This is a getter function of the installation of the Person
-   * Model.
-   * 
-   * @return the number of Reponse Models present on the Appliance model.
-   */
-  public Installation getInstallation ()
-  {
-    return installation;
-  }
-
-  /**
-   * This is a setter function of the id of the Person model.
-   * 
-   * @param the
-   *          id give from Cassandra server to the Person model.
-   */
-  public void setPersonID (String id)
-  {
-    personID = id;
-  }
-
-  /**
    * This function is used to add and Activity Model to the Person Model
    * 
    * @param activity
@@ -172,147 +109,6 @@ public class Person
   public void addActivity (ActivityModel activity)
   {
     activityModels.add(activity);
-  }
-
-  public ActivityModel findActivity (Appliance appliance)
-  {
-
-    ActivityModel result = null;
-    String temp = this.name + " " + appliance.getName() + " Activity Model";
-    // System.out.println("Name:" + name);
-    for (ActivityModel activity: activityModels) {
-      // System.out.println(activity.getName());
-      if (activity.getName().equalsIgnoreCase(temp)) {
-        result = activity;
-        break;
-      }
-    }
-    return result;
-  }
-
-  /**
-   * This function is searching for an Activity Model in the Person given
-   * a certain name.
-   * 
-   * @param name
-   *          The name of the Activity Model in search of.
-   * @param suffix
-   *          The flag showing a suffix is needed to find the correct Activity
-   *          Model.
-   * @return the found Activity Model.
-   */
-  public ActivityModel findActivity (String name, boolean suffix)
-  {
-
-    ActivityModel result = null;
-    String temp = "";
-    if (suffix)
-      temp = this.name + " " + name + " Activity Model";
-    else
-      temp = name;
-
-    for (ActivityModel activity: activityModels) {
-      if (activity.getName().equalsIgnoreCase(temp)) {
-        result = activity;
-        break;
-      }
-    }
-    return result;
-  }
-
-  /**
-   * This function is searching for an Response Model in the Person given
-   * a certain name.
-   * 
-   * @param name
-   *          The name of the Activity Model in search of.
-   * @return the found Response Model.
-   */
-  public ResponseModel findResponse (String name)
-  {
-
-    ResponseModel result = null;
-
-    for (ResponseModel response: responseModels) {
-
-      if (response.getName().equalsIgnoreCase(name)) {
-        result = response;
-        break;
-      }
-    }
-    return result;
-  }
-
-  /**
-   * This function is used for the training of the new Activity Models when a
-   * single appliance is at hand.
-   * 
-   * @param appliance
-   *          The base appliance for the Activity Model.
-   * @param distributions
-   *          The distribution types selected by the user on the GUI.
-   * @throws IOException
-   */
-  public void train (Appliance appliance, String[] distributions)
-    throws IOException
-  {
-    ActivityModel exists =
-      findActivity(name + " " + appliance.getName() + " Activity Model", false);
-
-    if (exists != null)
-      activityModels.remove(exists);
-
-    ActivityModel activityModel = new ActivityModel(appliance, this);
-    activityModel.train(distributions);
-    activityModels.add(activityModel);
-  }
-
-  /**
-   * This function is used for the training of the new Activity Models when an
-   * temporary Activity is used.
-   * 
-   * @param activity
-   *          The base temporary activity for the Activity Model.
-   * @param distributions
-   *          The distribution types selected by the user on the GUI.
-   * @throws IOException
-   */
-  public void train (ActivityTemp activity, String[] distributions)
-    throws IOException
-  {
-    ActivityModel exists =
-      findActivity(name + " " + activity.getName() + " Activity Model", false);
-
-    if (exists != null)
-      activityModels.remove(exists);
-
-    ActivityModel activityModel = activity.toActivityModel(this);
-    activityModel.train(distributions);
-    activityModels.add(activityModel);
-  }
-
-  /**
-   * It enables the creation of a graphical representation of a response model
-   * based on the user's preferences.
-   * 
-   * @param activity
-   *          The selected base Activity Model.
-   * @param response
-   *          The selected response type.
-   * @param basicScheme
-   *          The imported basic pricing scheme.
-   * @param newScheme
-   *          The imported new pricing scheme.
-   * @return a chart panel with the resulting Response model graphical
-   *         representation.
-   */
-  public ChartPanel previewResponse (ActivityModel activity, int response,
-                                     double[] basicScheme, double[] newScheme,
-                                     float awareness, float sensitivity)
-  {
-    return ResponseModel
-            .previewResponseModel(activity, response, basicScheme, newScheme,
-                                  awareness, sensitivity);
   }
 
   /**
@@ -421,10 +217,211 @@ public class Person
     return result;
   }
 
-  @Override
-  public String toString ()
+  public ActivityModel findActivity (Appliance appliance)
+  {
+
+    ActivityModel result = null;
+    String temp = this.name + " " + appliance.getName() + " Activity Model";
+    // System.out.println("Name:" + name);
+    for (ActivityModel activity: activityModels) {
+      // System.out.println(activity.getName());
+      if (activity.getName().equalsIgnoreCase(temp)) {
+        result = activity;
+        break;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * This function is searching for an Activity Model in the Person given
+   * a certain name.
+   * 
+   * @param name
+   *          The name of the Activity Model in search of.
+   * @param suffix
+   *          The flag showing a suffix is needed to find the correct Activity
+   *          Model.
+   * @return the found Activity Model.
+   */
+  public ActivityModel findActivity (String name, boolean suffix)
+  {
+
+    ActivityModel result = null;
+    String temp = "";
+    if (suffix)
+      temp = this.name + " " + name + " Activity Model";
+    else
+      temp = name;
+
+    for (ActivityModel activity: activityModels) {
+      if (activity.getName().equalsIgnoreCase(temp)) {
+        result = activity;
+        break;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * This function is searching for an Response Model in the Person given
+   * a certain name.
+   * 
+   * @param name
+   *          The name of the Activity Model in search of.
+   * @return the found Response Model.
+   */
+  public ResponseModel findResponse (String name)
+  {
+
+    ResponseModel result = null;
+
+    for (ResponseModel response: responseModels) {
+
+      if (response.getName().equalsIgnoreCase(name)) {
+        result = response;
+        break;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * This is a getter function of the size of the Activity models of the Person
+   * Model.
+   * 
+   * @return the number of Activity Models present on the Appliance model.
+   */
+  public int getActivityModelsSize ()
+  {
+    return activityModels.size();
+  }
+
+  /**
+   * This is a getter function of the installation of the Person
+   * Model.
+   * 
+   * @return the number of Reponse Models present on the Appliance model.
+   */
+  public Installation getInstallation ()
+  {
+    return installation;
+  }
+
+  /**
+   * This is a getter function of the Person model name.
+   * 
+   * @return the name of the Person model.
+   */
+  public String getName ()
   {
     return name;
+  }
+
+  /**
+   * This is a getter function of the id of the Person model.
+   * 
+   * @return the id of the Person model.
+   */
+  public String getPersonID ()
+  {
+    return personID;
+  }
+
+  /**
+   * This is a getter function of the size of the Response models of the Person
+   * Model.
+   * 
+   * @return the number of Reponse Models present on the Appliance model.
+   */
+  public int getResponseModelsSize ()
+  {
+    return responseModels.size();
+  }
+
+  /**
+   * It enables the creation of a graphical representation of a response model
+   * based on the user's preferences.
+   * 
+   * @param activity
+   *          The selected base Activity Model.
+   * @param basicScheme
+   *          The imported basic pricing scheme.
+   * @param newScheme
+   *          The imported new pricing scheme.
+   * @return a chart panel with the resulting Response model graphical
+   *         representation.
+   */
+  public ChartPanel previewDailyResponse (ActivityModel activity,
+                                          double[] basicScheme,
+                                          double[] newScheme, float awareness,
+                                          float sensitivity)
+  {
+    double energyRatio = Utils.estimateEnergyRatio(basicScheme, newScheme);
+
+    return ResponseModel.previewDailyResponseModel(activity, energyRatio,
+                                                   awareness, sensitivity);
+  }
+
+  /**
+   * It enables the creation of a graphical representation of a response model
+   * based on the user's preferences.
+   * 
+   * @param activity
+   *          The selected base Activity Model.
+   * @param response
+   *          The selected response type.
+   * @param basicScheme
+   *          The imported basic pricing scheme.
+   * @param newScheme
+   *          The imported new pricing scheme.
+   * @return a chart panel with the resulting Response model graphical
+   *         representation.
+   */
+  public ChartPanel previewResponse (ActivityModel activity, int response,
+                                     double[] basicScheme, double[] newScheme,
+                                     float awareness, float sensitivity)
+  {
+    return ResponseModel
+            .previewResponseModel(activity, response, basicScheme, newScheme,
+                                  awareness, sensitivity);
+  }
+
+  /**
+   * This is a setter function of the id of the Person model.
+   * 
+   * @param the
+   *          id give from Cassandra server to the Person model.
+   */
+  public void setPersonID (String id)
+  {
+    personID = id;
+  }
+
+  /**
+   * It enables the creation of a graphical statistic graph for an overview of
+   * the Person Model.
+   * 
+   * @return a chart panel with the resulting statistical overview graphical
+   *         representation.
+   */
+  public ChartPanel statisticGraphs ()
+  {
+    String title = name + " Statistics";
+
+    return ChartUtils.createPieChart(title, this);
+  }
+
+  /**
+   * This function is used to present the basic information of the Person
+   * Model on the console.
+   */
+  public void status ()
+  {
+    System.out.println("Name: " + name);
+    System.out.println("Person Of Installation: " + installation);
+    System.out.println("Activity Models:" + activityModels.toString());
+    System.out.println("Response Models:" + responseModels.toString());
   }
 
   /**
@@ -446,29 +443,57 @@ public class Person
 
   }
 
-  /**
-   * This function is used to present the basic information of the Person
-   * Model on the console.
-   */
-  public void status ()
+  @Override
+  public String toString ()
   {
-    System.out.println("Name: " + name);
-    System.out.println("Person Of Installation: " + installation);
-    System.out.println("Activity Models:" + activityModels.toString());
-    System.out.println("Response Models:" + responseModels.toString());
+    return name;
   }
 
   /**
-   * It enables the creation of a graphical statistic graph for an overview of
-   * the Person Model.
+   * This function is used for the training of the new Activity Models when an
+   * temporary Activity is used.
    * 
-   * @return a chart panel with the resulting statistical overview graphical
-   *         representation.
+   * @param activity
+   *          The base temporary activity for the Activity Model.
+   * @param distributions
+   *          The distribution types selected by the user on the GUI.
+   * @throws IOException
    */
-  public ChartPanel statisticGraphs ()
+  public void train (ActivityTemp activity, String[] distributions)
+    throws IOException
   {
-    String title = name + " Statistics";
+    ActivityModel exists =
+      findActivity(name + " " + activity.getName() + " Activity Model", false);
 
-    return ChartUtils.createPieChart(title, this);
+    if (exists != null)
+      activityModels.remove(exists);
+
+    ActivityModel activityModel = activity.toActivityModel(this);
+    activityModel.train(distributions);
+    activityModels.add(activityModel);
+  }
+
+  /**
+   * This function is used for the training of the new Activity Models when a
+   * single appliance is at hand.
+   * 
+   * @param appliance
+   *          The base appliance for the Activity Model.
+   * @param distributions
+   *          The distribution types selected by the user on the GUI.
+   * @throws IOException
+   */
+  public void train (Appliance appliance, String[] distributions)
+    throws IOException
+  {
+    ActivityModel exists =
+      findActivity(name + " " + appliance.getName() + " Activity Model", false);
+
+    if (exists != null)
+      activityModels.remove(exists);
+
+    ActivityModel activityModel = new ActivityModel(appliance, this);
+    activityModel.train(distributions);
+    activityModels.add(activityModel);
   }
 }

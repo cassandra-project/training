@@ -383,6 +383,13 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   }
 
   @Override
+  public void shiftingDaily (double energyRatio, float awareness,
+                             float sensitivity)
+  {
+
+  }
+
+  @Override
   public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
                                    double[] newScheme, float awareness,
                                    float sensitivity)
@@ -406,6 +413,16 @@ public class GaussianMixtureModels implements ProbabilityDistribution
       System.out.println("ERROR in shifting function");
     }
 
+    return result;
+
+  }
+
+  @Override
+  public double[] shiftingDailyPreview (double energyRatio, float awareness,
+                                        float sensitivity)
+  {
+
+    double[] result = new double[0];
     return result;
 
   }

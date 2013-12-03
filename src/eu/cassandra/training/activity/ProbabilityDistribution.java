@@ -184,7 +184,7 @@ public interface ProbabilityDistribution
                         double[] newScheme, float awareness, float sensitivity);
 
   /**
-   * Makes a preview of the shifting function
+   * Makes a preview of the start time shifting function
    * 
    * @param shiftingCase
    *          The selected response type by the user.
@@ -198,6 +198,35 @@ public interface ProbabilityDistribution
   public double[] shiftingPreview (int shiftingCase, double[] basicScheme,
                                    double[] newScheme, float awareness,
                                    float sensitivity);
+
+  /**
+   * Makes a preview of the daily times shifting function
+   * 
+   * @param shiftingCase
+   *          The selected response type by the user.
+   * @param basicScheme
+   *          The basic pricing scheme as imported by the user.
+   * @param newScheme
+   *          The new pricing scheme as imported by the user.
+   * 
+   * @return the new Start Time distribution as a result of the shifting.
+   */
+  public double[] shiftingDailyPreview (double energyRatio, float awareness,
+                                        float sensitivity);
+
+  /**
+   * Makes a preview of the daily times shifting function
+   * 
+   * @param shiftingCase
+   *          The selected response type by the user.
+   * @param basicScheme
+   *          The basic pricing scheme as imported by the user.
+   * @param newScheme
+   *          The new pricing scheme as imported by the user.
+   * 
+   */
+  public void shiftingDaily (double energyRatio, float awareness,
+                             float sensitivity);
 
   /**
    * The Optimal Case Scenario shifting function

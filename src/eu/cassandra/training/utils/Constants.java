@@ -80,7 +80,7 @@ public class Constants
   public static final String START_TIME_BINNED_FILE =
     "TempFiles/startTimeBinned";
 
-  public static final double SMALL_NUMBER = 1.0E7;
+  public static final double SMALL_NUMBER = 0.0000001;
 
   public static final int HOUR_SAMPLE_LIMIT = 2 * HOURS_PER_DAY;
   public static final int QUARTER_SAMPLE_LIMIT = 2 * QUARTERS_PER_DAY;

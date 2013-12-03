@@ -22,6 +22,10 @@ import java.text.DecimalFormat;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPosition;
+import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.CategoryLabelWidthType;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.PieSectionLabelGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
@@ -38,6 +42,9 @@ import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.text.TextBlockAnchor;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.TextAnchor;
 
 import eu.cassandra.training.entities.Person;
 
@@ -100,6 +107,65 @@ public class ChartUtils
     xyplot.setForegroundAlpha(0.85F);
     NumberAxis numberaxis = (NumberAxis) xyplot.getRangeAxis();
     numberaxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+
+    return new ChartPanel(chart);
+  }
+
+  /**
+   * This function is used for the visualization of a Comparative Response Model
+   * Histogram.
+   * 
+   * @param title
+   *          The title of the chart.
+   * @param x
+   *          The unit on the X axis of the chart.
+   * @param y
+   *          The unit on the Y axis of the chart.
+   * @param dataBefore
+   *          The array of values before the response.
+   * @param dataAfter
+   *          The array of values after the response.
+   * @return a chart panel with the graphical representation.
+   */
+  public static ChartPanel createDailyResponseHistogram (String title,
+                                                         String x, String y,
+                                                         double[] dataBefore,
+                                                         double[] dataAfter)
+  {
+    final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+    for (int i = 0; i < dataBefore.length; i++) {
+      dataset.addValue(dataBefore[i], "Basic Scheme", "" + i + "");
+      if (i < dataAfter.length)
+        dataset.addValue(dataAfter[i], "New Scheme", "" + i + "");
+      else
+        dataset.addValue(0, "New Scheme", "" + i + "");
+    }
+
+    JFreeChart chart = ChartFactory.createBarChart3D(title, // chart title
+                                                     x, // domain axis label
+                                                     y, // range axis label
+                                                     dataset, // data
+                                                     PlotOrientation.VERTICAL, // orientation
+                                                     true, // include legend
+                                                     true, // tooltips
+                                                     false // urls
+            );
+
+    final CategoryPlot plot = chart.getCategoryPlot();
+    plot.setForegroundAlpha(1.0f);
+
+    // left align the category labels...
+    final CategoryAxis axis = plot.getDomainAxis();
+    final CategoryLabelPositions p = axis.getCategoryLabelPositions();
+
+    final CategoryLabelPosition left =
+      new CategoryLabelPosition(RectangleAnchor.LEFT,
+                                TextBlockAnchor.CENTER_LEFT,
+                                TextAnchor.CENTER_LEFT, 0.0,
+                                CategoryLabelWidthType.RANGE, 0.30f);
+    axis.setCategoryLabelPositions(CategoryLabelPositions
+            .replaceLeftPosition(p, left));
 
     return new ChartPanel(chart);
   }

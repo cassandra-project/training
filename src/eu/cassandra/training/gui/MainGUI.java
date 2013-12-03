@@ -106,6 +106,53 @@ public class MainGUI extends JFrame
   private static final long serialVersionUID = 1L;
 
   /**
+   * This function is used when the program needs to search through the list of
+   * available activities to find the selected one.
+   * 
+   * @param name
+   *          name of the activity as it can be found on the list of detected /
+   *          selected activities
+   * @return the index of the activity in the list of the tempActivities.
+   */
+  private static int findActivity (String name)
+  {
+
+    int result = -1;
+
+    for (int i = 0; i < tempActivities.size(); i++) {
+      if (tempActivities.get(i).getName().equals(name)) {
+
+        result = i;
+        break;
+      }
+
+    }
+
+    return result;
+  }
+
+  /**
+   * This is the main function that launches the application. No arguments are
+   * needed to run.
+   */
+  public static void main (String[] args)
+  {
+    EventQueue.invokeLater(new Runnable() {
+      @Override
+      public void run ()
+      {
+        try {
+          MainGUI frame = new MainGUI();
+          frame.setVisible(true);
+        }
+        catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    });
+  }
+
+  /**
    * This variable is the main panel where all the graphical objects of the GUI
    * are added.
    */
@@ -155,6 +202,8 @@ public class MainGUI extends JFrame
    */
   private final ButtonGroup durationButtonGroup = new ButtonGroup();
 
+  // private static int threshold = 2;
+
   /**
    * This is the variable controlling over the radio buttons used for choosing
    * the Response Model type for the visualization or extraction of the new
@@ -170,8 +219,6 @@ public class MainGUI extends JFrame
    * order to simulate an electrical installation.
    */
   private Installation installation = new Installation();
-
-  // private static int threshold = 2;
 
   /**
    * This is an arraylist of the temporary Appliance Entity models that are
@@ -227,27 +274,6 @@ public class MainGUI extends JFrame
    */
   private DefaultListModel<String> exportModels =
     new DefaultListModel<String>();
-
-  /**
-   * This is the main function that launches the application. No arguments are
-   * needed to run.
-   */
-  public static void main (String[] args)
-  {
-    EventQueue.invokeLater(new Runnable() {
-      @Override
-      public void run ()
-      {
-        try {
-          MainGUI frame = new MainGUI();
-          frame.setVisible(true);
-        }
-        catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    });
-  }
 
   /**
    * Constructor of the Training Module GUI.
@@ -354,6 +380,188 @@ public class MainGUI extends JFrame
     tabbedPane.setEnabledAt(2, false);
     createResponseTab.setLayout(null);
 
+    // RESPONSE MODEL TAB //
+
+    final JPanel responseParametersPanel = new JPanel();
+    responseParametersPanel.setLayout(null);
+    responseParametersPanel.setBorder(new TitledBorder(null,
+                                                       "Response Parameters",
+                                                       TitledBorder.LEADING,
+                                                       TitledBorder.TOP, null,
+                                                       null));
+    responseParametersPanel.setBounds(6, 6, 391, 271);
+    createResponseTab.add(responseParametersPanel);
+
+    final JPanel activityModelSelectionPanel = new JPanel();
+    activityModelSelectionPanel.setLayout(null);
+    activityModelSelectionPanel
+            .setBorder(new TitledBorder(UIManager
+                    .getBorder("TitledBorder.border"),
+                                        "Activity Model Selection",
+                                        TitledBorder.LEADING, TitledBorder.TOP,
+                                        null, null));
+    activityModelSelectionPanel.setBounds(6, 516, 391, 228);
+    createResponseTab.add(activityModelSelectionPanel);
+
+    final JPanel responsePanel = new JPanel();
+    responsePanel.setBorder(new TitledBorder(UIManager
+            .getBorder("TitledBorder.border"), "Activity Model Change Preview",
+                                             TitledBorder.LEADING,
+                                             TitledBorder.TOP, null, null));
+    responsePanel.setBounds(401, 6, 786, 385);
+    createResponseTab.add(responsePanel);
+    responsePanel.setLayout(new BorderLayout(0, 0));
+
+    final JPanel pricingPreviewPanel = new JPanel();
+    pricingPreviewPanel
+            .setBorder(new TitledBorder(UIManager
+                    .getBorder("TitledBorder.border"),
+                                        "Pricing Scheme Preview",
+                                        TitledBorder.LEADING, TitledBorder.TOP,
+                                        null, null));
+    pricingPreviewPanel.setBounds(401, 438, 786, 259);
+    createResponseTab.add(pricingPreviewPanel);
+    pricingPreviewPanel.setLayout(new BorderLayout(0, 0));
+
+    final JPanel pricingSchemePanel = new JPanel();
+    pricingSchemePanel.setLayout(null);
+    pricingSchemePanel
+            .setBorder(new TitledBorder(UIManager
+                    .getBorder("TitledBorder.border"),
+                                        "Pricing Scheme Selection",
+                                        TitledBorder.LEADING, TitledBorder.TOP,
+                                        null, null));
+    pricingSchemePanel.setBounds(6, 274, 391, 243);
+    createResponseTab.add(pricingSchemePanel);
+
+    // /////////////////
+    // RESPONSE TAB //
+    // ////////////////
+
+    // RESPONSE PARAMETERS //
+
+    final JLabel lblSensitivity = new JLabel("Sensitivity");
+    lblSensitivity.setBounds(10, 28, 78, 16);
+    responseParametersPanel.add(lblSensitivity);
+
+    final JSlider sensitivitySlider = new JSlider();
+    sensitivitySlider.setPaintLabels(true);
+    sensitivitySlider.setSnapToTicks(true);
+    sensitivitySlider.setPaintTicks(true);
+    sensitivitySlider.setMinorTickSpacing(10);
+    sensitivitySlider.setMajorTickSpacing(10);
+    sensitivitySlider.setBounds(111, 28, 214, 45);
+    responseParametersPanel.add(sensitivitySlider);
+
+    final JLabel lblAwareness = new JLabel("Awareness");
+    lblAwareness.setBounds(10, 79, 78, 16);
+    responseParametersPanel.add(lblAwareness);
+
+    final JSlider awarenessSlider = new JSlider();
+    awarenessSlider.setPaintLabels(true);
+    awarenessSlider.setPaintTicks(true);
+    awarenessSlider.setMajorTickSpacing(10);
+    awarenessSlider.setMinorTickSpacing(10);
+    awarenessSlider.setSnapToTicks(true);
+    awarenessSlider.setBounds(111, 79, 214, 45);
+    responseParametersPanel.add(awarenessSlider);
+
+    final JLabel label_7 = new JLabel("Response Model");
+    label_7.setBounds(10, 153, 103, 16);
+    responseParametersPanel.add(label_7);
+
+    final JRadioButton optimalCaseRadioButton =
+      new JRadioButton("Optimal Case Scenario");
+    responseModelButtonGroup.add(optimalCaseRadioButton);
+    optimalCaseRadioButton.setBounds(111, 131, 170, 18);
+    responseParametersPanel.add(optimalCaseRadioButton);
+
+    final JRadioButton normalCaseRadioButton =
+      new JRadioButton("Normal Case Scenario");
+    normalCaseRadioButton.setSelected(true);
+    responseModelButtonGroup.add(normalCaseRadioButton);
+    normalCaseRadioButton.setBounds(111, 152, 170, 18);
+    responseParametersPanel.add(normalCaseRadioButton);
+
+    final JRadioButton discreteCaseRadioButton =
+      new JRadioButton("Discrete Case Scenario");
+    discreteCaseRadioButton.setSelected(true);
+    responseModelButtonGroup.add(discreteCaseRadioButton);
+    discreteCaseRadioButton.setBounds(111, 173, 170, 18);
+    responseParametersPanel.add(discreteCaseRadioButton);
+
+    final JButton previewResponseButton = new JButton("Preview Response Model");
+    previewResponseButton.setEnabled(false);
+    previewResponseButton.setBounds(24, 198, 157, 28);
+    responseParametersPanel.add(previewResponseButton);
+
+    final JButton createResponseButton = new JButton("Create Response Model");
+    createResponseButton.setEnabled(false);
+    createResponseButton.setBounds(191, 198, 162, 28);
+    responseParametersPanel.add(createResponseButton);
+
+    final JButton createResponseAllButton = new JButton("Create Response All");
+    createResponseAllButton.setEnabled(false);
+    createResponseAllButton.setBounds(111, 232, 157, 28);
+    responseParametersPanel.add(createResponseAllButton);
+
+    // SELECT ACTIVITY MODEL //
+
+    final JLabel lblSelectedActivity = new JLabel("Selected Activity");
+    lblSelectedActivity.setBounds(10, 21, 130, 16);
+    activityModelSelectionPanel.add(lblSelectedActivity);
+
+    JScrollPane activityListScrollPane = new JScrollPane();
+    activityListScrollPane.setBounds(20, 39, 355, 143);
+    activityModelSelectionPanel.add(activityListScrollPane);
+
+    final JList<String> activitySelectList = new JList<String>();
+    activityListScrollPane.setViewportView(activitySelectList);
+    activitySelectList.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null,
+                                                  null));
+
+    final JButton commitButton = new JButton("Commit");
+    commitButton.setEnabled(false);
+    commitButton.setBounds(151, 209, 89, 23);
+    pricingSchemePanel.add(commitButton);
+
+    JLabel lblBasicSchema = new JLabel("Basic Schema (Start - End - Value)");
+    lblBasicSchema.setBounds(10, 18, 177, 14);
+    pricingSchemePanel.add(lblBasicSchema);
+
+    JLabel lblNewSchemastart = new JLabel("New Schema (Start - End - Value)");
+    lblNewSchemastart.setBounds(197, 18, 177, 14);
+    pricingSchemePanel.add(lblNewSchemastart);
+
+    JScrollPane basicPricingSchemeScrollPane = new JScrollPane();
+    basicPricingSchemeScrollPane.setBounds(10, 43, 177, 161);
+    pricingSchemePanel.add(basicPricingSchemeScrollPane);
+
+    final JTextPane basicPricingSchemePane = new JTextPane();
+    basicPricingSchemeScrollPane.setViewportView(basicPricingSchemePane);
+    basicPricingSchemePane.setText("00:00-23:59-0.05");
+
+    JScrollPane newPricingScrollPane = new JScrollPane();
+    newPricingScrollPane.setBounds(197, 43, 177, 161);
+    pricingSchemePanel.add(newPricingScrollPane);
+
+    final JTextPane newPricingSchemePane = new JTextPane();
+
+    newPricingScrollPane.setViewportView(newPricingSchemePane);
+
+    JPanel buttonPanel = new JPanel();
+    buttonPanel.setBounds(682, 402, 265, 33);
+    createResponseTab.add(buttonPanel);
+
+    final JButton dailyResponseButton = new JButton("Daily Times");
+    dailyResponseButton.setEnabled(false);
+    buttonPanel.add(dailyResponseButton);
+
+    final JButton startResponseButton = new JButton("Start Time");
+
+    startResponseButton.setEnabled(false);
+    buttonPanel.add(startResponseButton);
+
     final JPanel exportTab = new JPanel();
     tabbedPane.addTab("Export Models", null, exportTab, null);
     tabbedPane.setEnabledAt(3, false);
@@ -429,61 +637,7 @@ public class MainGUI extends JFrame
     consumptionPreviewPanel.setBounds(630, 261, 557, 447);
     trainingTab.add(consumptionPreviewPanel);
     consumptionPreviewPanel.setLayout(new BorderLayout(0, 0));
-
-    // RESPONSE MODEL TAB //
-
-    final JPanel responseParametersPanel = new JPanel();
-    responseParametersPanel.setLayout(null);
-    responseParametersPanel.setBorder(new TitledBorder(null,
-                                                       "Response Parameters",
-                                                       TitledBorder.LEADING,
-                                                       TitledBorder.TOP, null,
-                                                       null));
-    responseParametersPanel.setBounds(6, 6, 391, 271);
-    createResponseTab.add(responseParametersPanel);
-
-    final JPanel activityModelSelectionPanel = new JPanel();
-    activityModelSelectionPanel.setLayout(null);
-    activityModelSelectionPanel
-            .setBorder(new TitledBorder(UIManager
-                    .getBorder("TitledBorder.border"),
-                                        "Activity Model Selection",
-                                        TitledBorder.LEADING, TitledBorder.TOP,
-                                        null, null));
-    activityModelSelectionPanel.setBounds(6, 516, 391, 228);
-    createResponseTab.add(activityModelSelectionPanel);
-
-    final JPanel responsePanel = new JPanel();
-    responsePanel.setBorder(new TitledBorder(UIManager
-            .getBorder("TitledBorder.border"), "Activity Model Change Preview",
-                                             TitledBorder.LEADING,
-                                             TitledBorder.TOP, null, null));
-    responsePanel.setBounds(401, 6, 786, 385);
-    createResponseTab.add(responsePanel);
-    responsePanel.setLayout(new BorderLayout(0, 0));
     contentPane.setLayout(gl_contentPane);
-
-    final JPanel pricingPreviewPanel = new JPanel();
-    pricingPreviewPanel
-            .setBorder(new TitledBorder(UIManager
-                    .getBorder("TitledBorder.border"),
-                                        "Pricing Scheme Preview",
-                                        TitledBorder.LEADING, TitledBorder.TOP,
-                                        null, null));
-    pricingPreviewPanel.setBounds(401, 402, 786, 295);
-    createResponseTab.add(pricingPreviewPanel);
-    pricingPreviewPanel.setLayout(new BorderLayout(0, 0));
-
-    final JPanel pricingSchemePanel = new JPanel();
-    pricingSchemePanel.setLayout(null);
-    pricingSchemePanel
-            .setBorder(new TitledBorder(UIManager
-                    .getBorder("TitledBorder.border"),
-                                        "Pricing Scheme Selection",
-                                        TitledBorder.LEADING, TitledBorder.TOP,
-                                        null, null));
-    pricingSchemePanel.setBounds(6, 274, 391, 243);
-    createResponseTab.add(pricingSchemePanel);
 
     // EXPORT TAB //
 
@@ -502,7 +656,7 @@ public class MainGUI extends JFrame
                     .getBorder("TitledBorder.border"), "Export Model Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    exportPreviewPanel.setBounds(20, 310, 1177, 387);
+    exportPreviewPanel.setBounds(10, 310, 1187, 387);
     exportTab.add(exportPreviewPanel);
     exportPreviewPanel.setLayout(new BorderLayout(0, 0));
 
@@ -765,121 +919,6 @@ public class MainGUI extends JFrame
     trainingTab.add(distributionPreviewPanel);
     distributionPreviewPanel.setLayout(new BorderLayout(0, 0));
 
-    // /////////////////
-    // RESPONSE TAB //
-    // ////////////////
-
-    // RESPONSE PARAMETERS //
-
-    final JLabel lblSensitivity = new JLabel("Sensitivity");
-    lblSensitivity.setBounds(10, 28, 78, 16);
-    responseParametersPanel.add(lblSensitivity);
-
-    final JSlider sensitivitySlider = new JSlider();
-    sensitivitySlider.setPaintLabels(true);
-    sensitivitySlider.setSnapToTicks(true);
-    sensitivitySlider.setPaintTicks(true);
-    sensitivitySlider.setMinorTickSpacing(10);
-    sensitivitySlider.setMajorTickSpacing(10);
-    sensitivitySlider.setBounds(111, 28, 214, 45);
-    responseParametersPanel.add(sensitivitySlider);
-
-    final JLabel lblAwareness = new JLabel("Awareness");
-    lblAwareness.setBounds(10, 79, 78, 16);
-    responseParametersPanel.add(lblAwareness);
-
-    final JSlider awarenessSlider = new JSlider();
-    awarenessSlider.setPaintLabels(true);
-    awarenessSlider.setPaintTicks(true);
-    awarenessSlider.setMajorTickSpacing(10);
-    awarenessSlider.setMinorTickSpacing(10);
-    awarenessSlider.setSnapToTicks(true);
-    awarenessSlider.setBounds(111, 79, 214, 45);
-    responseParametersPanel.add(awarenessSlider);
-
-    final JLabel label_7 = new JLabel("Response Model");
-    label_7.setBounds(10, 153, 103, 16);
-    responseParametersPanel.add(label_7);
-
-    final JRadioButton optimalCaseRadioButton =
-      new JRadioButton("Optimal Case Scenario");
-    responseModelButtonGroup.add(optimalCaseRadioButton);
-    optimalCaseRadioButton.setBounds(111, 131, 170, 18);
-    responseParametersPanel.add(optimalCaseRadioButton);
-
-    final JRadioButton normalCaseRadioButton =
-      new JRadioButton("Normal Case Scenario");
-    normalCaseRadioButton.setSelected(true);
-    responseModelButtonGroup.add(normalCaseRadioButton);
-    normalCaseRadioButton.setBounds(111, 152, 170, 18);
-    responseParametersPanel.add(normalCaseRadioButton);
-
-    final JRadioButton discreteCaseRadioButton =
-      new JRadioButton("Discrete Case Scenario");
-    discreteCaseRadioButton.setSelected(true);
-    responseModelButtonGroup.add(discreteCaseRadioButton);
-    discreteCaseRadioButton.setBounds(111, 173, 170, 18);
-    responseParametersPanel.add(discreteCaseRadioButton);
-
-    final JButton previewResponseButton = new JButton("Preview Response Model");
-    previewResponseButton.setEnabled(false);
-    previewResponseButton.setBounds(24, 198, 157, 28);
-    responseParametersPanel.add(previewResponseButton);
-
-    final JButton createResponseButton = new JButton("Create Response Model");
-    createResponseButton.setEnabled(false);
-    createResponseButton.setBounds(191, 198, 162, 28);
-    responseParametersPanel.add(createResponseButton);
-
-    final JButton createResponseAllButton = new JButton("Create Response All");
-    createResponseAllButton.setEnabled(false);
-    createResponseAllButton.setBounds(111, 232, 157, 28);
-    responseParametersPanel.add(createResponseAllButton);
-
-    // SELECT ACTIVITY MODEL //
-
-    final JLabel lblSelectedActivity = new JLabel("Selected Activity");
-    lblSelectedActivity.setBounds(10, 21, 130, 16);
-    activityModelSelectionPanel.add(lblSelectedActivity);
-
-    JScrollPane activityListScrollPane = new JScrollPane();
-    activityListScrollPane.setBounds(20, 39, 355, 143);
-    activityModelSelectionPanel.add(activityListScrollPane);
-
-    final JList<String> activitySelectList = new JList<String>();
-    activityListScrollPane.setViewportView(activitySelectList);
-    activitySelectList.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null,
-                                                  null));
-
-    final JButton commitButton = new JButton("Commit");
-    commitButton.setEnabled(false);
-    commitButton.setBounds(151, 209, 89, 23);
-    pricingSchemePanel.add(commitButton);
-
-    JLabel lblBasicSchema = new JLabel("Basic Schema (Start - End - Value)");
-    lblBasicSchema.setBounds(10, 18, 177, 14);
-    pricingSchemePanel.add(lblBasicSchema);
-
-    JLabel lblNewSchemastart = new JLabel("New Schema (Start - End - Value)");
-    lblNewSchemastart.setBounds(197, 18, 177, 14);
-    pricingSchemePanel.add(lblNewSchemastart);
-
-    JScrollPane basicPricingSchemeScrollPane = new JScrollPane();
-    basicPricingSchemeScrollPane.setBounds(10, 43, 177, 161);
-    pricingSchemePanel.add(basicPricingSchemeScrollPane);
-
-    final JTextPane basicPricingSchemePane = new JTextPane();
-    basicPricingSchemeScrollPane.setViewportView(basicPricingSchemePane);
-    basicPricingSchemePane.setText("00:00-23:59-0.05");
-
-    JScrollPane newPricingScrollPane = new JScrollPane();
-    newPricingScrollPane.setBounds(197, 43, 177, 161);
-    pricingSchemePanel.add(newPricingScrollPane);
-
-    final JTextPane newPricingSchemePane = new JTextPane();
-
-    newPricingScrollPane.setViewportView(newPricingSchemePane);
-
     // //////////////////
     // EXPORT TAB ///////
     // /////////////////
@@ -1118,6 +1157,8 @@ public class MainGUI extends JFrame
         basicPricingSchemePane.setText("00:00-23:59-0.05");
         newPricingSchemePane.setText("");
         commitButton.setEnabled(false);
+        dailyResponseButton.setEnabled(false);
+        startResponseButton.setEnabled(false);
 
         // Cleaning the Export Models tab components
         exportModelList.setSelectedIndex(-1);
@@ -1671,6 +1712,16 @@ public class MainGUI extends JFrame
 
         Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
+        responsePanel.removeAll();
+        responsePanel.validate();
+        pricingPreviewPanel.removeAll();
+        pricingPreviewPanel.validate();
+        previewResponseButton.setEnabled(false);
+        createResponseButton.setEnabled(false);
+        createResponseAllButton.setEnabled(false);
+        dailyResponseButton.setEnabled(false);
+        startResponseButton.setEnabled(false);
+
         try {
 
           root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1816,6 +1867,17 @@ public class MainGUI extends JFrame
       @Override
       public void actionPerformed (ActionEvent e)
       {
+
+        responsePanel.removeAll();
+        responsePanel.validate();
+        pricingPreviewPanel.removeAll();
+        pricingPreviewPanel.validate();
+        previewResponseButton.setEnabled(false);
+        createResponseButton.setEnabled(false);
+        createResponseAllButton.setEnabled(false);
+        dailyResponseButton.setEnabled(false);
+        startResponseButton.setEnabled(false);
+
         for (int i = 0; i < selectedApplianceList.getModel().getSize(); i++) {
           selectedApplianceList.setSelectedIndex(i);
           trainingButton.doClick();
@@ -2018,6 +2080,13 @@ public class MainGUI extends JFrame
 
     createResponseTab.addComponentListener(new ComponentAdapter() {
       @Override
+      public void componentHidden (ComponentEvent arg0)
+      {
+        activitySelectList.setSelectedIndex(0);
+
+      }
+
+      @Override
       public void componentShown (ComponentEvent arg0)
       {
         activitySelectList.setSelectedIndex(0);
@@ -2035,7 +2104,6 @@ public class MainGUI extends JFrame
       @Override
       public void actionPerformed (ActionEvent e)
       {
-
         Component root = SwingUtilities.getRoot((JButton) e.getSource());
 
         try {
@@ -2083,6 +2151,8 @@ public class MainGUI extends JFrame
 
           createResponseButton.setEnabled(true);
           createResponseAllButton.setEnabled(true);
+          dailyResponseButton.setEnabled(true);
+          startResponseButton.setEnabled(true);
         }
         finally {
           root.setCursor(Cursor.getDefaultCursor());
@@ -2342,11 +2412,146 @@ public class MainGUI extends JFrame
               previewResponseButton.setEnabled(false);
             }
           }
+
+          responsePanel.removeAll();
+          responsePanel.validate();
+          createResponseButton.setEnabled(false);
+          createResponseAllButton.setEnabled(false);
+          dailyResponseButton.setEnabled(false);
+          startResponseButton.setEnabled(false);
+
         }
 
         finally {
           root.setCursor(Cursor.getDefaultCursor());
         }
+      }
+    });
+
+    startResponseButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the start time button on
+       * the Preview Response panel of the Create Response Models tab. This
+       * button is enabled after the user has pressed the Response Preview
+       * button in order to see the results of his pricing scheme on a activity
+       * model. It shows the changes in the start time distribution.
+       */
+      @Override
+      public void actionPerformed (ActionEvent e)
+      {
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
+
+        try {
+
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+          responsePanel.removeAll();
+
+          // Find the selected activity
+          ActivityModel activity =
+            installation.getPerson().findActivity(activitySelectList
+                                                          .getSelectedValue(),
+                                                  false);
+
+          int response = -1;
+
+          // Check for the selected response type
+          if (optimalCaseRadioButton.isSelected())
+            response = 0;
+          else if (normalCaseRadioButton.isSelected())
+            response = 1;
+          else
+            response = 2;
+
+          // Parse the pricing schemes
+          double[] basicScheme =
+            Utils.parseScheme(basicPricingSchemePane.getText());
+          double[] newScheme =
+            Utils.parseScheme(newPricingSchemePane.getText());
+
+          float awareness = (float) (awarenessSlider.getValue()) / 100;
+          float sensitivity = (float) (sensitivitySlider.getValue()) / 100;
+
+          System.out.println("Awareness: " + awareness + " Sensitivity: "
+                             + sensitivity);
+
+          // Create a preview chart of the response model
+          ChartPanel chartPanel =
+            installation.getPerson().previewResponse(activity, response,
+                                                     basicScheme, newScheme,
+                                                     awareness, sensitivity);
+
+          responsePanel.add(chartPanel, BorderLayout.CENTER);
+          responsePanel.validate();
+
+          createResponseButton.setEnabled(true);
+          createResponseAllButton.setEnabled(true);
+          dailyResponseButton.setEnabled(true);
+          startResponseButton.setEnabled(true);
+        }
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
+        }
+
+      }
+    });
+
+    dailyResponseButton.addActionListener(new ActionListener() {
+      /**
+       * This function is called when the user presses the start time button on
+       * the Preview Response panel of the Create Response Models tab. This
+       * button is enabled after the user has pressed the Response Preview
+       * button in order to see the results of his pricing scheme on a activity
+       * model. It shows the changes in the daily times distribution.
+       */
+      @Override
+      public void actionPerformed (ActionEvent e)
+      {
+        Component root = SwingUtilities.getRoot((JButton) e.getSource());
+
+        try {
+
+          root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+          responsePanel.removeAll();
+
+          // Find the selected activity
+          ActivityModel activity =
+            installation.getPerson().findActivity(activitySelectList
+                                                          .getSelectedValue(),
+                                                  false);
+
+          // Parse the pricing schemes
+          double[] basicScheme =
+            Utils.parseScheme(basicPricingSchemePane.getText());
+          double[] newScheme =
+            Utils.parseScheme(newPricingSchemePane.getText());
+
+          float awareness = (float) (awarenessSlider.getValue()) / 100;
+          float sensitivity = (float) (sensitivitySlider.getValue()) / 100;
+
+          System.out.println("Awareness: " + awareness + " Sensitivity: "
+                             + sensitivity);
+
+          // Create a preview chart of the response model
+          ChartPanel chartPanel =
+            installation.getPerson().previewDailyResponse(activity,
+                                                          basicScheme,
+                                                          newScheme, awareness,
+                                                          sensitivity);
+
+          responsePanel.add(chartPanel, BorderLayout.CENTER);
+          responsePanel.validate();
+
+          createResponseButton.setEnabled(true);
+          createResponseAllButton.setEnabled(true);
+          dailyResponseButton.setEnabled(true);
+          startResponseButton.setEnabled(true);
+        }
+        finally {
+          root.setCursor(Cursor.getDefaultCursor());
+        }
+
       }
     });
 
@@ -3350,32 +3555,6 @@ public class MainGUI extends JFrame
                                       JOptionPane.INFORMATION_MESSAGE);
       }
     });
-  }
-
-  /**
-   * This function is used when the program needs to search through the list of
-   * available activities to find the selected one.
-   * 
-   * @param name
-   *          name of the activity as it can be found on the list of detected /
-   *          selected activities
-   * @return the index of the activity in the list of the tempActivities.
-   */
-  private static int findActivity (String name)
-  {
-
-    int result = -1;
-
-    for (int i = 0; i < tempActivities.size(); i++) {
-      if (tempActivities.get(i).getName().equals(name)) {
-
-        result = i;
-        break;
-      }
-
-    }
-
-    return result;
   }
 
   /**
