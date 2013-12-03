@@ -734,9 +734,18 @@ public class Histogram implements ProbabilityDistribution
     double diff = (energyRatio - 1) * (awareness * sensitivity);
 
     System.out.println("Diff: " + diff);
+
     double[] result;
-    if (diff > 0)
-      result = reduceUse(temp, diff);
+    if (diff > 0) {
+
+      if (diff > 1) {
+        result = new double[1];
+        result[0] = 1;
+      }
+      else
+        result = reduceUse(temp, diff);
+
+    }
     else
       result = increaseUse(temp, Math.abs(diff));
 
