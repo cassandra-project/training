@@ -757,6 +757,7 @@ public class Histogram implements ProbabilityDistribution
 
   private double[] reduceUse (double[] result, double diff)
   {
+
     int index = result.length - 1;
     double diffTemp = diff;
     double sum = 0;
@@ -786,12 +787,14 @@ public class Histogram implements ProbabilityDistribution
       sum += result[i];
 
     for (int i = 0; i <= index; i++)
-      result[i] += (result[i] / sum) * diff;
+      result[i] += (result[i] / (sum + Constants.SMALL_NUMBER)) * diff;
 
     sum = 0;
 
     for (int i = 0; i < result.length; i++)
       sum += result[i];
+
+    result[0] += (1 - sum);
 
     System.out.println("After Normalization:" + Arrays.toString(result));
 
@@ -808,6 +811,7 @@ public class Histogram implements ProbabilityDistribution
 
   private double[] increaseUse (double[] result, double diff)
   {
+
     int index = 0;
     double diffTemp = diff;
     double sum = 0;
@@ -836,12 +840,14 @@ public class Histogram implements ProbabilityDistribution
       sum += result[i];
 
     for (int i = index; i < result.length; i++)
-      result[i] += (result[i] / sum) * diff;
+      result[i] += (result[i] / (sum + Constants.SMALL_NUMBER)) * diff;
 
     sum = 0;
 
     for (int i = 0; i < result.length; i++)
       sum += result[i];
+
+    result[result.length - 1] += (1 - sum);
 
     System.out.println("After Normalization:" + Arrays.toString(result));
 
