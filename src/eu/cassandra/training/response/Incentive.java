@@ -30,36 +30,36 @@ public class Incentive
 {
 
   /** This variable signifies the start minute of the day for the incentive. */
-  private int startMinute;
+  private final int startMinute;
 
   /** This variable signifies the end minute of the day for the incentive. */
-  private int endMinute;
+  private final int endMinute;
 
   /**
    * This variable states if the incentive is penalty or reward.
    */
-  private boolean penalty;
+  private final boolean penalty;
 
   /** This variable presents the pricing of the basic schema at the same time. */
-  private double base;
+  private final double base;
 
   /**
    * This variable is the estimated difference between the old pricing value and
    * the new pricing value.
    */
-  private double difference;
+  private final double difference;
 
   /**
    * This variable is the estimated difference between the time period before
    * this time interval and the current incentive pricing value.
    */
-  private double beforeDifference;
+  private final double beforeDifference;
 
   /**
    * This variable is the estimated difference between the time period after
    * this time interval and the current incentive pricing value.
    */
-  private double afterDifference;
+  private final double afterDifference;
 
   /**
    * A constructor of an incentive where all of the input variables are known.

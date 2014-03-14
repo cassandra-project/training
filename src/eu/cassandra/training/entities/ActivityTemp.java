@@ -188,10 +188,10 @@ public class ActivityTemp
   public ActivityModel toActivityModel (Person person)
     throws FileNotFoundException
   {
-    String[] appliances = new String[this.appliances.size()];
+    Appliance[] appliances = new Appliance[this.appliances.size()];
 
     for (int i = 0; i < appliances.length; i++)
-      appliances[i] = this.appliances.get(i).getName();
+      appliances[i] = this.appliances.get(i);
 
     ActivityModel result =
       new ActivityModel(name, person, appliances, eventsFile);

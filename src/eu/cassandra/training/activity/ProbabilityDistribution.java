@@ -344,4 +344,14 @@ public interface ProbabilityDistribution
    */
   public double[] movingAverage (double[] values, Incentive incentive,
                                  float awareness, float sensitivity);
+
+  /**
+   * This function is an auxiliary function used in the estimation of the
+   * expected power of an activity.
+   * 
+   * @return the array of values for the probability of being over a certain
+   *         value.
+   */
+  public double[] getGreaterProbability ();
+
 }

@@ -470,6 +470,7 @@ public class Person
 
     ActivityModel activityModel = activity.toActivityModel(this);
     activityModel.train(distributions);
+    Utils.estimateExpectedPower(activityModel);
     activityModels.add(activityModel);
   }
 
@@ -494,6 +495,7 @@ public class Person
 
     ActivityModel activityModel = new ActivityModel(appliance, this);
     activityModel.train(distributions);
+    Utils.estimateExpectedPower(activityModel);
     activityModels.add(activityModel);
   }
 }

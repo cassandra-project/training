@@ -76,7 +76,7 @@ public class ResponseModel extends ActivityModel
   public ResponseModel (ActivityModel activity, Person person, int responseType)
     throws IOException
   {
-    applianceOf = activity.getAppliancesOf();
+    appliancesOf = activity.getAppliancesOf();
     activityModel = activity;
     if (activity.getActivity()) {
 
@@ -86,8 +86,9 @@ public class ResponseModel extends ActivityModel
       name = temp + " Response Model";
     }
     else {
-      nameActivity = person + " " + applianceOf[0] + " Response Activity";
-      name = person + " " + applianceOf[0] + " Response Model";
+      nameActivity =
+        person + " " + appliancesOf[0].getName() + " Response Activity";
+      name = person + " " + appliancesOf[0].getName() + " Response Model";
     }
 
     this.person = person;
@@ -116,6 +117,7 @@ public class ResponseModel extends ActivityModel
       fillDistribution(fileMap.get(types[i]), distributionTypes.get(types[i]),
                        i);
 
+    Utils.estimateExpectedPower(this);
   }
 
   /**
@@ -128,9 +130,11 @@ public class ResponseModel extends ActivityModel
    *          The imported basic pricing scheme.
    * @param newScheme
    *          The imported new pricing scheme.
+   * @throws IOException
    */
   public void respond (int responseType, double[] basicScheme,
                        double[] newScheme, float awareness, float sensitivity)
+    throws IOException
   {
 
     double energyRatio = Utils.estimateEnergyRatio(basicScheme, newScheme);
@@ -153,6 +157,7 @@ public class ResponseModel extends ActivityModel
                     Utils.aggregateStartTimeDistribution(startTime
                             .getHistogram()));
 
+    Utils.estimateExpectedPower(this);
   }
 
   /**

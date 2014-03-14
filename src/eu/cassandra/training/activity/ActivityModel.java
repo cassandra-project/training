@@ -81,7 +81,7 @@ public class ActivityModel
    * This array contains the appliances that are participating in the activity
    * model.
    */
-  protected String[] applianceOf;
+  protected Appliance[] appliancesOf;
 
   /**
    * This is the person type that this activity model corresponds
@@ -161,9 +161,8 @@ public class ActivityModel
    */
   protected boolean activity = false;
 
-  /**
-   * Simple constructor of an Activity model.
-   */
+  protected double[] expectedPower = null;
+
   public ActivityModel ()
   {
     name = "";
@@ -185,9 +184,9 @@ public class ActivityModel
     nameActivity = person + " " + appliance.getName() + " Activity";
     name = person + " " + appliance.getName() + " Activity Model";
     this.person = person;
-    applianceOf = new String[1];
-    applianceOf[0] = appliance.getName();
-    consumptionEventRepo = new ConsumptionEventRepo(applianceOf[0]);
+    appliancesOf = new Appliance[1];
+    appliancesOf[0] = appliance;
+    consumptionEventRepo = new ConsumptionEventRepo(appliancesOf[0].getName());
     consumptionEventRepo.readEventsFile(appliance.getEventsFile(),
                                         person.getInstallation());
   }
@@ -206,16 +205,17 @@ public class ActivityModel
    *          The filename of the event file used for the training procedure.
    * 
    */
-  public ActivityModel (String activity, Person person, String[] appliances,
+  public ActivityModel (String activity, Person person, Appliance[] appliances,
                         String eventsFile) throws FileNotFoundException
   {
     nameActivity = person + " " + activity + " Activity";
     name = person + " " + activity + " Activity Model";
     this.activity = true;
     this.person = person;
-    applianceOf = appliances;
+    appliancesOf = appliances;
     consumptionEventRepo = new ConsumptionEventRepo(activity);
     consumptionEventRepo.readEventsFile(eventsFile, person.getInstallation());
+
   }
 
   /**
@@ -296,9 +296,9 @@ public class ActivityModel
    * 
    * @return array of participating appliances.
    */
-  public String[] getAppliancesOf ()
+  public Appliance[] getAppliancesOf ()
   {
-    return applianceOf;
+    return appliancesOf;
   }
 
   /**
@@ -373,6 +373,19 @@ public class ActivityModel
   }
 
   /**
+   * This function is used as a getter for the time period (in days) that this
+   * activity is happening.
+   * 
+   * @return file map.
+   */
+  public int getDays ()
+  {
+    int days = consumptionEventRepo.getEventsPerDate().size();
+    System.out.println("Days of use: " + days);
+    return days;
+  }
+
+  /**
    * This function is used as a setter for the activity ID.
    * 
    * @param id
@@ -425,6 +438,16 @@ public class ActivityModel
   public void setStartID (String id)
   {
     startID = id;
+  }
+
+  public void setExpectedPower (double[] result)
+  {
+    expectedPower = result;
+  }
+
+  public double[] getExpectedPower ()
+  {
+    return expectedPower;
   }
 
   /**
@@ -621,6 +644,17 @@ public class ActivityModel
 
       break;
 
+    case "Uniform":
+      if (index == 2) {
+        consumptionEventRepo.createStartTimeHistogram2();
+        consumptionEventRepo.StartTimeHistogramToFile(file);
+        startTime = new Uniform(450, 1000, true);
+      }
+      else
+        System.out.println("ERROR in index");
+
+      break;
+
     default:
       System.out.println("ERROR in distribution type");
 
@@ -676,19 +710,8 @@ public class ActivityModel
     String x = "Number of Daily Times";
     String y = "Probability";
 
-    switch (distributionTypes.get("DailyTimes")) {
-
-    case "Histogram":
-
-      return ChartUtils.createHistogram(variable, x, y,
-                                        dailyTimes.getHistogram());
-
-    default:
-
-      return ChartUtils.createMixtureDistribution(variable, x, y,
-                                                  dailyTimes.getHistogram());
-
-    }
+    return ChartUtils
+            .createHistogram(variable, x, y, dailyTimes.getHistogram());
 
   }
 
@@ -704,21 +727,21 @@ public class ActivityModel
     String x = "Start Time Minute of the Day";
     String y = "Probability";
 
-    switch (distributionTypes.get("StartTime")) {
+    // switch (distributionTypes.get("StartTime")) {
+    //
+    // case "Histogram":
+    //
+    // // Utils.histogramValues(startTime.getHistogram());
+    //
+    // return ChartUtils.createHistogram(variable, x, y,
+    // startTime.getHistogram());
+    //
+    // default:
 
-    case "Histogram":
+    return ChartUtils.createMixtureDistribution(variable, x, y,
+                                                startTime.getHistogram());
 
-      // Utils.histogramValues(startTime.getHistogram());
-
-      return ChartUtils.createHistogram(variable, x, y,
-                                        startTime.getHistogram());
-
-    default:
-
-      return ChartUtils.createMixtureDistribution(variable, x, y,
-                                                  startTime.getHistogram());
-
-    }
+    // }
 
   }
 
@@ -737,11 +760,11 @@ public class ActivityModel
               + " Minutes Interval";
     String y = "Probability";
 
-    switch (distributionTypes.get("StartTimeBinned")) {
+    switch (distributionTypes.get("StartTime")) {
 
     case "Histogram":
 
-      // Utils.histogramValues(startTimeBinned.getHistogram());
+      // Utils.histogramValues(startTime.getHistogram());
 
       return ChartUtils.createHistogram(variable, x, y,
                                         startTimeBinned.getHistogram());
@@ -753,6 +776,23 @@ public class ActivityModel
                                                           .getHistogram());
 
     }
+
+  }
+
+  /**
+   * This function creates the Start Time Binned distribution chart when
+   * demanded by the user.
+   * 
+   * @return the chart panel containing the Start Time Binned distribution
+   *         chart.
+   */
+  public ChartPanel createExpectedPowerChart ()
+  {
+    String variable = "Activity Expected Power";
+    String x = "Minute of Day";
+    String y = "Expected Power (W)";
+
+    return ChartUtils.createExpectedPowerChart(variable, x, y, expectedPower);
 
   }
 
@@ -866,10 +906,16 @@ public class ActivityModel
     System.out.println("Activity: " + nameActivity);
     System.out.println("Day Type: " + dayType);
     System.out.println("Shiftable: " + shiftable);
-    System.out.println("Appliance Of: " + Arrays.toString(applianceOf));
+    System.out.println("Appliance Of: " + Arrays.toString(appliancesOf));
     System.out.println("Person:" + person);
     System.out.println("Distribution Types:" + distributionTypes.toString());
     System.out.println("File Map:" + fileMap.toString());
+  }
+
+  public int getDurationMax ()
+  {
+    // System.out.println(duration.getHistogram().length - 1);
+    return duration.getHistogram().length - 1;
   }
 
 }

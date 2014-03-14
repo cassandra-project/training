@@ -18,6 +18,7 @@ limitations under the License.
 package eu.cassandra.training.entities;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 
 /**
  * This class is used for implementing the temporary appliances that will become
@@ -54,17 +55,40 @@ public class ApplianceTemp
 
   /**
    * This variable contains the value of the active activeOnly consumption of
-   * the
-   * temporary appliance model.
+   * the temporary appliance model.
    */
-  private final double p;
+  private double p = 0;
 
   /**
    * This variable contains the value of the reactive activeOnly consumption of
-   * the
-   * temporary appliance model.
+   * the temporary appliance model.
    */
-  private final double q;
+  private double q = 0;
+
+  /**
+   * This variable contains the duration of the operation of an appliance. This
+   * is used mostly in refrigerators and freezers.
+   */
+  private int duration = 10;
+
+  /**
+   * This variable contains the distance between switching events on the
+   * operation of an appliance. This is used mostly in refrigerators and
+   * freezers.
+   */
+  private int distance = 0;
+
+  /**
+   * This variable contains the array of active power consumption of an
+   * appliance, used mostly in the washing machine appliances
+   */
+  private double[] pValues = null;
+
+  /**
+   * This variable contains the array of reactive power consumption of an
+   * appliance, used mostly in the washing machine appliances
+   */
+  private double[] qValues = null;
 
   /**
    * Simple constructor of a temporary appliance object.
@@ -78,9 +102,9 @@ public class ApplianceTemp
    * @param activity
    *          The name of the activity the temporary appliance is connected to
    * @param p
-   *          The active activeOnly consumption of the temporary appliance
+   *          The active consumption of the temporary appliance
    * @param q
-   *          The reactive activeOnly consumption of the temporary appliance
+   *          The reactive consumption of the temporary appliance
    */
   public ApplianceTemp (String name, String installation, String type,
                         String activity, double p, double q)
@@ -91,6 +115,68 @@ public class ApplianceTemp
     this.activity = activity;
     this.p = p;
     this.q = q;
+  }
+
+  /**
+   * Simple constructor of a temporary appliance object.
+   * 
+   * @param name
+   *          The name of the temporary appliance
+   * @param installation
+   *          The name of the installation
+   * @param type
+   *          The type of the temporary appliance
+   * @param activity
+   *          The name of the activity the temporary appliance is connected to
+   * @param p
+   *          The active consumption of the temporary appliance
+   * @param q
+   *          The reactive consumption of the temporary appliance
+   * @param duration
+   *          The duration of the appliance operation
+   * @param distance
+   *          The distance between switching events in the operation of the
+   *          appliance
+   */
+  public ApplianceTemp (String name, String installation, String type,
+                        String activity, double p, double q, int duration,
+                        int distance)
+  {
+    this.name = name;
+    this.installation = installation;
+    this.type = type;
+    this.activity = activity;
+    this.p = p;
+    this.q = q;
+    this.duration = duration;
+    this.distance = distance;
+  }
+
+  /**
+   * Simple constructor of a temporary appliance object.
+   * 
+   * @param name
+   *          The name of the temporary appliance
+   * @param installation
+   *          The name of the installation
+   * @param type
+   *          The type of the temporary appliance
+   * @param activity
+   *          The name of the activity the temporary appliance is connected to
+   * @param pValues
+   *          The array of active consumption of the temporary appliance
+   * @param qValues
+   *          The array of reactive consumption of the temporary appliance
+   */
+  public ApplianceTemp (String name, String installation, String type,
+                        String activity, double[] pValues, double[] qValues)
+  {
+    this.name = name;
+    this.installation = installation;
+    this.type = type;
+    this.activity = activity;
+    this.pValues = pValues;
+    this.qValues = qValues;
   }
 
   /**
@@ -105,6 +191,10 @@ public class ApplianceTemp
     System.out.println("Activity:" + activity);
     System.out.println("P:" + p);
     System.out.println("Q:" + q);
+    System.out.println("PValues:" + Arrays.toString(pValues));
+    System.out.println("QValues:" + Arrays.toString(qValues));
+    System.out.println("Duration:" + duration);
+    System.out.println("Distance:" + distance);
 
   }
 
@@ -117,35 +207,72 @@ public class ApplianceTemp
    */
   public Appliance toAppliance ()
   {
-    String powerModel = "";
+    String activeModel = "";
     String reactiveModel = "";
     boolean base = false;
-    if (activity.equalsIgnoreCase("Refrigeration Refrigerator")) {
-      powerModel =
-        "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" :"
-                + p
-                + ", \"d\" : 20, \"s\": 0.0}, {\"p\" : 0 , \"d\" : 20, \"s\": 0.0}]}]}";
 
-      reactiveModel =
-        "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" :"
-                + q
-                + ", \"d\" : 20, \"s\": 0.0}, {\"q\" : 0 , \"d\" : 20, \"s\": 0.0}]}]}";
-    }
-    else {
-      powerModel =
+    boolean refFlag = activity.contains("Refrigeration");
+    boolean wmFlag = name.contains("Washing");
+
+    if (refFlag) {
+      activeModel =
         "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" :" + p
-                + ", \"d\" : 10, \"s\": 0.0}]}]}";
+                + ", \"d\" :" + duration
+                + ", \"s\": 0.0}, {\"p\" : 0 , \"d\" :" + distance
+                + ", \"s\": 0.0}]}]}";
 
       reactiveModel =
         "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" :" + q
-                + ", \"d\" : 10, \"s\": 0.0}]}]}";
+                + ", \"d\" :" + duration
+                + ", \"s\": 0.0}, {\"q\" : 0 , \"d\" :" + distance
+                + ", \"s\": 0.0}]}]}";
+
+      base = true;
+    }
+    else if (wmFlag) {
+
+      // System.out.println(Arrays.toString(pValues));
+      // System.out.println(Arrays.toString(qValues));
+
+      for (int i = 0; i < pValues.length; i++) {
+
+        if (i == 0)
+          activeModel =
+            "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" :"
+                    + pValues[i] + ", \"d\" : 1 , \"s\": 0.0}";
+        else if (i == pValues.length - 1)
+          activeModel += "]}]}";
+        else
+          activeModel += ",{\"p\" :" + pValues[i] + ", \"d\" : 1 , \"s\": 0.0}";
+
+        if (i == 0)
+          reactiveModel =
+            "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" :"
+                    + qValues[i] + ", \"d\" : 1 , \"s\": 0.0}";
+        else if (i == pValues.length - 1)
+          reactiveModel += "]}]}";
+        else
+          reactiveModel +=
+            ",{\"q\" :" + qValues[i] + ", \"d\" : 1 , \"s\": 0.0}";
+
+      }
+
+      // System.out.println(activeModel);
+      // System.out.println(reactiveModel);
+    }
+    else {
+      activeModel =
+        "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"p\" :" + p
+                + ", \"d\" :" + duration + ", \"s\": 0.0}]}]}";
+
+      reactiveModel =
+        "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" :" + q
+                + ", \"d\" :" + duration + ", \"s\": 0.0}]}]}";
 
     }
-    if (activity.equalsIgnoreCase("Refrigeration Refrigerator"))
-      base = true;
 
     Appliance appliance =
-      new Appliance(name, installation, powerModel, reactiveModel, "", base);
+      new Appliance(name, installation, activeModel, reactiveModel, "", base);
 
     appliance.setType(type);
     appliance.setActivity(activity);

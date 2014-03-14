@@ -27,6 +27,8 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
+import eu.cassandra.training.activity.ActivityModel;
+
 /**
  * This class contains static functions that are used for general purposes
  * throughout the Training Module.
@@ -373,6 +375,100 @@ public class Utils
     System.out.println("Energy Ratio: " + energyRatio);
 
     return energyRatio;
+  }
+
+  public static void estimateExpectedPower (ActivityModel activity)
+    throws IOException
+  {
+
+    int durationMax =
+      Math.min(Constants.MINUTES_PER_DAY, activity.getDurationMax());
+
+    double[] result = new double[Constants.MINUTES_PER_DAY];
+
+    System.out.println("Activity " + activity.getName() + " duration max: "
+                       + durationMax);
+
+    System.out.println("Appliances for Activity: "
+                       + Arrays.toString(activity.getAppliancesOf()));
+
+    // System.out.println("Duration Histogram: "
+    // + Arrays.toString(activity.getDuration()
+    // .getHistogram()));
+    //
+    // System.out.println("Greater Probability: "
+    // + Arrays.toString(activity.getDuration()
+    // .getGreaterProbability()));
+
+    for (int i = 0; i < activity.getAppliancesOf().length; i++) {
+
+      Double[] applianceConsumption =
+        activity.getAppliancesOf()[i].getActiveConsumptionModel();
+
+      boolean staticConsumption =
+        activity.getAppliancesOf()[i].getStaticConsumption();
+
+      for (int j = 0; j < result.length; j++)
+        result[j] +=
+          aggregatedProbability(activity, applianceConsumption, j, durationMax,
+                                staticConsumption);
+
+    }
+
+    System.out.println(Arrays.toString(result));
+
+    int days = activity.getDays();
+
+    for (int i = 0; i < result.length; i++)
+      result[i] *= days;
+
+    System.out.println(Arrays.toString(result));
+
+    activity.setExpectedPower(result);
+
+  }
+
+  private static double aggregatedProbability (ActivityModel activity,
+                                               Double[] consumption, int index,
+                                               int durationMax,
+                                               boolean staticConsumption)
+  {
+
+    double result = 0;
+
+    for (int i = 0; i < durationMax; i++) {
+
+      // System.out
+      // .println("Index "
+      // + ((TrainingConstants.MINUTES_PER_DAY + index - i) %
+      // TrainingConstants.MINUTES_PER_DAY)
+      // + ": Duration Probability: "
+      // + activity.getDuration().getProbabilityGreaterEqual(i)
+      // + " Start Time Probability: "
+      // + activity.getStartTime().getProbability(index - i)
+      // + " Consumption: " + consumption[i % consumption.length]);
+
+      if (staticConsumption)
+        result +=
+          activity.getDuration().getProbabilityGreaterEqual(i)
+                  * activity
+                          .getStartTime()
+                          .getProbability((Constants.MINUTES_PER_DAY + index - i)
+                                                  % Constants.MINUTES_PER_DAY)
+                  * consumption[0];
+      else
+        result +=
+          activity.getDuration().getProbabilityGreaterEqual(i)
+                  * activity
+                          .getStartTime()
+                          .getProbability((Constants.MINUTES_PER_DAY + index - i)
+                                                  % Constants.MINUTES_PER_DAY)
+                  * consumption[i % consumption.length];
+
+    }
+
+    return result;
+
   }
 
 }

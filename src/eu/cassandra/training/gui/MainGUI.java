@@ -120,8 +120,7 @@ public class MainGUI extends JFrame
     int result = -1;
 
     for (int i = 0; i < tempActivities.size(); i++) {
-      if (tempActivities.get(i).getName().equals(name)) {
-
+      if (tempActivities.get(i).getName().contains(name)) {
         result = i;
         break;
       }
@@ -389,7 +388,7 @@ public class MainGUI extends JFrame
                                                        TitledBorder.LEADING,
                                                        TitledBorder.TOP, null,
                                                        null));
-    responseParametersPanel.setBounds(6, 6, 391, 271);
+    responseParametersPanel.setBounds(6, 6, 394, 271);
     createResponseTab.add(responseParametersPanel);
 
     final JPanel activityModelSelectionPanel = new JPanel();
@@ -400,7 +399,7 @@ public class MainGUI extends JFrame
                                         "Activity Model Selection",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    activityModelSelectionPanel.setBounds(6, 516, 391, 228);
+    activityModelSelectionPanel.setBounds(6, 516, 394, 192);
     createResponseTab.add(activityModelSelectionPanel);
 
     final JPanel responsePanel = new JPanel();
@@ -408,7 +407,7 @@ public class MainGUI extends JFrame
             .getBorder("TitledBorder.border"), "Activity Model Change Preview",
                                              TitledBorder.LEADING,
                                              TitledBorder.TOP, null, null));
-    responsePanel.setBounds(401, 6, 786, 385);
+    responsePanel.setBounds(417, 6, 770, 385);
     createResponseTab.add(responsePanel);
     responsePanel.setLayout(new BorderLayout(0, 0));
 
@@ -419,7 +418,7 @@ public class MainGUI extends JFrame
                                         "Pricing Scheme Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    pricingPreviewPanel.setBounds(401, 438, 786, 259);
+    pricingPreviewPanel.setBounds(417, 438, 770, 259);
     createResponseTab.add(pricingPreviewPanel);
     pricingPreviewPanel.setLayout(new BorderLayout(0, 0));
 
@@ -431,7 +430,7 @@ public class MainGUI extends JFrame
                                         "Pricing Scheme Selection",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    pricingSchemePanel.setBounds(6, 274, 391, 243);
+    pricingSchemePanel.setBounds(6, 274, 394, 243);
     createResponseTab.add(pricingSchemePanel);
 
     // /////////////////
@@ -525,11 +524,11 @@ public class MainGUI extends JFrame
     commitButton.setBounds(151, 209, 89, 23);
     pricingSchemePanel.add(commitButton);
 
-    JLabel lblBasicSchema = new JLabel("Basic Schema (Start - End - Value)");
-    lblBasicSchema.setBounds(10, 18, 177, 14);
+    JLabel lblBasicSchema = new JLabel("Basic Schema (Start-End-Value)");
+    lblBasicSchema.setBounds(10, 18, 182, 14);
     pricingSchemePanel.add(lblBasicSchema);
 
-    JLabel lblNewSchemastart = new JLabel("New Schema (Start - End - Value)");
+    JLabel lblNewSchemastart = new JLabel("New Schema (Start-End-Value)");
     lblNewSchemastart.setBounds(197, 18, 177, 14);
     pricingSchemePanel.add(lblNewSchemastart);
 
@@ -550,7 +549,7 @@ public class MainGUI extends JFrame
     newPricingScrollPane.setViewportView(newPricingSchemePane);
 
     JPanel buttonPanel = new JPanel();
-    buttonPanel.setBounds(682, 402, 265, 33);
+    buttonPanel.setBounds(682, 390, 265, 33);
     createResponseTab.add(buttonPanel);
 
     final JButton dailyResponseButton = new JButton("Daily Times");
@@ -627,16 +626,16 @@ public class MainGUI extends JFrame
     applianceSelectionPanel.setBounds(630, 6, 557, 256);
     trainingTab.add(applianceSelectionPanel);
 
-    final JPanel consumptionPreviewPanel = new JPanel();
-    consumptionPreviewPanel
+    final JPanel expectedPowerPanel = new JPanel();
+    expectedPowerPanel
             .setBorder(new TitledBorder(UIManager
                     .getBorder("TitledBorder.border"),
-                                        "Example Consumption Model Preview",
+                                        "Expected Power Preview",
                                         TitledBorder.LEADING, TitledBorder.TOP,
                                         null, null));
-    consumptionPreviewPanel.setBounds(630, 261, 557, 447);
-    trainingTab.add(consumptionPreviewPanel);
-    consumptionPreviewPanel.setLayout(new BorderLayout(0, 0));
+    expectedPowerPanel.setBounds(630, 261, 557, 447);
+    trainingTab.add(expectedPowerPanel);
+    expectedPowerPanel.setLayout(new BorderLayout(0, 0));
     contentPane.setLayout(gl_contentPane);
 
     // EXPORT TAB //
@@ -661,7 +660,7 @@ public class MainGUI extends JFrame
     exportPreviewPanel.setLayout(new BorderLayout(0, 0));
 
     JPanel exportButtonsPanel = new JPanel();
-    exportButtonsPanel.setBounds(376, 279, 482, 33);
+    exportButtonsPanel.setBounds(322, 279, 536, 33);
     exportTab.add(exportButtonsPanel);
 
     JPanel connectionPanel = new JPanel();
@@ -890,7 +889,7 @@ public class MainGUI extends JFrame
     // DISTRIBUTION SELECTION //
 
     JPanel distributionSelectionPanel = new JPanel();
-    distributionSelectionPanel.setBounds(87, 261, 482, 33);
+    distributionSelectionPanel.setBounds(80, 261, 482, 33);
     trainingTab.add(distributionSelectionPanel);
 
     final JButton dailyTimesButton = new JButton("Daily Times");
@@ -954,6 +953,10 @@ public class MainGUI extends JFrame
     final JButton exportStartBinnedButton = new JButton("Start Time Binned");
     exportStartBinnedButton.setEnabled(false);
     exportButtonsPanel.add(exportStartBinnedButton);
+
+    final JButton exportExpectedPowerButton = new JButton("Expected Power");
+    exportExpectedPowerButton.setEnabled(false);
+    exportButtonsPanel.add(exportExpectedPowerButton);
 
     JLabel usernameLabel = new JLabel("Username:");
     usernameLabel.setBounds(46, 27, 71, 16);
@@ -1129,8 +1132,8 @@ public class MainGUI extends JFrame
         // Cleaning the Training Activity Models tab components
         distributionPreviewPanel.removeAll();
         distributionPreviewPanel.updateUI();
-        consumptionPreviewPanel.removeAll();
-        consumptionPreviewPanel.updateUI();
+        expectedPowerPanel.removeAll();
+        expectedPowerPanel.updateUI();
         selectedApplianceList.setSelectedIndex(-1);
         selectedAppliances.clear();
         selectedApplianceList.setListData(new String[0]);
@@ -1171,6 +1174,7 @@ public class MainGUI extends JFrame
         exportDurationButton.setEnabled(false);
         exportStartButton.setEnabled(false);
         exportStartBinnedButton.setEnabled(false);
+        exportExpectedPowerButton.setEnabled(false);
         exportButton.setEnabled(false);
         exportAllBaseButton.setEnabled(false);
         exportAllResponseButton.setEnabled(false);
@@ -1401,14 +1405,46 @@ public class MainGUI extends JFrame
                 type = type.trim();
 
               }
-              double p = Double.parseDouble(line[2]);
-              double q = Double.parseDouble(line[3]);
-              // For each appliance found in the file, an temporary Appliance
-              // Entity is created.
-              tempAppliances.add(new ApplianceTemp(name,
-                                                   installation.getName(),
-                                                   type, activity, p, q));
 
+              boolean refFlag = activity.contains("Refrigeration");
+              boolean wmFlag = name.contains("Washing");
+              double p = 0, q = 0;
+              int distance = 0, duration = 0;
+
+              if (refFlag) {
+                p = Double.parseDouble(line[2]);
+                q = Double.parseDouble(line[3]);
+                distance = Integer.parseInt(line[4]);
+                duration = Integer.parseInt(line[5]);
+                // For each appliance found in the file, an temporary Appliance
+                // Entity is created.
+
+                tempAppliances.add(new ApplianceTemp(name, installation
+                        .getName(), type, activity, p, q, duration, distance));
+              }
+              else if (wmFlag) {
+                double[] pValues = new double[line.length / 2 - 1];
+                double[] qValues = new double[line.length / 2 - 1];
+                // For each appliance found in the file, an temporary Appliance
+                // Entity is created.
+
+                for (int i = 0; i < pValues.length; i++) {
+                  pValues[i] = Double.parseDouble(line[2 + 2 * i]);
+                  qValues[i] = Double.parseDouble(line[3 + 2 * i]);
+                }
+
+                tempAppliances.add(new ApplianceTemp(name, installation
+                        .getName(), type, activity, pValues, qValues));
+              }
+              else {
+                p = Double.parseDouble(line[2]);
+                q = Double.parseDouble(line[3]);
+                // For each appliance found in the file, an temporary Appliance
+                // Entity is created.
+
+                tempAppliances.add(new ApplianceTemp(name, installation
+                        .getName(), type, activity, p, q));
+              }
             }
 
             System.out.println("Appliances:" + tempAppliances.size());
@@ -1454,7 +1490,7 @@ public class MainGUI extends JFrame
             }
 
             // This is hard copied for now
-            int activityIndex = findActivity("Refrigeration Refrigerator");
+            int activityIndex = findActivity("Refrigeration");
             if (activityIndex != -1) {
               tempActivities.remove(activityIndex);
               System.out.println("Refrigeration Removed");
@@ -1791,6 +1827,9 @@ public class MainGUI extends JFrame
           distributionPreviewPanel.removeAll();
           distributionPreviewPanel.updateUI();
 
+          expectedPowerPanel.removeAll();
+          expectedPowerPanel.updateUI();
+
           // Show the distribution created on the Distribution Preview Panel
           ActivityModel activityModel =
             installation.getPerson().findActivity(selection, true);
@@ -1802,6 +1841,10 @@ public class MainGUI extends JFrame
             activityModel.createDailyTimesDistributionChart();
           distributionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
           distributionPreviewPanel.validate();
+
+          chartPanel = activityModel.createExpectedPowerChart();
+          expectedPowerPanel.add(chartPanel, BorderLayout.CENTER);
+          expectedPowerPanel.validate();
 
           // Add the Activity model to the list of trained Activity models of
           // the Create Response Models tab
@@ -2024,8 +2067,9 @@ public class MainGUI extends JFrame
       public void valueChanged (ListSelectionEvent arg0)
       {
 
-        consumptionPreviewPanel.removeAll();
-        consumptionPreviewPanel.updateUI();
+        ChartPanel chartPanel = null, chartPanel2 = null, chartPanel3 = null;
+        expectedPowerPanel.removeAll();
+        expectedPowerPanel.updateUI();
         distributionPreviewPanel.removeAll();
         distributionPreviewPanel.updateUI();
 
@@ -2038,21 +2082,11 @@ public class MainGUI extends JFrame
 
           Appliance currentAppliance = installation.findAppliance(selection);
 
-          ChartPanel chartPanel = null;
-          if (currentAppliance != null)
-            chartPanel = currentAppliance.consumptionGraph();
-          else {
-            ActivityTemp currentActivity =
-              tempActivities.get(findActivity(selection));
-            chartPanel = currentActivity.consumptionGraph();
-          }
-
-          consumptionPreviewPanel.add(chartPanel, BorderLayout.CENTER);
-          consumptionPreviewPanel.validate();
+          ActivityModel activityModel =
+            installation.getPerson().findActivity(selection, true);
 
           // If there is also an Activity model trained, show the corresponding
           // distribution charts on the Distribution Preview panel
-          ActivityModel activityModel = null;
 
           if (currentAppliance != null)
             activityModel =
@@ -2064,12 +2098,27 @@ public class MainGUI extends JFrame
 
           if (activityModel != null) {
 
-            ChartPanel chartPanel2 =
-              activityModel.createDailyTimesDistributionChart();
+            dailyTimesButton.setEnabled(true);
+            durationButton.setEnabled(true);
+            startTimeButton.setEnabled(true);
+            startTimeBinnedButton.setEnabled(true);
+
+            chartPanel2 = activityModel.createDailyTimesDistributionChart();
             distributionPreviewPanel.add(chartPanel2, BorderLayout.CENTER);
             distributionPreviewPanel.validate();
             distributionPreviewPanel.updateUI();
 
+            chartPanel3 = activityModel.createExpectedPowerChart();
+            expectedPowerPanel.add(chartPanel3, BorderLayout.CENTER);
+            expectedPowerPanel.validate();
+            expectedPowerPanel.updateUI();
+
+          }
+          else {
+            dailyTimesButton.setEnabled(false);
+            durationButton.setEnabled(false);
+            startTimeButton.setEnabled(false);
+            startTimeBinnedButton.setEnabled(false);
           }
         }
 
@@ -2606,6 +2655,7 @@ public class MainGUI extends JFrame
                 exportDurationButton.setEnabled(false);
                 exportStartButton.setEnabled(false);
                 exportStartBinnedButton.setEnabled(false);
+                exportExpectedPowerButton.setEnabled(false);
               }
               catch (IOException e1) {
                 e1.printStackTrace();
@@ -2621,6 +2671,7 @@ public class MainGUI extends JFrame
               exportDurationButton.setEnabled(false);
               exportStartButton.setEnabled(false);
               exportStartBinnedButton.setEnabled(false);
+              exportExpectedPowerButton.setEnabled(false);
 
             }
             else if (appliance != null) {
@@ -2631,6 +2682,7 @@ public class MainGUI extends JFrame
               exportDurationButton.setEnabled(false);
               exportStartButton.setEnabled(false);
               exportStartBinnedButton.setEnabled(false);
+              exportExpectedPowerButton.setEnabled(false);
 
             }
             else if (activity != null) {
@@ -2641,6 +2693,7 @@ public class MainGUI extends JFrame
               exportDurationButton.setEnabled(true);
               exportStartButton.setEnabled(true);
               exportStartBinnedButton.setEnabled(true);
+              exportExpectedPowerButton.setEnabled(true);
             }
             else if (response != null) {
 
@@ -2650,6 +2703,7 @@ public class MainGUI extends JFrame
               exportDurationButton.setEnabled(true);
               exportStartButton.setEnabled(true);
               exportStartBinnedButton.setEnabled(true);
+              exportExpectedPowerButton.setEnabled(true);
             }
 
             exportPreviewPanel.add(chartPanel, BorderLayout.CENTER);
@@ -2790,6 +2844,34 @@ public class MainGUI extends JFrame
           chartPanel = activity.createDurationDistributionChart();
         else
           chartPanel = response.createDurationDistributionChart();
+
+        exportPreviewPanel.add(chartPanel, BorderLayout.CENTER);
+        exportPreviewPanel.validate();
+
+      }
+    });
+
+    exportExpectedPowerButton.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent arg0)
+      {
+
+        exportPreviewPanel.removeAll();
+        exportPreviewPanel.updateUI();
+
+        String selection = exportModelList.getSelectedValue();
+
+        ActivityModel activity =
+          installation.getPerson().findActivity(selection, false);
+
+        ResponseModel response =
+          installation.getPerson().findResponse(selection);
+
+        ChartPanel chartPanel = null;
+
+        if (activity != null)
+          chartPanel = activity.createExpectedPowerChart();
+        else
+          chartPanel = response.createExpectedPowerChart();
 
         exportPreviewPanel.add(chartPanel, BorderLayout.CENTER);
         exportPreviewPanel.validate();
@@ -2980,8 +3062,7 @@ public class MainGUI extends JFrame
             // For each appliance that participates in the activity
             for (int i = 0; i < activity.getAppliancesOf().length; i++) {
 
-              Appliance activityAppliance =
-                installation.findAppliance(activity.getAppliancesOf()[i]);
+              Appliance activityAppliance = activity.getAppliancesOf()[i];
 
               try {
                 // In case the appliances contained in the Activity model are
@@ -3090,8 +3171,7 @@ public class MainGUI extends JFrame
             // For each appliance that participates in the activity
             for (int i = 0; i < response.getAppliancesOf().length; i++) {
 
-              Appliance responseAppliance =
-                installation.findAppliance(response.getAppliancesOf()[i]);
+              Appliance responseAppliance = response.getAppliancesOf()[i];
 
               try {
                 // In case the appliances contained in the Activity model are
@@ -3294,8 +3374,7 @@ public class MainGUI extends JFrame
               // For each appliance that participates in the activity
               for (int j = 0; j < activity.getAppliancesOf().length; j++) {
 
-                Appliance activityAppliance =
-                  installation.findAppliance(activity.getAppliancesOf()[j]);
+                Appliance activityAppliance = activity.getAppliancesOf()[j];
                 applianceTemp[j] = activityAppliance.getApplianceID();
               }
 
@@ -3480,8 +3559,7 @@ public class MainGUI extends JFrame
               // For each appliance that participates in the activity
               for (int j = 0; j < response.getAppliancesOf().length; j++) {
 
-                Appliance responseAppliance =
-                  installation.findAppliance(response.getAppliancesOf()[j]);
+                Appliance responseAppliance = response.getAppliancesOf()[j];
 
                 applianceTemp[j] = responseAppliance.getApplianceID();
               }

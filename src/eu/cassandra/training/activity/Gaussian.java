@@ -96,6 +96,12 @@ public class Gaussian implements ProbabilityDistribution
    */
   protected double[] histogram;
 
+  /**
+   * This is an array that contains the probabilities that the distribution has
+   * value over a threshold.
+   */
+  private double[] greaterProbability;
+
   /** The id of the distribution as given by the Cassandra server. */
   private String distributionID = "";
 
@@ -185,6 +191,7 @@ public class Gaussian implements ProbabilityDistribution
     mean = 0.0;
     sigma = 1.0;
     precomputed = false;
+
   }
 
   /**
@@ -202,6 +209,7 @@ public class Gaussian implements ProbabilityDistribution
     mean = mu;
     sigma = s;
     precomputed = false;
+
   }
 
   /**
@@ -232,6 +240,8 @@ public class Gaussian implements ProbabilityDistribution
     precompute(0, maxValue, maxValue);
 
     input.close();
+
+    estimateGreaterProbability();
 
   }
 
@@ -386,6 +396,12 @@ public class Gaussian implements ProbabilityDistribution
   }
 
   @Override
+  public double[] getGreaterProbability ()
+  {
+    return greaterProbability;
+  }
+
+  @Override
   public double getProbabilityGreaterEqual (int x)
   {
     double prob = 0;
@@ -402,6 +418,15 @@ public class Gaussian implements ProbabilityDistribution
   public double getProbabilityLess (int x)
   {
     return 1 - getProbabilityGreaterEqual(x);
+  }
+
+  private void estimateGreaterProbability ()
+  {
+    greaterProbability = new double[histogram.length];
+
+    for (int i = 0; i < histogram.length; i++)
+      greaterProbability[i] = getProbabilityGreaterEqual(i);
+
   }
 
   @Override
@@ -887,26 +912,30 @@ public class Gaussian implements ProbabilityDistribution
 
     // Initialize the auxiliary variables.
     double temp = 0;
-    // double sum = 0;
+    double sum = 0;
     double overDiff = 0, overDiffTemp = 0;
     int start, end;
     double newPrice;
+    int durationCheapest = 0;
 
     // Finding the cheapest window in the day.
-    int cheapest = pricing.getCheapest();
-    int startCheapest =
-      pricing.getPricings(pricing.getCheapest()).getStartMinute();
-    int endCheapest = pricing.getPricings(pricing.getCheapest()).getEndMinute();
-    int durationCheapest = endCheapest - startCheapest;
+    ArrayList<Integer> cheapest = pricing.getCheapest();
+
+    for (Integer index: cheapest) {
+      int startCheapest = pricing.getPricings(index).getStartMinute();
+      int endCheapest = pricing.getPricings(index).getEndMinute();
+      durationCheapest += endCheapest - startCheapest;
+    }
+
     double cheapestPrice =
-      pricing.getPricings(pricing.getCheapest()).getCurrentPrice();
+      pricing.getPricings(pricing.getCheapest().get(0)).getCurrentPrice();
 
     // Moving from all the available vectors residual percentages to the
     // cheapest one.
     for (int i = 0; i < pricing.getPricings().size(); i++) {
 
-      if (i != cheapest) {
-        // sum = 0;
+      if (cheapest.contains(i) == false) {
+        sum = 0;
         overDiff = 0;
         start = pricing.getPricings(i).getStartMinute();
         end = pricing.getPricings(i).getEndMinute();
@@ -919,18 +948,22 @@ public class Gaussian implements ProbabilityDistribution
           overDiff += overDiffTemp;
           values[j] -= overDiffTemp;
 
-          // overDiff += values[j] - temp;
-          // values[j] = temp;
         }
 
         double additive = overDiff / durationCheapest;
 
-        for (int j = startCheapest; j <= endCheapest; j++)
-          values[j] += additive;
+        for (Integer index: cheapest) {
+          int startCheapest = pricing.getPricings(index).getStartMinute();
+          int endCheapest = pricing.getPricings(index).getEndMinute();
 
-        // for (int j = 0; j < values.length; j++)
-        // sum += values[j];
-        // System.out.println("Summary after index " + i + ": " + sum);
+          for (int j = startCheapest; j <= endCheapest; j++)
+            values[j] += additive;
+
+        }
+
+        for (int j = 0; j < values.length; j++)
+          sum += values[j];
+        System.out.println("Summary after index " + i + ": " + sum);
 
       }
 

@@ -28,7 +28,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
-import eu.cassandra.training.consumption.PowerConsumptionModel;
+import eu.cassandra.training.consumption.ActiveConsumptionModel;
 import eu.cassandra.training.consumption.ReactiveConsumptionModel;
 import eu.cassandra.training.consumption.TripletPower;
 import eu.cassandra.training.consumption.TripletReactive;
@@ -88,6 +88,12 @@ public class Appliance
   private boolean shiftable = false;
 
   /**
+   * This boolean variable states if this is appliance has static consumption or
+   * not.
+   */
+  private boolean staticConsumption = true;
+
+  /**
    * This is the value of the standby consumption of the appliance.
    */
   private double standbyConsumption = 0.0;
@@ -97,7 +103,7 @@ public class Appliance
    * in
    * form of a string.
    */
-  private String powerConsumptionModelString = "";
+  private String activeConsumptionModelString = "";
 
   /**
    * This variable presents this appliance's reactive active consumption
@@ -110,8 +116,8 @@ public class Appliance
    * This variable presents this appliance's active active consumption
    * model.
    */
-  private PowerConsumptionModel powerConsumptionModel =
-    new PowerConsumptionModel();
+  private ActiveConsumptionModel activeConsumptionModel =
+    new ActiveConsumptionModel();
 
   /**
    * This variable presents this appliance's active active consumption
@@ -139,29 +145,30 @@ public class Appliance
    *          The name of the Appliance Model
    * @param installation
    *          The name of the installation that the Appliance Model is installed
-   * @param powerModel
+   * @param activeModel
    *          The active active consumption of the Appliance Model
    * @param reactiveModel
    *          The reactive active consumption of the Appliance Model
    * @param eventFile
    *          The event file of the Appliance Model
    */
-  public Appliance (String name, String installation, String powerModel,
+  public Appliance (String name, String installation, String activeModel,
                     String reactiveModel, String eventFile, Boolean... base)
   {
 
     this.name = name;
     this.installation = installation;
     this.eventsFile = eventFile;
-    powerConsumptionModelString = powerModel;
+    activeConsumptionModelString = activeModel;
     reactiveConsumptionModelString = reactiveModel;
-    DBObject dbo = (DBObject) JSON.parse(powerConsumptionModelString);
-    powerConsumptionModel.init(dbo);
+    DBObject dbo = (DBObject) JSON.parse(activeConsumptionModelString);
+    activeConsumptionModel.init(dbo);
     dbo = (DBObject) JSON.parse(reactiveConsumptionModelString);
     reactiveConsumptionModel.init(dbo);
     if (base.length == 1)
       this.base = base[0];
 
+    staticConsumption = checkStatic();
   }
 
   // TODO Remove after disaggregation encapsulation
@@ -176,6 +183,8 @@ public class Appliance
     this.eventsFile = eventFile;
     if (base.length == 1)
       this.base = base[0];
+
+    staticConsumption = checkStatic();
   }
 
   /**
@@ -231,6 +240,17 @@ public class Appliance
   }
 
   /**
+   * This is a getter function of the static consumption variable of the
+   * Appliance model.
+   * 
+   * @return the events file of the Appliance model.
+   */
+  public boolean getStaticConsumption ()
+  {
+    return staticConsumption;
+  }
+
+  /**
    * This is a setter function of the activity the Appliance model belongs to.
    * 
    * @param the
@@ -270,26 +290,26 @@ public class Appliance
    * @return an array with the active active consumption for limited time
    *         interval.
    */
-  public Double[] getPowerConsumptionModel ()
+  public Double[] getActiveConsumptionModel ()
   {
 
     ArrayList<Double> temp = new ArrayList<Double>();
-    int times = powerConsumptionModel.getOuterN();
+    int times = activeConsumptionModel.getOuterN();
     if (times == 0)
       times = 2;
     // Number of repeats
     for (int i = 0; i < times; i++) {
       // System.out.println("Time: " + i);
       // Number of patterns in each repeat
-      for (int j = 0; j < powerConsumptionModel.getPatternN(); j++) {
+      for (int j = 0; j < activeConsumptionModel.getPatternN(); j++) {
         // System.out.println("Pattern: " + j);
-        int internalTimes = powerConsumptionModel.getN(j);
+        int internalTimes = activeConsumptionModel.getN(j);
         if (internalTimes == 0)
           internalTimes = 2;
         // System.out.println("Internal Times: " + k);
         for (int k = 0; k < internalTimes; k++) {
           ArrayList<TripletPower> tripplets =
-            powerConsumptionModel.getPattern(j);
+            activeConsumptionModel.getPattern(j);
           for (int l = 0; l < tripplets.size(); l++) {
             // System.out.println("TripletPower: " + l);
             for (int m = 0; m < tripplets.get(l).d; m++) {
@@ -381,12 +401,12 @@ public class Appliance
     }
     scanner.close();
 
-    powerConsumptionModelString = model;
-    DBObject dbo = (DBObject) JSON.parse(powerConsumptionModelString);
-    powerConsumptionModel.init(dbo);
+    activeConsumptionModelString = model;
+    DBObject dbo = (DBObject) JSON.parse(activeConsumptionModelString);
+    activeConsumptionModel.init(dbo);
 
     reactiveConsumptionModelString =
-      powerConsumptionModelString.replace("p", "q");
+      activeConsumptionModelString.replace("p", "q");
     reactiveConsumptionModelString =
       reactiveConsumptionModelString.replace("qara", "para");
     System.out.println(reactiveConsumptionModelString);
@@ -443,7 +463,7 @@ public class Appliance
     temp.put("type", type);
     temp.put("description", "P and Q Consumption Model");
     temp.put("app_id", applianceID);
-    temp.put("pmodel", JSON.parse(powerConsumptionModelString));
+    temp.put("pmodel", JSON.parse(activeConsumptionModelString));
     temp.put("qmodel", JSON.parse(reactiveConsumptionModelString));
     temp.put("pvalues", new double[1]);
     temp.put("qvalues", new double[1]);
@@ -462,8 +482,39 @@ public class Appliance
   {
 
     return ChartUtils.createArea(name + " Consumption Model", "Time Step",
-                                 "Power", getPowerConsumptionModel(),
+                                 "Power", getActiveConsumptionModel(),
                                  getReactiveConsumptionModel());
+  }
+
+  /**
+   * This function is utilized to check if the consumption model is a static one
+   * (having the same value all the operation cycle) or not.
+   * 
+   * @return a boolean variable if the model has static consumption or not.
+   */
+  private boolean checkStatic ()
+  {
+    boolean result = true;
+
+    Double[] values = activeConsumptionModel.getValues();
+
+    // System.out.println("Appliance: " + name + " Model: "
+    // + activeConsumptionModelString);
+    //
+    // System.out.println("Appliance: " + name + " Values: "
+    // + Arrays.toString(values));
+
+    for (int i = 0; i < values.length - 1; i++) {
+      // System.out.println("Previous: " + values[i].doubleValue() + " Next: "
+      // + values[i + 1].doubleValue());
+      if (values[i].doubleValue() != values[i + 1].doubleValue()) {
+        // System.out.println("IN");
+        result = false;
+        break;
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -478,12 +529,13 @@ public class Appliance
     System.out.println("Base: " + base);
     System.out.println("Controllable: " + controllable);
     System.out.println("Shiftable: " + shiftable);
+    System.out.println("Static Consumption: " + staticConsumption);
     System.out.println("Energy Class: " + energyClass);
     System.out.println("StandBy Consumption: " + standbyConsumption);
     System.out.println("Events File: " + eventsFile);
     System.out.println("Power Consumption Model:"
-                       + powerConsumptionModel.toString());
+                       + activeConsumptionModelString);
     System.out.println("Reactive Power Consumption Model:"
-                       + reactiveConsumptionModel.toString());
+                       + reactiveConsumptionModelString);
   }
 }

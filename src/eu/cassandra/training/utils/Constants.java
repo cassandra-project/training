@@ -31,6 +31,12 @@ public class Constants
 {
 
   /**
+   * This variable is used as the folder where the temporary files will be
+   * stored.
+   */
+  public static final String tempFolder = "TempFiles/";
+
+  /**
    * This variable is used as the folder where the result files will be stored.
    */
   public static final String resultFolder = "ResultFiles/";
@@ -45,12 +51,6 @@ public class Constants
       return Long.compare(date1.getMillis(), date2.getMillis());
     }
   };
-
-  /**
-   * This variable is used as the folder where the temporary files will be
-   * stored.
-   */
-  public static final String tempFolder = "TempFiles/";
 
   public static final int HUNDRED = 100;
 

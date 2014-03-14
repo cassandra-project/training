@@ -18,7 +18,9 @@ package eu.cassandra.training.utils;
 
 import java.awt.Color;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 
+import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -27,6 +29,7 @@ import org.jfree.chart.axis.CategoryLabelPosition;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.CategoryLabelWidthType;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.labels.PieSectionLabelGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
@@ -35,15 +38,13 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.function.Function2D;
-import org.jfree.data.function.NormalDistributionFunction2D;
 import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.text.TextBlockAnchor;
 import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.RectangleInsets;
 import org.jfree.ui.TextAnchor;
 
 import eu.cassandra.training.entities.Person;
@@ -57,6 +58,8 @@ import eu.cassandra.training.entities.Person;
  */
 public class ChartUtils
 {
+
+  static Logger log = Logger.getLogger(ChartUtils.class);
 
   /**
    * This function is used for the visualization of a Comparative Response Model
@@ -105,8 +108,12 @@ public class ChartUtils
     xyplot.setDomainPannable(true);
     xyplot.setRangePannable(true);
     xyplot.setForegroundAlpha(0.85F);
+    NumberAxis domainAxis = (NumberAxis) xyplot.getDomainAxis();
+
+    // domainAxis.setRange(0.0, 1440.0);
+    domainAxis.setTickUnit(new NumberTickUnit(10));
     NumberAxis numberaxis = (NumberAxis) xyplot.getRangeAxis();
-    numberaxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+    numberaxis.setTickUnit(new NumberTickUnit(0.1));
 
     return new ChartPanel(chart);
   }
@@ -251,47 +258,21 @@ public class ChartUtils
    * @return a chart panel with the graphical representation.
    */
   public static ChartPanel createHistogram (String title, String x, String y,
-                                            Double[] data)
-  {
-
-    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-    for (int i = 0; i < data.length; i++) {
-      dataset.addValue(data[i], y, (Comparable) i);
-    }
-
-    PlotOrientation orientation = PlotOrientation.VERTICAL;
-    boolean show = false;
-    boolean toolTips = false;
-    boolean urls = false;
-
-    JFreeChart chart =
-      ChartFactory.createBarChart(title, x, y, dataset, orientation, show,
-                                  toolTips, urls);
-
-    return new ChartPanel(chart);
-  }
-
-  /**
-   * This function is used for the visualization of a Histogram.
-   * 
-   * @param title
-   *          The title of the chart.
-   * @param x
-   *          The unit on the X axis of the chart.
-   * @param y
-   *          The unit on the Y axis of the chart.
-   * @param data
-   *          The array of values.
-   * @return a chart panel with the graphical representation.
-   */
-  public static ChartPanel createHistogram (String title, String x, String y,
                                             double[] data)
   {
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
+    log.info(Arrays.toString(data));
+
     for (int i = 0; i < data.length; i++) {
-      dataset.addValue(data[i], y, (Comparable) i);
+      if (title.contains("Start")) {
+        log.info(i + " " + data[i]);
+        dataset.addValue(data[i], y, (Comparable) i);
+      }
+      else if (data[i] != 0) {
+        log.info(i + " " + data[i]);
+        dataset.addValue(data[i], y, (Comparable) i);
+      }
     }
 
     PlotOrientation orientation = PlotOrientation.VERTICAL;
@@ -335,7 +316,7 @@ public class ChartUtils
       data[1] = doubles2;
 
       final CategoryDataset dataset =
-        DatasetUtilities.createCategoryDataset("Power ", "Type ", data);
+        DatasetUtilities.createCategoryDataset("Power ", "", data);
 
       chart =
         ChartFactory.createAreaChart(title, x, y, dataset,
@@ -344,19 +325,24 @@ public class ChartUtils
 
       chart.setBackgroundPaint(Color.white);
 
-      final CategoryPlot plot = chart.getCategoryPlot();
+      CategoryPlot plot = chart.getCategoryPlot();
       plot.setForegroundAlpha(0.5f);
 
       // plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
       plot.setBackgroundPaint(Color.lightGray);
+
+      CategoryAxis domainAxis = plot.getDomainAxis();
+      domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+      // domainAxis.setTickUnit(new NumberTickUnit(10));
+      NumberAxis numberaxis = (NumberAxis) plot.getRangeAxis();
+      numberaxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
     }
     return new ChartPanel(chart);
   }
 
   /**
-   * This function is used for the visualization of a Gaussian (Normal)
-   * Distribution.
+   * This function is used for the visualization of two Area Diagrams.
    * 
    * @param title
    *          The title of the chart.
@@ -364,35 +350,49 @@ public class ChartUtils
    *          The unit on the X axis of the chart.
    * @param y
    *          The unit on the Y axis of the chart.
-   * @param mean
-   *          The mean parameter of the distribution.
+   * @param doubles
+   *          The array of values of the first array.
    * 
-   * @param mean
-   *          The standard deviation parameter of the distribution.
    * @return a chart panel with the graphical representation.
    */
-  public static ChartPanel createNormalDistribution (String title, String x,
-                                                     String y, double mean,
-                                                     double sigma)
+  public static ChartPanel createExpectedPowerChart (String title, String x,
+                                                     String y, double[] data)
   {
+    JFreeChart chart = null;
 
-    if (sigma < 0.01)
-      sigma = 0.01;
-    Function2D normal = new NormalDistributionFunction2D(mean, sigma);
-    XYDataset dataset =
-      DatasetUtilities.sampleFunction2D(normal, 0, (mean + 4 * sigma), 100,
-                                        "Normal");
+    XYSeries series1 = new XYSeries("Expected Power");
+    for (int i = 0; i < data.length; i++) {
+      series1.add(i, data[i]);
+    }
+
+    XYSeriesCollection dataset = new XYSeriesCollection();
+    dataset.addSeries(series1);
+
     PlotOrientation orientation = PlotOrientation.VERTICAL;
     boolean show = false;
     boolean toolTips = false;
     boolean urls = false;
 
-    JFreeChart chart =
+    chart =
       ChartFactory.createXYLineChart(title, x, y, dataset, orientation, show,
                                      toolTips, urls);
 
-    return new ChartPanel(chart);
+    chart.setBackgroundPaint(Color.white);
 
+    XYPlot plot = (XYPlot) chart.getPlot();
+    plot.setBackgroundPaint(Color.lightGray);
+    plot.setDomainGridlinePaint(Color.white);
+    plot.setRangeGridlinePaint(Color.white);
+    plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+    plot.setDomainCrosshairVisible(true);
+    plot.setRangeCrosshairVisible(true);
+
+    NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
+    domainAxis.setVerticalTickLabels(true);
+    domainAxis.setRange(0.0, 1440.0);
+    domainAxis.setTickUnit(new NumberTickUnit(100));
+
+    return new ChartPanel(chart);
   }
 
   /**
@@ -430,72 +430,20 @@ public class ChartUtils
       ChartFactory.createXYLineChart(title, x, y, dataset, orientation, show,
                                      toolTips, urls);
 
-    return new ChartPanel(chart);
-
-  }
-
-  /**
-   * This function is used for parsing and presenting the basic pricing schema.
-   * 
-   * @param basic
-   *          The basic pricing schema
-   * @return a chart panel with the
-   *         graphical representation.
-   */
-  public static ChartPanel parsePricingScheme (String basic)
-  {
-
-    double[] data = new double[Constants.MINUTES_PER_DAY];
-
-    String[] lines = basic.split("\n");
-
-    int startTime = -1;
-    int endTime = -1;
-
-    for (String line: lines) {
-
-      String start = line.split("-")[0];
-
-      int startHour = Integer.parseInt(start.split(":")[0]);
-      int startMinute = Integer.parseInt(start.split(":")[1]);
-
-      String end = line.split("-")[1];
-
-      int endHour = Integer.parseInt(end.split(":")[0]);
-      int endMinute = Integer.parseInt(end.split(":")[1]);
-
-      startTime = startHour * 60 + startMinute;
-      endTime = endHour * 60 + endMinute;
-
-      System.out.println("Start: " + startTime + " End: " + endTime);
-
-      double value = Double.parseDouble(line.split("-")[2]);
-
-      if (startTime < endTime) {
-        for (int i = startTime; i <= endTime; i++)
-          data[i] = value;
-      }
-    }
-
-    XYSeries series1 = new XYSeries("Basic Pricing Scheme");
-    for (int i = 0; i < data.length; i++) {
-      series1.add(i, data[i]);
-    }
-
-    XYSeriesCollection dataset = new XYSeriesCollection();
-    dataset.addSeries(series1);
-
-    PlotOrientation orientation = PlotOrientation.VERTICAL;
-    boolean show = true;
-    boolean toolTips = false;
-    boolean urls = false;
-
-    JFreeChart chart =
-      ChartFactory.createXYLineChart("Pricing Scheme", "Minute of Day",
-                                     "Euros/kWh", dataset, orientation, show,
-                                     toolTips, urls);
+    XYPlot xyplot = (XYPlot) chart.getPlot();
+    xyplot.setDomainPannable(true);
+    xyplot.setRangePannable(true);
+    xyplot.setForegroundAlpha(0.85F);
+    NumberAxis domainAxis = (NumberAxis) xyplot.getDomainAxis();
+    if (data.length != 1440)
+      domainAxis.setTickUnit(new NumberTickUnit(data.length / 10));
+    else
+      domainAxis.setTickUnit(new NumberTickUnit(100));
+    NumberAxis numberaxis = (NumberAxis) xyplot.getRangeAxis();
+    numberaxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
     return new ChartPanel(chart);
+
   }
 
   /**
@@ -540,6 +488,16 @@ public class ChartUtils
       ChartFactory.createXYLineChart("Pricing Schemes", "Minute of Day",
                                      "Euros/kWh", dataset, orientation, show,
                                      toolTips, urls);
+
+    XYPlot xyplot = (XYPlot) chart.getPlot();
+    xyplot.setDomainPannable(true);
+    xyplot.setRangePannable(true);
+    xyplot.setForegroundAlpha(0.85F);
+    NumberAxis domainAxis = (NumberAxis) xyplot.getDomainAxis();
+
+    domainAxis.setTickUnit(new NumberTickUnit(100));
+    NumberAxis numberaxis = (NumberAxis) xyplot.getRangeAxis();
+    numberaxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
     return new ChartPanel(chart);
   }
