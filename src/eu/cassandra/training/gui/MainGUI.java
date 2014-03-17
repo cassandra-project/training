@@ -21,6 +21,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,6 +34,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -1020,6 +1022,24 @@ public class MainGUI extends JFrame
     householdNameLabel.setBounds(24, 233, 147, 14);
     connectionPanel.add(householdNameLabel);
 
+    JButton btnOpenPlatform = new JButton("Open Platform");
+    btnOpenPlatform.addActionListener(new ActionListener() {
+      public void actionPerformed (ActionEvent arg0)
+      {
+        try {
+          Desktop.getDesktop()
+                  .browse(new URL(
+                                  "https://cassandra.iti.gr:8443/cassandra/app.html")
+                                  .toURI());
+        }
+        catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    });
+    btnOpenPlatform.setBounds(401, 138, 147, 28);
+    connectionPanel.add(btnOpenPlatform);
+
     // //////////////////
     // ACTIONS ///////
     // /////////////////
@@ -1408,6 +1428,7 @@ public class MainGUI extends JFrame
 
               boolean refFlag = activity.contains("Refrigeration");
               boolean wmFlag = name.contains("Washing");
+
               double p = 0, q = 0;
               int distance = 0, duration = 0;
 
@@ -1495,6 +1516,12 @@ public class MainGUI extends JFrame
               tempActivities.remove(activityIndex);
               System.out.println("Refrigeration Removed");
             }
+
+            activityIndex = findActivity("Standby");
+            if (activityIndex != -1) {
+              tempActivities.remove(activityIndex);
+              System.out.println("Standby Consumption Removed");
+            }
             // TODO Add these lines in case we want to remove activities with
             // small sampling number
 
@@ -1505,7 +1532,7 @@ public class MainGUI extends JFrame
 
             // Create an event file for each activity, in order to be able to
             // use
-            // it for training the beahviour models if asked from the user
+            // it for training the behaviour models if asked from the user
             for (int i = 0; i < tempActivities.size(); i++) {
               // tempActivities.get(i).status();
               try {

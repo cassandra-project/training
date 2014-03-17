@@ -213,6 +213,7 @@ public class ApplianceTemp
 
     boolean refFlag = activity.contains("Refrigeration");
     boolean wmFlag = name.contains("Washing");
+    boolean standbyFlag = activity.contains("Standby Consumption");
 
     if (refFlag) {
       activeModel =
@@ -268,6 +269,9 @@ public class ApplianceTemp
       reactiveModel =
         "{ \"n\" : 0, \"params\" : [{ \"n\" : 1, \"values\" : [ {\"q\" :" + q
                 + ", \"d\" :" + duration + ", \"s\": 0.0}]}]}";
+
+      if (standbyFlag)
+        base = true;
 
     }
 
