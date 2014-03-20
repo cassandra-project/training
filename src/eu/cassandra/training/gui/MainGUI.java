@@ -1373,23 +1373,32 @@ public class MainGUI extends JFrame
           String fileName =
             file.getName().substring(0, file.getName().length() - 4);
 
-          if (Constants.NOT_FILED) {
-            try {
-              Disaggregate dis =
-                new Disaggregate(folder, fileNameWithExtension);
-            }
-            catch (Exception e2) {
-              System.out.println("Missing File");
-              e2.printStackTrace();
-            }
-          }
-
           filename =
             pathField.getText().substring(0, pathField.getText().length() - 4);
           File appliancesFile =
             new File(Constants.resultFolder + fileName + "ApplianceList.csv");
           File activitiesFile =
             new File(Constants.resultFolder + fileName + "ActivityList.csv");
+
+          if ((Constants.USE_FILES == false)
+              || (!appliancesFile.exists() && !activitiesFile.exists())) {
+            try {
+              System.out.println("IN!!!");
+
+              Disaggregate dis =
+                new Disaggregate(folder, fileNameWithExtension);
+
+              appliancesFile =
+                new File(Constants.resultFolder + fileName
+                         + "ApplianceList.csv");
+              activitiesFile =
+                new File(Constants.resultFolder + fileName + "ActivityList.csv");
+            }
+            catch (Exception e2) {
+              System.out.println("Missing File");
+              e2.printStackTrace();
+            }
+          }
 
           // If these exist, disaggregation was successful and the procedure can
           // continue
@@ -1575,8 +1584,7 @@ public class MainGUI extends JFrame
             }
 
           }
-          // Demonstration of the disaggregation in case it was not successful.
-          // For presentation purposes only.
+          // In case of an error.
           else {
 
             int temp = 8 + ((int) (Math.random() * 2));

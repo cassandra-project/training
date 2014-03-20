@@ -92,5 +92,5 @@ public class Constants
   public static final int HIGH_SAMPLE_MIXTURE = 5;
   public static final int VERY_HIGH_SAMPLE_MIXTURE = 10;
 
-  public static final boolean NOT_FILED = true;
+  public static final boolean USE_FILES = true;
 }
