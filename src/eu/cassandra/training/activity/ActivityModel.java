@@ -918,4 +918,17 @@ public class ActivityModel
     return duration.getHistogram().length - 1;
   }
 
+  public double estimateNumberOfTimesFactor ()
+  {
+    double result = 0;
+
+    for (int i = 0; i < dailyTimes.getHistogram().length; i++) {
+
+      result += i * dailyTimes.getHistogram()[i];
+
+    }
+
+    return result;
+  }
+
 }

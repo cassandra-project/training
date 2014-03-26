@@ -414,4 +414,11 @@ public class Installation
     System.out.println("Active Power:" + activePower.toString());
     System.out.println("Reactive Power:" + reactivePower.toString());
   }
+
+  public ChartPanel createExpectedPowerChart ()
+  {
+
+    return person.expectedPowerChart();
+
+  }
 }

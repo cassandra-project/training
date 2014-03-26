@@ -28,6 +28,7 @@ import com.mongodb.DBObject;
 import eu.cassandra.training.activity.ActivityModel;
 import eu.cassandra.training.response.ResponseModel;
 import eu.cassandra.training.utils.ChartUtils;
+import eu.cassandra.training.utils.Constants;
 import eu.cassandra.training.utils.Utils;
 
 /**
@@ -497,5 +498,39 @@ public class Person
     activityModel.train(distributions);
     Utils.estimateExpectedPower(activityModel);
     activityModels.add(activityModel);
+  }
+
+  public ChartPanel expectedPowerChart ()
+  {
+    double[] overallExpectedPower = new double[Constants.MINUTES_PER_DAY];
+
+    for (ActivityModel activityModel: activityModels) {
+
+      for (int i = 0; i < activityModel.getExpectedPower().length; i++)
+        overallExpectedPower[i] += activityModel.getExpectedPower()[i];
+
+    }
+
+    Appliance fridge = installation.findAppliance("Refrigeration Refrigerator");
+    double mean = fridge.getMeanActiveConsumption();
+    System.out.println("Mean:" + mean);
+    Appliance standby = installation.findAppliance("Standby Consumption");
+    // standby.status();
+
+    for (int i = 0; i < overallExpectedPower.length; i++) {
+      if (standby != null)
+        overallExpectedPower[i] += standby.getActiveConsumptionModel()[0];
+
+      if (fridge != null)
+        overallExpectedPower[i] += mean;
+    }
+
+    String variable = "Activity Expected Power";
+    String x = "Minute of Day";
+    String y = "Expected Power (W)";
+
+    return ChartUtils.createExpectedPowerChart(variable, x, y,
+                                               overallExpectedPower);
+
   }
 }

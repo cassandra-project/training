@@ -517,6 +517,23 @@ public class Appliance
     return result;
   }
 
+  public double getMeanActiveConsumption ()
+  {
+
+    double result = 0;
+
+    Double[] activeConsumptionModel = getActiveConsumptionModel();
+
+    for (int i = 0; i < activeConsumptionModel.length; i++) {
+
+      result += activeConsumptionModel[i];
+
+    }
+
+    return result / activeConsumptionModel.length;
+
+  }
+
   /**
    * This function is used to present the basic information of the Appliance
    * Model on the console.

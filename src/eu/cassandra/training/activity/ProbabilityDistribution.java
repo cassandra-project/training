@@ -142,7 +142,7 @@ public interface ProbabilityDistribution
    *          The input value.
    * @return The probability value at x (P(x)).
    */
-  public double getProbabilityGreaterEqual (int x);
+  public double getProbabilityGreater (int x);
 
   /**
    * Get the precomputed probability value for the x.

@@ -367,13 +367,13 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   }
 
   @Override
-  public double getProbabilityGreaterEqual (int x)
+  public double getProbabilityGreater (int x)
   {
     double prob = 0;
 
     int start = (int) x;
 
-    for (int i = start; i < histogram.length; i++)
+    for (int i = start + 1; i < histogram.length; i++)
       prob += histogram[i];
 
     return prob;
@@ -382,7 +382,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
   @Override
   public double getProbabilityLess (int x)
   {
-    return 1 - getProbabilityGreaterEqual(x);
+    return 1 - getProbabilityGreater(x);
   }
 
   private void estimateGreaterProbability ()
@@ -390,7 +390,7 @@ public class GaussianMixtureModels implements ProbabilityDistribution
     greaterProbability = new double[histogram.length];
 
     for (int i = 0; i < histogram.length; i++)
-      greaterProbability[i] = getProbabilityGreaterEqual(i);
+      greaterProbability[i] = getProbabilityGreater(i);
 
   }
 

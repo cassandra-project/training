@@ -415,12 +415,21 @@ public class Utils
 
     }
 
+    double factor =
+      activity.estimateNumberOfTimesFactor()
+              / (double) activity.getAppliancesOf().length;
+
+    System.out.println("Resulting factor:" + factor);
+
+    for (int j = 0; j < result.length; j++)
+      // result[j] *= (factor / activity.getDurationMax());
+      result[j] *= factor;
+
     System.out.println(Arrays.toString(result));
 
-    int days = activity.getDays();
-
-    for (int i = 0; i < result.length; i++)
-      result[i] *= days;
+    // int days = activity.getDays();
+    // for (int i = 0; i < result.length; i++)
+    // result[i] *= days;
 
     System.out.println(Arrays.toString(result));
 
@@ -450,7 +459,7 @@ public class Utils
 
       if (staticConsumption)
         result +=
-          activity.getDuration().getProbabilityGreaterEqual(i)
+          activity.getDuration().getProbabilityGreater(i)
                   * activity
                           .getStartTime()
                           .getProbability((Constants.MINUTES_PER_DAY + index - i)
@@ -458,7 +467,7 @@ public class Utils
                   * consumption[0];
       else
         result +=
-          activity.getDuration().getProbabilityGreaterEqual(i)
+          activity.getDuration().getProbabilityGreater(i)
                   * activity
                           .getStartTime()
                           .getProbability((Constants.MINUTES_PER_DAY + index - i)
@@ -470,5 +479,4 @@ public class Utils
     return result;
 
   }
-
 }

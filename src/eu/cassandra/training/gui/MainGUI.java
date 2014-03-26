@@ -276,6 +276,8 @@ public class MainGUI extends JFrame
   private DefaultListModel<String> exportModels =
     new DefaultListModel<String>();
 
+  private boolean trained = false;
+
   /**
    * Constructor of the Training Module GUI.
    * 
@@ -1211,6 +1213,7 @@ public class MainGUI extends JFrame
 
         // Removing temporary files
         Utils.cleanFiles();
+        trained = false;
 
       }
     });
@@ -1931,6 +1934,7 @@ public class MainGUI extends JFrame
 
         finally {
           root.setCursor(Cursor.getDefaultCursor());
+          trained = true;
         }
       }
     });
@@ -2690,7 +2694,10 @@ public class MainGUI extends JFrame
                 exportDurationButton.setEnabled(false);
                 exportStartButton.setEnabled(false);
                 exportStartBinnedButton.setEnabled(false);
-                exportExpectedPowerButton.setEnabled(false);
+                if (trained)
+                  exportExpectedPowerButton.setEnabled(true);
+                else
+                  exportExpectedPowerButton.setEnabled(false);
               }
               catch (IOException e1) {
                 e1.printStackTrace();
@@ -2903,7 +2910,9 @@ public class MainGUI extends JFrame
 
         ChartPanel chartPanel = null;
 
-        if (activity != null)
+        if (selection.equalsIgnoreCase(installation.getName()))
+          chartPanel = installation.createExpectedPowerChart();
+        else if (activity != null)
           chartPanel = activity.createExpectedPowerChart();
         else
           chartPanel = response.createExpectedPowerChart();
