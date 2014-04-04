@@ -116,6 +116,27 @@ public class MainGUI extends JFrame
    *          selected activities
    * @return the index of the activity in the list of the tempActivities.
    */
+  private static ArrayList<ActivityTemp> findAllActivity (String name)
+  {
+
+    ArrayList<ActivityTemp> result = new ArrayList<ActivityTemp>();
+
+    for (int i = 0; i < tempActivities.size(); i++)
+      if (tempActivities.get(i).getName().contains(name))
+        result.add(tempActivities.get(i));
+
+    return result;
+  }
+
+  /**
+   * This function is used when the program needs to search through the list of
+   * available activities to find the selected one.
+   * 
+   * @param name
+   *          name of the activity as it can be found on the list of detected /
+   *          selected activities
+   * @return the index of the activity in the list of the tempActivities.
+   */
   private static int findActivity (String name)
   {
 
@@ -126,7 +147,6 @@ public class MainGUI extends JFrame
         result = i;
         break;
       }
-
     }
 
     return result;
@@ -1523,15 +1543,16 @@ public class MainGUI extends JFrame
             }
 
             // This is hard copied for now
-            int activityIndex = findActivity("Refrigeration");
-            if (activityIndex != -1) {
-              tempActivities.remove(activityIndex);
+            ArrayList<ActivityTemp> activities =
+              findAllActivity("Refrigeration");
+            for (ActivityTemp activityTemp: activities) {
+              tempActivities.remove(activityTemp);
               System.out.println("Refrigeration Removed");
             }
 
-            activityIndex = findActivity("Standby");
-            if (activityIndex != -1) {
-              tempActivities.remove(activityIndex);
+            int index = findActivity("Standby");
+            if (index != -1) {
+              tempActivities.remove(index);
               System.out.println("Standby Consumption Removed");
             }
             // TODO Add these lines in case we want to remove activities with
