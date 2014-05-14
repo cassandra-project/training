@@ -69,7 +69,7 @@ public class ActivityModel
    * This variable shows if the activity model can be shifted or not (due to
    * monetary or other types of incentives).
    */
-  protected boolean shiftable = false;
+  protected boolean shiftable = true;
 
   /**
    * The daytype variable is used to show the type of days or season this

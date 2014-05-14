@@ -325,7 +325,7 @@ public class MainGUI extends JFrame
     });
 
     // Cleaning temporary files from the temp folder when starting the GUI.
-    Utils.cleanFiles();
+    // Utils.cleanFiles();
 
     // Change the platforms look and feel to Nimbus
     LookAndFeel lnf = new javax.swing.plaf.nimbus.NimbusLookAndFeel();
@@ -2751,7 +2751,7 @@ public class MainGUI extends JFrame
             else if (activity != null) {
 
               chartPanel = activity.createDailyTimesDistributionChart();
-
+              activity.status();
               exportDailyButton.setEnabled(true);
               exportDurationButton.setEnabled(true);
               exportStartButton.setEnabled(true);

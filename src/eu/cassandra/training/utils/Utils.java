@@ -69,7 +69,7 @@ public class Utils
   public static void cleanFiles ()
   {
     File directory = new File(Constants.tempFolder);
-    File files[] = directory.listFiles();
+    File[] files = directory.listFiles();
     String extension = "";
     for (int index = 0; index < files.length; index++) {
       {
@@ -89,6 +89,28 @@ public class Utils
         }
       }
     }
+
+    // directory = new File(Constants.resultFolder);
+    // files = directory.listFiles();
+    // extension = "";
+    // for (int index = 0; index < files.length; index++) {
+    // {
+    // extension =
+    // files[index].getAbsolutePath().substring(files[index]
+    // .getAbsolutePath()
+    // .length() - 3,
+    // files[index]
+    // .getAbsolutePath()
+    // .length());
+    // if (extension.equalsIgnoreCase("csv")
+    // || extension.equalsIgnoreCase("txt")) {
+    // boolean wasDeleted = files[index].delete();
+    // if (!wasDeleted) {
+    // System.out.println("Not Deleted File " + files[index].toString());
+    // }
+    // }
+    // }
+    // }
   }
 
   public static void histogramValues (double[] values)
