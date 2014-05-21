@@ -845,6 +845,7 @@ public class MainGUI extends JFrame
 
     final JRadioButton startHistogramRadioButton =
       new JRadioButton("Histogram");
+    startHistogramRadioButton.setSelected(true);
     startTimeButtonGroup.add(startHistogramRadioButton);
     startHistogramRadioButton.setBounds(160, 131, 87, 18);
     trainingParametersPanel.add(startHistogramRadioButton);
@@ -869,6 +870,7 @@ public class MainGUI extends JFrame
 
     final JRadioButton durationHistogramRadioButton =
       new JRadioButton("Histogram");
+    durationHistogramRadioButton.setSelected(true);
     durationButtonGroup.add(durationHistogramRadioButton);
     durationHistogramRadioButton.setBounds(160, 84, 87, 18);
     trainingParametersPanel.add(durationHistogramRadioButton);
