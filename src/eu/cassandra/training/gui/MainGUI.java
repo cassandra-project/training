@@ -1469,8 +1469,8 @@ public class MainGUI extends JFrame
               if (refFlag) {
                 p = Double.parseDouble(line[2]);
                 q = Double.parseDouble(line[3]);
-                distance = Integer.parseInt(line[4]);
-                duration = Integer.parseInt(line[5]);
+                duration = Integer.parseInt(line[4]);
+                distance = Integer.parseInt(line[5]);
                 // For each appliance found in the file, an temporary Appliance
                 // Entity is created.
 
@@ -1524,6 +1524,7 @@ public class MainGUI extends JFrame
               // String name = line[0];
               // String activity = line[1];
               String activity = line[1] + " " + line[0];
+              String type = line[1];
               int start = Integer.parseInt(line[2]);
               int end = Integer.parseInt(line[3]);
 
@@ -1533,7 +1534,7 @@ public class MainGUI extends JFrame
               // if not found, create a new one
               if (activityIndex == -1) {
                 // System.out.println("In!");
-                ActivityTemp newActivity = new ActivityTemp(activity);
+                ActivityTemp newActivity = new ActivityTemp(activity, type);
                 newActivity.addEvent(start, end);
                 tempActivities.add(newActivity);
                 // System.out.println(tempActivities.toString());

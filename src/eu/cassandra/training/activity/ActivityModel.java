@@ -63,7 +63,7 @@ public class ActivityModel
   /**
    * This variable contains the type of the activity model.
    */
-  protected String type = "";
+  protected String type = "Other";
 
   /**
    * This variable shows if the activity model can be shifted or not (due to
@@ -178,10 +178,11 @@ public class ActivityModel
    * @param person
    *          The name of the person type that this activity model belongs to.
    */
-  public ActivityModel (Appliance appliance, Person person)
+  public ActivityModel (Appliance appliance, String type, Person person)
     throws FileNotFoundException
   {
     nameActivity = person + " " + appliance.getName() + " Activity";
+    this.type = type;
     name = person + " " + appliance.getName() + " Activity Model";
     this.person = person;
     appliancesOf = new Appliance[1];
@@ -205,11 +206,13 @@ public class ActivityModel
    *          The filename of the event file used for the training procedure.
    * 
    */
-  public ActivityModel (String activity, Person person, Appliance[] appliances,
-                        String eventsFile) throws FileNotFoundException
+  public ActivityModel (String activity, String type, Person person,
+                        Appliance[] appliances, String eventsFile)
+    throws FileNotFoundException
   {
     nameActivity = person + " " + activity + " Activity";
     name = person + " " + activity + " Activity Model";
+    this.type = type;
     this.activity = true;
     this.person = person;
     appliancesOf = appliances;

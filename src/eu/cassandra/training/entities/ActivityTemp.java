@@ -46,6 +46,11 @@ public class ActivityTemp
   private final String name;
 
   /**
+   * This variable contains the name of the temporary activity model.
+   */
+  private final String type;
+
+  /**
    * This variable contains a list of the consumption events corresponding to
    * the temporary activity model.
    */
@@ -66,9 +71,10 @@ public class ActivityTemp
   /**
    * Simple constructor of a temporary activity object.
    */
-  public ActivityTemp (String name)
+  public ActivityTemp (String name, String type)
   {
     this.name = name;
+    this.type = type;
   }
 
   /**
@@ -79,6 +85,16 @@ public class ActivityTemp
   public String getName ()
   {
     return name;
+  }
+
+  /**
+   * This is a getter function of the temporary activity's type.
+   * 
+   * @return the name of the temporary activity.
+   */
+  public String getType ()
+  {
+    return type;
   }
 
   /**
@@ -153,6 +169,7 @@ public class ActivityTemp
   public void status ()
   {
     System.out.println("Activity:" + name);
+    System.out.println("Activity Type:" + type);
     System.out.println("Events File:" + eventsFile);
     System.out.println("Number of Events:" + events.size());
     System.out.println("Appliances:" + appliances.toString());
@@ -194,7 +211,7 @@ public class ActivityTemp
       appliances[i] = this.appliances.get(i);
 
     ActivityModel result =
-      new ActivityModel(name, person, appliances, eventsFile);
+      new ActivityModel(name, type, person, appliances, eventsFile);
 
     return result;
   }

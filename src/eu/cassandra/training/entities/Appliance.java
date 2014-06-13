@@ -65,7 +65,7 @@ public class Appliance
   /**
    * This variable provides the type of the Appliance model.
    */
-  private String type = "Generic";
+  private String type = "Other";
 
   /**
    * This variable provides the energy class of the Appliance model.

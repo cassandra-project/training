@@ -494,7 +494,9 @@ public class Person
     if (exists != null)
       activityModels.remove(exists);
 
-    ActivityModel activityModel = new ActivityModel(appliance, this);
+    String type = appliance.getName().split(" ")[0];
+
+    ActivityModel activityModel = new ActivityModel(appliance, type, this);
     activityModel.train(distributions);
     Utils.estimateExpectedPower(activityModel);
     activityModels.add(activityModel);
